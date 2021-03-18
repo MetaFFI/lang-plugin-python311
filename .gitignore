@@ -1,9 +1,57 @@
+# ------------- vscode -------------
+.vscode
+
+# ------------- CLion -------------
+.idea
+
+# ------------- CMake -------------
+build/
+cmake-build*
+output*
+
+# ------------ Python -------------
+*__pycache__*
+
+# -------------- C++ --------------
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# -------------- Go --------------
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+go.sum
 
 # Test binary, built with `go test -c`
 *.test
@@ -12,4 +60,4 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
