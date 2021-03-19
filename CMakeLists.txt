@@ -1,29 +1,10 @@
 cmake_minimum_required(VERSION 3.17.3)
 project(openffi-plugin-python3 VERSION 0.0.1)
 
-# build openffi.compiler.python3 Go dynamic library
+include(CTest)
+enable_testing()
 
-# TODO: make c-shared as PIC
+include(${CMAKE_CURRENT_LIST_DIR}/../plugin-sdk/CMakeLists.txt)
 
-FILE(GLOB go_sources "${CMAKE_CURRENT_LIST_DIR}/*.go")
-
-find_program(GOEXEC go)
-if(NOT GOEXEC)
-	message(WARNING "Go not found - Skipping build of Python support")
-else()
-
-# build
-add_custom_target(openffi.compiler.python3 ALL)
-add_custom_command(TARGET openffi.compiler.python3
-					DEPENDS ${go_sources}
-					WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-					COMMAND ${GOEXEC} build -buildmode=c-shared -gcflags=-shared -o ${CMAKE_CURRENT_BINARY_DIR}/openffi.compiler.python3${CMAKE_SHARED_LIBRARY_SUFFIX} ${GO_SRCS}
-					COMMENT "Building openffi.compiler.python3 compiler plugin")
-
-
-# Unitest
-add_test(NAME compiler_python_gotest
-		COMMAND ${GOEXEC} test
-		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-
-endif()
+include(compiler/CMakeLists.txt)
+include(runtime/CMakeLists.txt)
