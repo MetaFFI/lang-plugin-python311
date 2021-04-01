@@ -1,10 +1,5 @@
-module github.com/GreenFuze/OpenFFI/CLI/python
+module github.com/OpenFFI/lang-plugin-python3/compiler
 
-go 1.12
+go 1.16
 
-require (
-	github.com/GreenFuze/OpenFFI/CLI/utils/go v0.0.0-20200812050943-32ea9144a191
-	github.com/antchfx/jsonquery v1.1.4
-	github.com/antchfx/xpath v1.1.10 // indirect
-	github.com/yoheimuta/go-protoparser v3.4.0+incompatible
-)
+require github.com/OpenFFI/plugin-sdk/compiler v0.0.0-20210328210524-22c76a70ebaa

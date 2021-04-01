@@ -1,66 +1,34 @@
 package main
 
 import (
-	"fmt"
-	. "github.com/GreenFuze/OpenFFI/CLI/utils/go"
+	"github.com/OpenFFI/plugin-sdk/compiler/go"
 )
 
 //--------------------------------------------------------------------
 type Compiler struct{
-	parser *ProtoParser
+	def *compiler.IDLDefinition
+	serializationCode map[string]string
+	outputPath string
 }
 //--------------------------------------------------------------------
-func NewCompiler(proto string, protoFilename string) (*Compiler, error) {
-
-	parser, err := NewProtoParser(proto, protoFilename)
-	if err != nil{
-		return nil, fmt.Errorf("Failed to create proto pparser. Error: %v", err)
-	}
-
-	return &Compiler{parser: parser}, nil
+func NewCompiler(def *compiler.IDLDefinition, serializationCode map[string]string, outputPath string) *Compiler {
+	return &Compiler{def: def, serializationCode: serializationCode, outputPath: outputPath}
 }
 //--------------------------------------------------------------------
-// @protobufFileName - The name of the protobuf python generated
-func (this *Compiler) CompileGuest() (string, error){
+func (this *Compiler) CompileGuest() (outputFileName string, err error){
 
-	compilerParams, err := NewTemplateParameters(this.parser.GetProtoFileName(), PROTOBUF_PYTHON_SUFFIX, this.parser.TargetLanguage, ProtoTypeToPythonType, nil)
+	cmp := NewGuestCompiler(this.def, this.outputPath, this.def.IDLFilename, this.serializationCode)
+	outputFileName, err = cmp.Compile()
 	if err != nil{
-		return "", err
+		return
 	}
 
-	modules, err := this.parser.GetModules()
-	if err != nil{
-		return "", err
-	}
-
-
-	for _, m := range modules{
-		compilerParams.AddModule(m)
-	}
-
-	// generate guest code
-	return compilerParams.Generate("guest", GuestTemplate)
+	return outputFileName, err
 }
 //--------------------------------------------------------------------
-// @protobufFileName - The name of the protobuf python generated
-func (this *Compiler) CompileHost() (string, error){
+func (this *Compiler) CompileHost() (outputFileName string, err error){
 
-	compilerParams, err := NewTemplateParameters(this.parser.GetProtoFileName(), PROTOBUF_PYTHON_SUFFIX, this.parser.TargetLanguage, ProtoTypeToPythonType, nil)
-	if err != nil{
-		return "", err
-	}
-
-	modules, err := this.parser.GetModules()
-	if err != nil{
-		return "", err
-	}
-
-
-	for _, m := range modules{
-		compilerParams.AddModule(m)
-	}
-
-	// generate host code
-	return compilerParams.Generate("host", HostTemplate)
+	cmp := NewHostCompiler(this.def, this.outputPath, this.def.IDLFilename, this.serializationCode)
+	return cmp.Compile()
 }
 //--------------------------------------------------------------------
