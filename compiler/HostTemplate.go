@@ -36,8 +36,8 @@ def get_filename_to_load(fname):
 
 const HostFunctionStubsTemplate = `
 {{$pfn := .IDLFilenameWithExtension}}
-{{$targetLang := .TargetLanguage}}
 {{range $mindex, $m := .Modules}}
+{{$targetLang := $m.TargetLanguage}}
 # Code to call foreign functions in module {{$m.Name}} via XLLR
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}

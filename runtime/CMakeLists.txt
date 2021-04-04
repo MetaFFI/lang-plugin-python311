@@ -30,6 +30,13 @@ else()
 	target_link_libraries(${target_name} ${Python3_LIBRARIES} Boost::filesystem)
 endif()
 
+# Copy to openffi directory
+add_custom_command(TARGET ${target_name} POST_BUILD
+		COMMAND "${CMAKE_COMMAND}" -E copy
+		"${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+		"$ENV{OPENFFI_HOME}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+		COMMENT "Copy ${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX} -> $ENV{OPENFFI_HOME}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
 # Unitest Python
 add_executable(xllr_python3_test "${CMAKE_CURRENT_LIST_DIR}/xllr_python3_test.cpp")
 target_link_libraries(xllr_python3_test Boost::filesystem dl)
@@ -41,9 +48,4 @@ add_test(NAME test_python_module_module_not_exist_fail COMMAND xllr_python3_test
 add_test(NAME test_python_call_success COMMAND xllr_python3_test 6)
 add_test(NAME test_python_call_fail COMMAND xllr_python3_test 7)
 
-# Copy to openffi directory
-add_custom_command(TARGET ${target_name} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy
-		"${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}"
-		"$ENV{OPENFFI_HOME}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}"
-		COMMENT "Copy ${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX} -> $ENV{OPENFFI_HOME}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
