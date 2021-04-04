@@ -26,22 +26,22 @@ def load_xllr():
 def get_filename_to_load(fname):
 	osname = platform.system()
 	if osname == 'Windows':
-		return ctypes.util.find_library(fname + '.dll')
+		return os.getenv('OPENFFI_HOME')+'\\'+ fname + '.dll'
 	elif osname == 'Darwin':
-		return fname + '.dylib'
+		return os.getenv('OPENFFI_HOME')+'/' + fname + '.dylib'
 	else:
-		return fname + '.so' # for everything that is not windows or mac, return .so
+		return os.getenv('OPENFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
 
 `
 
 const HostFunctionStubsTemplate = `
-{{$pfn := .IDLFilenameWithExtension}}
+{{$pfn := .IDLFilename}}
 {{range $mindex, $m := .Modules}}
 {{$targetLang := $m.TargetLanguage}}
 # Code to call foreign functions in module {{$m.Name}} via XLLR
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}
-def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{$elem.Type}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Type}}{{end}}):
+def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{ToPythonType $elem.Type}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{ToPythonType $elem.Type}}{{end}}):
 	
 	# serialize parameters
 	req = {{$f.ParametersType}}()
@@ -61,8 +61,8 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 	
 	# call function
 	runtime_plugin = """xllr.{{$targetLang}}""".encode("utf-8")
-	module_name = """{{$pfn}}OpenFFIGuest""".encode("utf-8")
-	func_name = """Foreign{{$f.PathToForeignFunction.function}}""".encode("utf-8")
+	module_name = """{{$pfn}}_OpenFFIGuest""".encode("utf-8")
+	func_name = """EntryPoint_{{$f.PathToForeignFunction.function}}""".encode("utf-8")
 
 	# in parameters
 	in_params = req.SerializeToString()

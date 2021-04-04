@@ -37,7 +37,7 @@ func (this *HostCompiler) Compile() (outputFileName string, err error){
 	}
 
 	// write to output
-	outputFileName = this.outputDir+string(os.PathSeparator)+this.outputFilename+".go"
+	outputFileName = this.outputDir+string(os.PathSeparator)+this.outputFilename+"_OpenFFIHost_pb2.py"
 	err = ioutil.WriteFile( outputFileName, []byte(code), 0600)
 	if err != nil{
 		return "", fmt.Errorf("Failed to write host code to %v. Error: %v", this.outputDir+this.outputFilename, err)
@@ -70,6 +70,15 @@ func (this *HostCompiler) parseForeignStubs() (string, error){
 			} else {
 				return strings.ToUpper(elem[0:1]) + elem[1:]
 			}
+		},
+
+		"ToPythonType": func (elem string) string{
+			pyType, found := OpenFFITypeToPython3Type[elem]
+			if !found{
+				panic("Type "+elem+" is not an OpenFFI type")
+			}
+
+			return pyType
 		},
 	}
 

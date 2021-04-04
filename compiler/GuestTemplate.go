@@ -20,7 +20,7 @@ const GuestFunctionXLLRTemplate = `
 # Code to call foreign functions in module {{$m.Name}}
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}
-def EntryPoint{{$f.PathToForeignFunction.function}}(paramsVal: bytes) -> Tuple[bytes,str]:
+def EntryPoint_{{$f.PathToForeignFunction.function}}(paramsVal: bytes) -> Tuple[bytes,str]:
 	try:
 		req = {{$f.ParametersType}}()
 		req.ParseFromString(paramsVal)
