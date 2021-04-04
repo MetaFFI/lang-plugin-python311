@@ -26,7 +26,7 @@ def EntryPoint{{$f.PathToForeignFunction.function}}(paramsVal: bytes) -> Tuple[b
 		req.ParseFromString(paramsVal)
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} req.{{$elem.Name}}{{end}})
 		
-		ret = {{$f.ParametersType}}()
+		ret = {{$f.ReturnValuesType}}()
 		{{range $index, $elem := $f.ReturnValues}}
 		if getattr(ret.{{$elem.Name}}, 'extend', None) != None: # if repeated value, use append
 			ret.{{$elem.Name}}.extend({{$elem.Name}})

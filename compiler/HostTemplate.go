@@ -41,7 +41,7 @@ const HostFunctionStubsTemplate = `
 # Code to call foreign functions in module {{$m.Name}} via XLLR
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}
-def {{$f.ForeignFunctionName}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{$elem.Type}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Type}}{{end}}):
+def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{$elem.Type}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Type}}{{end}}):
 	
 	# serialize parameters
 	req = {{$f.ParametersType}}()
@@ -62,7 +62,7 @@ def {{$f.ForeignFunctionName}}({{range $index, $elem := $f.Parameters}}{{if $ind
 	# call function
 	runtime_plugin = """xllr.{{$targetLang}}""".encode("utf-8")
 	module_name = """{{$pfn}}OpenFFIGuest""".encode("utf-8")
-	func_name = """Foreign{{$f.ForeignFunctionName}}""".encode("utf-8")
+	func_name = """Foreign{{$f.PathToForeignFunction.function}}""".encode("utf-8")
 
 	# in parameters
 	in_params = req.SerializeToString()
@@ -102,7 +102,7 @@ def {{$f.ForeignFunctionName}}({{range $index, $elem := $f.Parameters}}{{if $ind
 	if out_is_error.contents.value != 0:
 		raise RuntimeError('\n'+str(protoData).replace("\\n", "\n"))
 
-	ret = {{$f.ProtobufResponseStruct}}()
+	ret = {{$f.ReturnValuesType}}()
 	ret.ParseFromString(protoData)
 
 	return {{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}ret.{{$elem.Name}}{{end}}
