@@ -6,27 +6,27 @@ const GuestHeaderTemplate = `
 # Guest code for {{.IDLFilenameWithExtension}}
 `
 
-const GuestImports = `
+const GuestImportsTemplate = `
 import traceback
 import sys
 from typing import Tuple
+
+{{range $mindex, $i := .Imports}}
+import {{$i}}{{end}}
 `
 
 const GuestFunctionXLLRTemplate = `
 {{range $mindex, $m := .Modules}}
 # Code to call foreign functions in module {{$m.Name}}
-import {{$m.Name}}
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}
 def EntryPoint{{$f.PathToForeignFunction.function}}(paramsVal: bytes) -> Tuple[bytes,str]:
 	try:
 		req = {{$f.ParametersType}}()
 		req.ParseFromString(paramsVal)
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} req.{{$elem.Name}}{{end}})
 		
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$m.Name}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} req.{{$elem.Name}}{{end}})
-
 		ret = {{$f.ParametersType}}()
-
 		{{range $index, $elem := $f.ReturnValues}}
 		if getattr(ret.{{$elem.Name}}, 'extend', None) != None: # if repeated value, use append
 			ret.{{$elem.Name}}.extend({{$elem.Name}})
@@ -34,24 +34,12 @@ def EntryPoint{{$f.PathToForeignFunction.function}}(paramsVal: bytes) -> Tuple[b
 			ret.{{$elem.Name}}.CopyFrom({{$elem.Name}})
 		else:
 			ret.{{$elem.Name}} = {{$elem.Name}}
-		{{end}}
-
+		{{end}}		
 		return ret.SerializeToString(), None
-
 	except Exception as e:
 		errdata = traceback.format_exception(*sys.exc_info())
 		return None, '\n'.join(errdata)
 
 {{end}}
 {{end}}
-`
-
-const GuestFunctionTemplate = `
-{{range $mindex, $m := .Modules}}
-{{range $findex, $f := $m.Functions}}
-def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{$elem.Type}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Type}}{{end}}):
-	# Call original function as it is defined in the IDL. Modify to suit your needs.
-	return {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
-
-{{end}}{{end}}
 `

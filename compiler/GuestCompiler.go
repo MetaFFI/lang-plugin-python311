@@ -37,7 +37,7 @@ func (this *GuestCompiler) Compile() (outputFileName string, err error){
 	}
 
 	// write to output
-	outputFullFileName := fmt.Sprintf("%v%v%v_OpenFFIGuest.go", this.outputDir, string(os.PathSeparator), this.outputFilename)
+	outputFullFileName := fmt.Sprintf("%v%v%v_OpenFFIGuest.py", this.outputDir, string(os.PathSeparator), this.outputFilename)
 	err = ioutil.WriteFile(outputFullFileName, []byte(code), 0600)
 	if err != nil{
 		return "", fmt.Errorf("Failed to write dynamic library to %v. Error: %v", this.outputDir+this.outputFilename, err)
@@ -73,14 +73,6 @@ func (this *GuestCompiler) parseForeignFunctions() (string, error){
 		},
 	}
 
-	tmpForeignFunctions, err := template.New("guest").Funcs(funcMap).Parse(GuestFunctionTemplate)
-	if err != nil{
-		return "", fmt.Errorf("Failed to parse tmpForeignFunctions: %v", err)
-	}
-
-	bufForeignFunctions := strings.Builder{}
-	err = tmpForeignFunctions.Execute(&bufForeignFunctions, this.def)
-
 	tmpEntryPoint, err := template.New("guest").Funcs(funcMap).Parse(GuestFunctionXLLRTemplate)
 	if err != nil{
 		return "", fmt.Errorf("Failed to parse GuestFunctionXLLRTemplate: %v", err)
@@ -89,7 +81,43 @@ func (this *GuestCompiler) parseForeignFunctions() (string, error){
 	bufEntryPoint := strings.Builder{}
 	err = tmpEntryPoint.Execute(&bufEntryPoint, this.def)
 
-	return bufForeignFunctions.String() + "\n" + bufEntryPoint.String(), err
+	return bufEntryPoint.String(), err
+}
+//--------------------------------------------------------------------
+func (this *GuestCompiler) parseImports() (string, error){
+
+	// get all imports from the def file
+	imports := struct {
+		Imports []string
+	}{
+		Imports: make([]string, 0),
+	}
+
+	set := make(map[string]bool)
+
+	for _, m := range this.def.Modules{
+		for _, f := range m.Functions{
+			if mod, found := f.PathToForeignFunction["module"]; found{
+
+				set[mod] = true
+			}
+		}
+	}
+
+	for k, _ := range set{
+		imports.Imports = append(imports.Imports, k)
+	}
+
+	tmp, err := template.New("guest").Parse(GuestImportsTemplate)
+	if err != nil{
+		return "", fmt.Errorf("Failed to parse GuestImportsTemplate: %v", err)
+	}
+
+	buf := strings.Builder{}
+	err = tmp.Execute(&buf, imports)
+	importsCode := buf.String()
+
+	return importsCode, err
 }
 //--------------------------------------------------------------------
 func (this *GuestCompiler) generateCode() (string, error){
@@ -97,10 +125,13 @@ func (this *GuestCompiler) generateCode() (string, error){
 	header, err := this.parseHeader()
 	if err != nil{ return "", err }
 
+	imports, err := this.parseImports()
+	if err != nil{ return "", err }
+
 	functionStubs, err := this.parseForeignFunctions()
 	if err != nil{ return "", err }
 
-	res := header + GuestImports + functionStubs
+	res := header + imports + functionStubs
 
 	// append serialization code in the same file
 	for filename, serializationCode := range this.serializationCode{
