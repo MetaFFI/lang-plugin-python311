@@ -1,11 +1,14 @@
-#include "python_api.h"
+#include <runtime/runtime_plugin_interface.h>
 #include <cstdlib>
 #include <cstring>
 #include <utils/scope_guard.hpp>
+#include <utils/function_path_parser.h>
+#include <utils/foreign_function.h>
 #include "utils.h"
 #include <boost/filesystem.hpp>
 #include <Python.h>
 #include <sstream>
+#include <map>
 
 using namespace openffi::utils;
 
@@ -35,6 +38,7 @@ using namespace openffi::utils;
 		PyGILState_Release(gstate); \
 	});
 	
+std::map<int64_t, PyObject*> loaded_functions;
 
 //--------------------------------------------------------------------
 void load_package_path()
@@ -78,115 +82,80 @@ void free_runtime(char** err, uint32_t* err_len)
 	}
 }
 //--------------------------------------------------------------------
-void load_module(const char* mod, uint32_t module_len, char** err, uint32_t* err_len)
+int64_t load_function(const char* function_path, uint32_t function_path_len, char** err, uint32_t* err_len)
 {
 	
 	if(!Py_IsInitialized())
 	{
 		handle_err(err, err_len, "Runtime has not been loaded - module cannot be loaded!");
-		return;
+		return -1;
 	}
 	
 	pyscope();
 	
-	// copying to std::string to make sure the string is null terminated
-	std::string module_name(mod, module_len);
-	PyObject* pymod = PyImport_ImportModuleEx(module_name.c_str(), Py_None, Py_None, Py_None);
+	openffi::utils::function_path_parser fp(function_path);
+	
+	// TODO: can pymod be released?!
+	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_openffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
 
 	if(!pymod)
 	{
 		// error has occurred
 		handle_py_err(err, err_len);
-		return;
+		return -1;
 	}
-
+	
+	// load function
+	PyObject* pyfunc = PyObject_GetAttrString(pymod, fp[function_path_entry_entrypoint_function].c_str());
+	
+	if(!pyfunc)
+	{
+		handle_err((char**)err, err_len, "Cannot find function in module!");
+		return -1;
+	}
+	
+	if(!PyCallable_Check(pyfunc))
+	{
+		handle_err((char**)err, err_len, "Requested function found in module, but it is not a function!");
+		return -1;
+	}
+	
+	// place in loaded functions
+	int64_t function_id = -1;
+	for(auto& it : loaded_functions) // make function_id the highest number
+	{
+		if(function_id <= it.first)
+		{
+			function_id = it.first + 1;
+		}
+	}
+	
+	loaded_functions[function_id] = pyfunc;
+	
+	return function_id;
 }
 //--------------------------------------------------------------------
-void free_module(const char* mod, uint32_t module_len, char** err, uint32_t* err_len)
+void free_function(int64_t function_id, char** err, uint32_t* err_len)
 {
-	if(!Py_IsInitialized())
-	{
-		return;
-	}
-	
-	pyscope();
-	
-	// copying to std::string to make sure the string is null terminated
-	std::string module_name(mod, module_len);
-
-	PyObject* modules = PyImport_GetModuleDict();
-	if(!modules)
-	{
-		handle_err(err, err_len, "Failed to get modules dictionary!");
-		return;
-	}
-
-	// free module
-	PyObject* module_obj = PyDict_GetItemString(modules, module_name.c_str());
-	if(!module_obj)
-	{
-		handle_err(err, err_len, "Module not been loaded!");
-		return;
-	}
-
-	if(PyDict_DelItemString(modules, module_name.c_str()) == -1)
-	{
-		handle_err(err, err_len, "Failed to remove module from modules dictionary!");
-		return;
-	}
-
+	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
 void call(
-	const char* mod, uint32_t module_name_len,
-	const char* func_name, uint32_t func_name_len,
+	int64_t function_id,
 	unsigned char* in_params, uint64_t in_params_len,
 	unsigned char** out_params, uint64_t* out_params_len,
 	unsigned char** out_ret, uint64_t* out_ret_len,
 	uint8_t* is_error
 )
 {
-	// check if python is initialized
-	if(!Py_IsInitialized())
+	auto it = loaded_functions.find(function_id);
+	if(it == loaded_functions.end())
 	{
-		handle_err((char**)out_ret, out_ret_len, "Cannot call, runtime has not been loaded!");
+		handle_err((char**)out_ret, out_ret_len, "Requested function has not been loaded");
 		*is_error = TRUE;
 		return;
 	}
-	
-	pyscope();
-	
-	// check if module is loaded initialized
-	PyObject* modules = PyImport_GetModuleDict();
-
-	// copying to std::string to make sure the string is null terminated
-	std::string module_name(mod, module_name_len);
-
-	PyObject* module_obj = PyDict_GetItemString(modules, module_name.c_str());
-	if(!module_obj || strcmp(module_obj->ob_type->tp_name, "module") != 0)
-	{
-		handle_err((char**)out_ret, out_ret_len, "Cannot call, Module cannot be loaded!");
-		*is_error = TRUE;
-		return;
-	}
-
-	// load function
-	std::string funcname(func_name, func_name_len);
-	PyObject* pyfunc = PyObject_GetAttrString(module_obj, funcname.c_str());
-
-	if(!pyfunc)
-	{
-		handle_err((char**)out_ret, out_ret_len, "Cannot find function in module!");
-		*is_error = TRUE;
-		return;
-	}
-
-	if(!PyCallable_Check(pyfunc))
-	{
-		handle_err((char**)out_ret, out_ret_len, "Requested function found in module, but it is not a function!");
-		*is_error = TRUE;
-		return;
-	}
+	PyObject* pyfunc = it->second;
 	
 	// set parameters
 	PyObject* pyParams = PyBytes_FromStringAndSize((const char*)in_params, in_params_len);

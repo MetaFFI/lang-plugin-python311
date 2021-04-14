@@ -4,12 +4,10 @@ find_package(Python3 REQUIRED COMPONENTS Development) # Python library
 set(target_name "xllr.python3")
 
 # build xllr.python3
+file(GLOB SRC_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp ${CMAKE_CURRENT_LIST_DIR}/*.h)
 add_library(${target_name}
 			SHARED
-			${CMAKE_CURRENT_LIST_DIR}/python_api.h
-			${CMAKE_CURRENT_LIST_DIR}/python_api.cpp
-			${CMAKE_CURRENT_LIST_DIR}/utils.h
-			${CMAKE_CURRENT_LIST_DIR}/utils.cpp
+			${SRC_FILES}
 )
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} ${Python3_INCLUDE_DIRS})
 

@@ -41,6 +41,7 @@ const HostFunctionStubsTemplate = `
 # Code to call foreign functions in module {{$m.Name}} via XLLR
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}
+{{$f.PathToForeignFunction.function}}_id = -1
 def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{ToPythonType $elem.Type}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{ToPythonType $elem.Type}}{{end}}):
 	
 	# serialize parameters
@@ -58,11 +59,23 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 
 	# load XLLR
 	load_xllr()
-	
-	# call function
+
+	# load function
 	runtime_plugin = """xllr.{{$targetLang}}""".encode("utf-8")
-	module_name = """{{$pfn}}_OpenFFIGuest""".encode("utf-8")
-	func_name = """EntryPoint_{{$f.PathToForeignFunction.function}}""".encode("utf-8")
+
+	if {{$f.PathToForeignFunction.function}}_id == -1:
+		function_path = """{{$f.PathToForeignFunctionAsString}}""".encode("utf-8")
+        err = POINTER(c_ubyte)()
+        out_err = POINTER(POINTER(c_ubyte))(c_void_p(addressof(err)))
+        err_len = c_uint32()
+        out_err_len = POINTER(c_uint64)(c_void_p(addressof(err_len)))
+
+		{{$f.PathToForeignFunction.function}}_id = xllrHandle.load_function(runtime_plugin, len(runtime_plugin), function_path, len(function_path))
+		if {{$f.PathToForeignFunction.function}}_id == -1: # failed to load function
+			err_text = string_at(out_err.contents, out_err_len.contents.value)
+			raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
+
+	# call function
 
 	# in parameters
 	in_params = req.SerializeToString()
@@ -74,20 +87,13 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 	ret_len = c_uint64()
 	out_ret_len = POINTER(c_uint64)(c_void_p(addressof(ret_len)))
 
-# Currently disabling "ref params" support for python. To support that, one of parameters must be a list
-#	oparams = POINTER(c_byte)()
-#	out_params = POINTER(POINTER(c_byte))(c_void_p(addressof(oparams)))
-#	oparams_len = c_int32()
-#	out_params_len = POINTER(c_int32)(c_void_p(addressof(oparams_len)))
-
 	is_error = c_int8()
 	out_is_error = POINTER(c_int8)(c_void_p(addressof(is_error)))
 	out_is_error.contents.value = 0
 
 	global xllrHandle
 	xllrHandle.call(runtime_plugin, len(runtime_plugin), \
-									module_name, len(module_name), \
-									func_name, len(func_name), \
+									{{$f.PathToForeignFunction.function}}_id, \
 									in_params, in_params_len, \
 									None, None, \
 									out_ret, out_ret_len, \
