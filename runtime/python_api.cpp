@@ -84,7 +84,6 @@ void free_runtime(char** err, uint32_t* err_len)
 //--------------------------------------------------------------------
 int64_t load_function(const char* function_path, uint32_t function_path_len, char** err, uint32_t* err_len)
 {
-	
 	if(!Py_IsInitialized())
 	{
 		handle_err(err, err_len, "Runtime has not been loaded - module cannot be loaded!");
@@ -121,7 +120,7 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 	}
 	
 	// place in loaded functions
-	int64_t function_id = -1;
+	int64_t function_id = loaded_functions.empty() ? 0 : -1;
 	for(auto& it : loaded_functions) // make function_id the highest number
 	{
 		if(function_id <= it.first)

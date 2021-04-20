@@ -2,4 +2,4 @@ module github.com/OpenFFI/lang-plugin-python3/compiler
 
 go 1.16
 
-require github.com/OpenFFI/plugin-sdk/compiler v0.0.0-20210405062145-7f32f2f4d995
+require github.com/OpenFFI/plugin-sdk/compiler v0.0.0-20210420085757-66a24415a166
