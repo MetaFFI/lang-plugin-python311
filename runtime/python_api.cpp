@@ -1,4 +1,4 @@
-#include <runtime/runtime_plugin_interface.h>
+#include <runtime/runtime_plugin_api.h>
 #include <cstdlib>
 #include <cstring>
 #include <utils/scope_guard.hpp>
