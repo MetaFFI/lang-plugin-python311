@@ -24,5 +24,5 @@ var OpenFFITypeToPython3Type = map[string]string{
 	compiler.STRING16: "str",
 	compiler.STRING32: "str",
 
-	compiler.BYTES: "bytes",
+	compiler.SIZE: "int",
 }

@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -14,21 +13,14 @@ import (
 type HostCompiler struct{
 	def *compiler.IDLDefinition
 	outputDir string
-	serializationCode map[string]string
 	hostOptions map[string]string
 	outputFilename string
 }
 //--------------------------------------------------------------------
-func NewHostCompiler(definition *compiler.IDLDefinition, outputDir string, outputFilename string, serializationCode map[string]string, hostOptions map[string]string) *HostCompiler{
-
-	serializationCodeCopy := make(map[string]string)
-	for k, v := range serializationCode{
-		serializationCodeCopy[k] = v
-	}
+func NewHostCompiler(definition *compiler.IDLDefinition, outputDir string, outputFilename string, hostOptions map[string]string) *HostCompiler{
 
 	return &HostCompiler{def: definition,
 		outputDir: outputDir,
-		serializationCode: serializationCodeCopy,
 		hostOptions: hostOptions,
 		outputFilename: outputFilename}
 }
@@ -42,7 +34,7 @@ func (this *HostCompiler) Compile() (outputFileName string, err error){
 	}
 
 	// write to output
-	outputFileName = this.outputDir+string(os.PathSeparator)+this.outputFilename+"_OpenFFIHost_pb2.py"
+	outputFileName = this.outputDir+string(os.PathSeparator)+this.outputFilename+"_OpenFFIHost.py"
 	err = ioutil.WriteFile( outputFileName, []byte(code), 0600)
 	if err != nil{
 		return "", fmt.Errorf("Failed to write host code to %v. Error: %v", this.outputDir+this.outputFilename, err)
@@ -66,28 +58,7 @@ func (this *HostCompiler) parseHeader() (string, error){
 //--------------------------------------------------------------------
 func (this *HostCompiler) parseForeignStubs() (string, error){
 
-	var funcMap = map[string]interface{}{
-		"AsPublic": func(elem string) string {
-			if len(elem) == 0 {
-				return ""
-			} else if len(elem) == 1 {
-				return strings.ToUpper(elem)
-			} else {
-				return strings.ToUpper(elem[0:1]) + elem[1:]
-			}
-		},
-
-		"ToPythonType": func (elem string) string{
-			pyType, found := OpenFFITypeToPython3Type[elem]
-			if !found{
-				panic("Type "+elem+" is not an OpenFFI type")
-			}
-
-			return pyType
-		},
-	}
-
-	tmp, err := template.New("host").Funcs(funcMap).Parse(HostFunctionStubsTemplate)
+	tmp, err := template.New("host").Funcs(templatesFuncMap).Parse(HostFunctionStubsTemplate)
 	if err != nil{
 		return "", fmt.Errorf("Failed to parse HostFunctionStubsTemplate: %v", err)
 	}
@@ -107,16 +78,6 @@ func (this *HostCompiler) generateCode() (string, error){
 	if err != nil{ return "", err }
 
 	res := header + HostImports + HostHelperFunctions + functionStubs
-
-	// append serialization code in the same file
-	for filename, serializationCode := range this.serializationCode{
-
-		if strings.ToLower(filepath.Ext(filename)) != ".py"{
-			continue
-		}
-
-		res += serializationCode
-	}
 
 	return res, nil
 }

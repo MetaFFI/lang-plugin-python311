@@ -141,16 +141,15 @@ void free_function(int64_t function_id, char** err, uint32_t* err_len)
 //--------------------------------------------------------------------
 void call(
 	int64_t function_id,
-	unsigned char* in_params, uint64_t in_params_len,
-	unsigned char** out_params, uint64_t* out_params_len,
-	unsigned char** out_ret, uint64_t* out_ret_len,
-	uint8_t* is_error
+	void** parameters, uint64_t parameters_size,
+	void** return_values, uint64_t return_values_size,
+	char** out_err, uint64_t* out_err_length
 )
 {
 	auto it = loaded_functions.find(function_id);
 	if(it == loaded_functions.end())
 	{
-		handle_err((char**)out_ret, out_ret_len, "Requested function has not been loaded");
+		handle_err((char**)out_err, out_err_length, "Requested function has not been loaded");
 		*is_error = TRUE;
 		return;
 	}
@@ -160,7 +159,7 @@ void call(
 	PyObject* pyParams = PyBytes_FromStringAndSize((const char*)in_params, in_params_len);
 	if(!pyParams)
 	{
-		handle_err((char**)out_ret, out_ret_len, "Failed to create parameters byte array");
+		handle_err((char**)out_err, out_err_length, "Failed to create parameters byte array");
 		*is_error = TRUE;
 		return;
 	}
@@ -168,7 +167,7 @@ void call(
 	PyObject* paramsArray = PyTuple_New(1);
 	if(!paramsArray)
 	{
-		handle_err((char**)out_ret, out_ret_len, "Failed to create new tuple");
+		handle_err((char**)out_err, out_err_length, "Failed to create new tuple");
 		*is_error = TRUE;
 		return;
 	}
@@ -182,7 +181,7 @@ void call(
 	PyObject* res = PyObject_CallObject(pyfunc, paramsArray);
 	if(!res)
 	{
-		handle_err((char**)out_ret, out_ret_len, "OpenFFI Python guest code returned with an exception! The generated code must return error as str. (something is wrong...");
+		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code returned with an exception! The generated code must return error as str. (something is wrong...");
 		*is_error = TRUE;
 		return;
 	}
@@ -206,7 +205,7 @@ void call(
 	// second parameter is the out parameters - serialized OR empty
 	if(!PyTuple_Check(res))
 	{
-		handle_err((char**)out_ret, out_ret_len, "OpenFFI Python guest code did not return a tuple. Expects a tuple! (something is wrong...");
+		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code did not return a tuple. Expects a tuple! (something is wrong...");
 		*is_error = TRUE;
 		return;
 	}
@@ -224,7 +223,7 @@ void call(
 	}
 	else
 	{
-		handle_err((char**)out_ret, out_ret_len, "OpenFFI Python guest code expected a tuple of size 2 or 3 (something is wrong...)");
+		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code expected a tuple of size 2 or 3 (something is wrong...)");
 		*is_error = TRUE;
 		return;
 	}
@@ -232,7 +231,7 @@ void call(
 	if(errmsg != nullptr && errmsg != Py_None) // error has occurred
 	{
 		const char* perrmsg = PyUnicode_AsUTF8(errmsg);
-		handle_err((char**)out_ret, out_ret_len, perrmsg);
+		handle_err((char**)out_err, out_err_length, perrmsg);
 		*is_error = TRUE;
 		return;
 	}
@@ -247,26 +246,26 @@ void call(
 
 	if(!PyBytes_Check(ret))
 	{
-		handle_err((char**)out_ret, out_ret_len, "OpenFFI Python guest code must did not return bytes type as expected (something is wrong...)");
+		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code must did not return bytes type as expected (something is wrong...)");
 		*is_error = TRUE;
 		return;
 	}
 	
 	// get return values
 	// serialized proto results are in "str"
-	*out_ret_len = PyBytes_Size(ret);
-	if(*out_ret_len == 0) // void param
+	*out_err_length = PyBytes_Size(ret);
+	if(*out_err_length == 0) // void param
 	{
-		*out_ret = nullptr;
+		*out_err = nullptr;
 		*is_error = FALSE;
 		return;
 	}
 	
 	const char* pretarray = PyBytes_AsString(ret);
 	
-	*out_ret = (unsigned char*)malloc(*out_ret_len);
+	*out_err = (unsigned char*)malloc(*out_err_length);
 	
-	memcpy(*out_ret, (unsigned char*)pretarray, *out_ret_len);
+	memcpy(*out_err, (unsigned char*)pretarray, *out_err_length);
 	
 	*is_error = FALSE;
 }

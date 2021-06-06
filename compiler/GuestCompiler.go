@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -14,18 +13,12 @@ import (
 type GuestCompiler struct{
 	def *compiler.IDLDefinition
 	outputDir string
-	serializationCode map[string]string
 	outputFilename string
 }
 //--------------------------------------------------------------------
-func NewGuestCompiler(definition *compiler.IDLDefinition, outputDir string, outputFilename string, serializationCode map[string]string) *GuestCompiler{
+func NewGuestCompiler(definition *compiler.IDLDefinition, outputDir string, outputFilename string) *GuestCompiler{
 
-	serializationCodeCopy := make(map[string]string)
-	for k, v := range serializationCode{
-		serializationCodeCopy[k] = v
-	}
-
-	return &GuestCompiler{def: definition, outputDir: outputDir, serializationCode: serializationCodeCopy, outputFilename: outputFilename}
+	return &GuestCompiler{def: definition, outputDir: outputDir, outputFilename: outputFilename}
 }
 //--------------------------------------------------------------------
 func (this *GuestCompiler) Compile() (outputFileName string, err error){
@@ -132,16 +125,6 @@ func (this *GuestCompiler) generateCode() (string, error){
 	if err != nil{ return "", err }
 
 	res := header + imports + functionStubs
-
-	// append serialization code in the same file
-	for filename, serializationCode := range this.serializationCode{
-
-		if strings.ToLower(filepath.Ext(filename)) != ".py"{
-			continue
-		}
-
-		res += serializationCode
-	}
 
 	return res, nil
 }
