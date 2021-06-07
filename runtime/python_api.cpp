@@ -146,21 +146,21 @@ void call(
 	char** out_err, uint64_t* out_err_length
 )
 {
+	/*
 	auto it = loaded_functions.find(function_id);
 	if(it == loaded_functions.end())
 	{
 		handle_err((char**)out_err, out_err_length, "Requested function has not been loaded");
-		*is_error = TRUE;
 		return;
 	}
 	PyObject* pyfunc = it->second;
 	
 	// set parameters
+	
 	PyObject* pyParams = PyBytes_FromStringAndSize((const char*)in_params, in_params_len);
 	if(!pyParams)
 	{
 		handle_err((char**)out_err, out_err_length, "Failed to create parameters byte array");
-		*is_error = TRUE;
 		return;
 	}
 	
@@ -168,7 +168,6 @@ void call(
 	if(!paramsArray)
 	{
 		handle_err((char**)out_err, out_err_length, "Failed to create new tuple");
-		*is_error = TRUE;
 		return;
 	}
 	
@@ -182,7 +181,6 @@ void call(
 	if(!res)
 	{
 		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code returned with an exception! The generated code must return error as str. (something is wrong...");
-		*is_error = TRUE;
 		return;
 	}
 
@@ -206,7 +204,6 @@ void call(
 	if(!PyTuple_Check(res))
 	{
 		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code did not return a tuple. Expects a tuple! (something is wrong...");
-		*is_error = TRUE;
 		return;
 	}
 	
@@ -224,7 +221,6 @@ void call(
 	else
 	{
 		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code expected a tuple of size 2 or 3 (something is wrong...)");
-		*is_error = TRUE;
 		return;
 	}
 	
@@ -232,22 +228,12 @@ void call(
 	{
 		const char* perrmsg = PyUnicode_AsUTF8(errmsg);
 		handle_err((char**)out_err, out_err_length, perrmsg);
-		*is_error = TRUE;
 		return;
 	}
 	
-	// get out parameters
-	if(out && out != Py_None)
-	{
-		*out_params_len = PyBytes_Size(out);
-		*out_params = (unsigned char*)malloc(*out_params_len);
-		memcpy(*out_params, (unsigned char*)PyBytes_AsString(out), *out_params_len);
-	}
-
 	if(!PyBytes_Check(ret))
 	{
 		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code must did not return bytes type as expected (something is wrong...)");
-		*is_error = TRUE;
 		return;
 	}
 	
@@ -257,16 +243,9 @@ void call(
 	if(*out_err_length == 0) // void param
 	{
 		*out_err = nullptr;
-		*is_error = FALSE;
 		return;
 	}
+	*/
 	
-	const char* pretarray = PyBytes_AsString(ret);
-	
-	*out_err = (unsigned char*)malloc(*out_err_length);
-	
-	memcpy(*out_err, (unsigned char*)pretarray, *out_err_length);
-	
-	*is_error = FALSE;
 }
 //--------------------------------------------------------------------

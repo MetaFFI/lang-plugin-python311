@@ -25,6 +25,7 @@ def host_compiler():
 		raise RuntimeError('Expected res[1] is "return two". Received: '+res[1])
 
 host_compiler()
+free_openffi()
 print('Host test passed successfully')
 `
 
@@ -44,7 +45,7 @@ func TestHost(t *testing.T){
 		t.Fatal(err)
 		return
 	}
-/*
+
 	defer func(){
 		err = os.RemoveAll("temp")
 		if err != nil{
@@ -52,7 +53,7 @@ func TestHost(t *testing.T){
 			return
 		}
 	}()
-*/
+
 	cmp := NewCompiler(def, "./temp")
 	_, err = cmp.CompileHost(nil)
 	if err != nil{

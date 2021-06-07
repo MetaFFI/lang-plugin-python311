@@ -17,7 +17,12 @@ const HostHelperFunctions = `
 xllrHandle = None
 
 def free_openffi():
-		return # TODO: implement free library. not supported by cdll.
+	global xllrHandle
+	global runtime_plugin
+
+	err = pointer((c_char * 1)(0))
+	err_len = (c_ulonglong)(0)
+	xllrHandle.free_runtime_plugin(runtime_plugin, len(runtime_plugin), byref(err), byref(err_len))
 
 def load_xllr():
 	global xllrHandle
@@ -76,8 +81,8 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 
 	
 	# pack parameters
-	{{$parametersLength := len $f.Parameters}}{{if gt $parametersLength 0}}parametersBuffer = xllrHandle.alloc_args_buffer({{$parametersLength}}){{end}}
-	{{$returnValuesLength := len $f.ReturnValues}}{{if gt $returnValuesLength 0}}returnValuesBuffer = xllrHandle.alloc_args_buffer({{$returnValuesLength}}){{end}}
+	{{$parametersLength := len $f.Parameters}}{{if gt $parametersLength 0}}parametersBuffer = xllrHandle.alloc_args_buffer({{CalculateArgsLength $f.Parameters}}){{end}}
+	{{$returnValuesLength := len $f.ReturnValues}}{{if gt $returnValuesLength 0}}returnValuesBuffer = xllrHandle.alloc_args_buffer({{CalculateArgsLength $f.ReturnValues}}){{end}}
 	
 	{{range $index, $elem := $f.Parameters}}	
 	{{if $elem.IsString}}
@@ -149,7 +154,7 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 	{{if $elem.IsArray}}
 	# string array (TODO: support utf-16/utf-32)
 	{{$elem.Name}} = []
-	out_{{$elem.Name}}_sizes = ({{ConvertToCPythonType "openffi_size"}} * 1)(0)
+	out_{{$elem.Name}}_sizes = pointer(({{ConvertToCPythonType "openffi_size"}} * 1)(0))
 	out_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
 	out_{{$elem.Name}} = xllrHandle.get_arg_openffi_string_array(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}_sizes), byref(out_{{$elem.Name}}_length))
 
