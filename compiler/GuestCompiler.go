@@ -54,19 +54,7 @@ func (this *GuestCompiler) parseHeader() (string, error){
 //--------------------------------------------------------------------
 func (this *GuestCompiler) parseForeignFunctions() (string, error){
 
-	var funcMap = map[string]interface{}{
-		"AsPublic": func(elem string) string {
-			if len(elem) == 0 {
-				return ""
-			} else if len(elem) == 1 {
-				return strings.ToUpper(elem)
-			} else {
-				return strings.ToUpper(elem[0:1]) + elem[1:]
-			}
-		},
-	}
-
-	tmpEntryPoint, err := template.New("guest").Funcs(funcMap).Parse(GuestFunctionXLLRTemplate)
+	tmpEntryPoint, err := template.New("guest").Funcs(templatesFuncMap).Parse(GuestFunctionXLLRTemplate)
 	if err != nil{
 		return "", fmt.Errorf("Failed to parse GuestFunctionXLLRTemplate: %v", err)
 	}
@@ -124,7 +112,7 @@ func (this *GuestCompiler) generateCode() (string, error){
 	functionStubs, err := this.parseForeignFunctions()
 	if err != nil{ return "", err }
 
-	res := header + imports + functionStubs
+	res := header + imports + GuestHelperFunctions + functionStubs
 
 	return res, nil
 }

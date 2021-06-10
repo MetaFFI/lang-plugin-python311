@@ -1,5 +1,5 @@
 find_package(Boost REQUIRED COMPONENTS filesystem) # Boost library
-find_package(Python3 REQUIRED COMPONENTS Development) # Python library
+find_package(Python3 REQUIRED COMPONENTS Development Development.Embed) # Python library
 
 set(target_name "xllr.python3")
 
@@ -16,17 +16,8 @@ set_property(TARGET ${target_name} PROPERTY POSITION_INDEPENDENT_CODE ON)
 # remove the "lib" prefix in linux to get the expected filename "xllr.python3.[ext]"
 SET_TARGET_PROPERTIES(${target_name} PROPERTIES PREFIX "")
 
-# get the name of the library and use this to link
-# it is to ignore full path of package managers like vcpkg
-
-get_filename_component(py3Lib "${Python3_LIBRARIES}" NAME)
-
-find_library(isFoundNoFullPath ${py3Lib})
-if (isFoundNoFullPath)
-	target_link_libraries(${target_name} ${py3Lib} Boost::filesystem)
-else()
-	target_link_libraries(${target_name} ${Python3_LIBRARIES} Boost::filesystem)
-endif()
+target_link_libraries(${target_name} Boost::filesystem Python3::Python)
+target_link_directories(${target_name} PUBLIC ${Python3_LIBRARY_DIRS})
 
 # Copy to openffi directory
 add_custom_command(TARGET ${target_name} POST_BUILD

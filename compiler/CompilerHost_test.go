@@ -1,3 +1,5 @@
+//+build HostTest
+
 package main
 
 import (

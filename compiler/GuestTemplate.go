@@ -9,10 +9,51 @@ const GuestHeaderTemplate = `
 const GuestImportsTemplate = `
 import traceback
 import sys
-from typing import Tuple
+import platform
+import os
+from ctypes import *
 
 {{range $mindex, $i := .Imports}}
 import {{$i}}{{end}}
+`
+
+const GuestHelperFunctions = `
+xllrHandle = None
+
+def load_xllr():
+	global xllrHandle
+	
+	if xllrHandle == None:
+		xllrHandle = cdll.LoadLibrary(get_filename_to_load('xllr'))
+
+		# set restypes
+		xllrHandle.get_openffi_string_element.restype = c_char_p
+		xllrHandle.get_arg_openffi_string.restype = c_char_p
+		xllrHandle.get_arg_openffi_string_array.restype = c_void_p
+		
+		xllrHandle.get_arg_openffi_float64.restype = c_double
+		xllrHandle.get_arg_openffi_float32.restype = c_float
+		
+		xllrHandle.get_arg_openffi_int8.restype = c_int8
+		xllrHandle.get_arg_openffi_int16.restype = c_int16
+		xllrHandle.get_arg_openffi_int32.restype = c_int32
+		xllrHandle.get_arg_openffi_int64.restype = c_int64
+
+		xllrHandle.get_arg_openffi_uint8.restype = c_uint8
+		xllrHandle.get_arg_openffi_uint16.restype = c_uint16
+		xllrHandle.get_arg_openffi_uint32.restype = c_uint32
+		xllrHandle.get_arg_openffi_uint64.restype = c_uint64
+
+		xllrHandle.get_arg_openffi_uint8_array.restype = c_void_p
+
+def get_filename_to_load(fname):
+	osname = platform.system()
+	if osname == 'Windows':
+		return os.getenv('OPENFFI_HOME')+'\\'+ fname + '.dll'
+	elif osname == 'Darwin':
+		return os.getenv('OPENFFI_HOME')+'/' + fname + '.dylib'
+	else:
+		return os.getenv('OPENFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
 `
 
 const GuestFunctionXLLRTemplate = `
@@ -20,25 +61,123 @@ const GuestFunctionXLLRTemplate = `
 # Code to call foreign functions in module {{$m.Name}}
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.PathToForeignFunction.function}}
-def EntryPoint_{{$f.PathToForeignFunction.function}}(paramsVal: bytes) -> Tuple[bytes,str]:
+def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , parameters_size, return_val_buffer, return_val_size) -> str:
+	global xllrHandle
+
+	load_xllr()
+
 	try:
-		req = {{$f.ParametersType}}()
-		req.ParseFromString(paramsVal)
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} req.{{$elem.Name}}{{end}})
+		# unpack parameters
+		bufIndex = 0
+		{{range $index, $elem := $f.Parameters}}
+
+		{{if $elem.IsString}}
+		{{if $elem.IsArray}}
+		# string array (TODO: support utf-16/utf-32)
+		{{$elem.Name}} = []
+		in_{{$elem.Name}}_sizes = pointer(({{ConvertToCPythonType "openffi_size"}} * 1)(0))
+		in_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
+		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_string_array(parameters_buffer, bufIndex, byref(in_{{$elem.Name}}_sizes), byref(in_{{$elem.Name}}_length))
+	
+		i = 0
 		
-		ret = {{$f.ReturnValuesType}}()
-		{{range $index, $elem := $f.ReturnValues}}
-		if getattr(ret.{{$elem.Name}}, 'extend', None) != None: # if repeated value, use append
-			ret.{{$elem.Name}}.extend({{$elem.Name}})
-		elif getattr(ret.{{$elem.Name}}, 'CopyFrom', None) != None: # if proto message
-			ret.{{$elem.Name}}.CopyFrom({{$elem.Name}})
-		else:
-			ret.{{$elem.Name}} = {{$elem.Name}}
-		{{end}}		
-		return ret.SerializeToString(), None
+		for i in range(in_{{$elem.Name}}_length.value):
+			val_len = ({{ConvertToCPythonType "openffi_size"}})(0)
+			val = xllrHandle.get_openffi_string_element(i, c_char_p(in_{{$elem.Name}}), in_{{$elem.Name}}_sizes, byref(val_len))
+			{{$elem.Name}}.append(string_at(val, val_len.value).decode('utf-8'))
+			i = i+1
+	
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{else}}
+		# string
+		in_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
+		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_string(parameters_buffer, bufIndex, byref(in_{{$elem.Name}}_length))
+		
+		{{$elem.Name}} = string_at(in_{{$elem.Name}}, in_{{$elem.Name}}_length.value).decode('utf-8')
+	
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{end}}
+		{{else}}
+		{{if $elem.IsArray}}
+		# non-string array
+		
+		{{$elem.Name}} = []
+		in_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
+		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_{{$elem.Type}}_array(parameters_buffer, bufIndex, byref(in_{{$elem.Name}}_length))
+	
+		i = 0
+		
+		for i in range(in_{{$elem.Name}}_length.value):
+			val = (xllrHandle.get_openffi_{{$elem.Type}}_element(c_void_p(in_{{$elem.Name}}), i))
+			{{$elem.Name}}.append(val)
+			i = i+1
+	
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{else}}
+		# non-string
+		{{$elem.Name}} = xllrHandle.get_arg_openffi_{{$elem.Type}}(parameters_buffer, bufIndex)
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{end}}
+		{{end}}
+		{{end}}
+
+		# call function
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
+		
+		bufIndex = 0
+
+		# pack return values
+		{{range $index, $elem := $f.ReturnValues}}	
+		{{if $elem.IsString}}
+		{{if $elem.IsArray}}
+		# string array
+		out_{{$elem.Name}}_len = xllrHandle.alloc_openffi_size_on_heap(len({{$elem.Name}}))
+		out_{{$elem.Name}} = xllrHandle.alloc_args_buffer(sizeof({{ConvertToCPythonType "openffi_string"}}) * len({{$elem.Name}}))
+		out_{{$elem.Name}}_sizes = xllrHandle.alloc_args_buffer(sizeof({{ConvertToCPythonType "openffi_size"}}) * len({{$elem.Name}}))
+	
+		i = 0
+		for val in {{$elem.Name}}:
+			encval = val.encode('utf-8')
+			valcptr = xllrHandle.alloc_openffi_string_on_heap(encval, len(encval))
+			xllrHandle.set_openffi_string_element(i, out_{{$elem.Name}}, out_{{$elem.Name}}_sizes, valcptr, len(encval))
+			i = i+1
+	
+		xllrHandle.set_arg_openffi_string_array(return_val_buffer, bufIndex, out_{{$elem.Name}}, out_{{$elem.Name}}_sizes, out_{{$elem.Name}}_len)
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{else}}
+		# string
+		{{$elem.Name}}_encval = {{$elem.Name}}.encode('utf-8')
+		{{$elem.Name}}_pencval = xllrHandle.alloc_openffi_string_on_heap({{$elem.Name}}_encval, len({{$elem.Name}}_encval))
+		{{$elem.Name}}_pencval_len = xllrHandle.alloc_openffi_size_on_heap(len({{$elem.Name}}))
+		xllrHandle.set_arg_openffi_string(return_val_buffer, bufIndex, {{$elem.Name}}_pencval, {{$elem.Name}}_pencval_len)
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{end}}
+		{{else}}
+		{{if $elem.IsArray}}
+		# non-string array
+		out_{{$elem.Name}}_len = xllrHandle.alloc_openffi_size_on_heap(len({{$elem.Name}}))
+		out_{{$elem.Name}} = xllrHandle.alloc_args_buffer(sizeof({{ConvertToCPythonType "openffi_{{$elem.Type}}"}}) * len({{$elem.Name}}))
+	
+		i = 0
+		for val in {{$elem.Name}}:
+			xllrHandle.set_openffi_{{$elem.Type}}_element(out_{{$elem.Name}}, i, val)
+			i = i+1
+	
+		xllrHandle.set_arg_openffi_{{$elem.Type}}_array(return_val_buffer, bufIndex, out_{{$elem.Name}}, out_{{$elem.Name}}_len)
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{else}}
+		# non-string
+		c{{$elem.Name}} = xllrHandle.alloc_openffi_{{$elem.Type}}_on_heap({{$elem.Name}})
+		xllrHandle.set_arg_openffi_{{$elem.Type}}(return_val_buffer, bufIndex, c{{$elem.Name}})
+		bufIndex = bufIndex + {{CalculateArgLength $elem}}
+		{{end}}
+		{{end}}
+		{{end}}
+
+		return None
 	except Exception as e:
 		errdata = traceback.format_exception(*sys.exc_info())
-		return None, '\n'.join(errdata)
+		return '\n'.join(errdata)
 
 {{end}}
 {{end}}

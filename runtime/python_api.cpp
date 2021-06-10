@@ -44,7 +44,6 @@ std::map<int64_t, PyObject*> loaded_functions;
 void load_package_path()
 {
 	std::string curpath(boost::filesystem::current_path().string());
-	
 	std::stringstream ss;
 	ss << "import sys" << std::endl;
 	//ss << "import site" << std::endl;
@@ -86,24 +85,23 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 {
 	if(!Py_IsInitialized())
 	{
-		handle_err(err, err_len, "Runtime has not been loaded - module cannot be loaded!");
-		return -1;
+		load_runtime(err, err_len);
 	}
-	
+
 	pyscope();
 	
 	openffi::utils::function_path_parser fp(function_path);
 	
 	// TODO: can pymod be released?!
 	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_openffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
-
+	
 	if(!pymod)
 	{
 		// error has occurred
 		handle_py_err(err, err_len);
 		return -1;
 	}
-	
+
 	// load function
 	PyObject* pyfunc = PyObject_GetAttrString(pymod, fp[function_path_entry_entrypoint_function].c_str());
 	
@@ -112,7 +110,7 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 		handle_err((char**)err, err_len, "Cannot find function in module!");
 		return -1;
 	}
-	
+
 	if(!PyCallable_Check(pyfunc))
 	{
 		handle_err((char**)err, err_len, "Requested function found in module, but it is not a function!");
@@ -146,7 +144,6 @@ void call(
 	char** out_err, uint64_t* out_err_length
 )
 {
-	/*
 	auto it = loaded_functions.find(function_id);
 	if(it == loaded_functions.end())
 	{
@@ -156,15 +153,7 @@ void call(
 	PyObject* pyfunc = it->second;
 	
 	// set parameters
-	
-	PyObject* pyParams = PyBytes_FromStringAndSize((const char*)in_params, in_params_len);
-	if(!pyParams)
-	{
-		handle_err((char**)out_err, out_err_length, "Failed to create parameters byte array");
-		return;
-	}
-	
-	PyObject* paramsArray = PyTuple_New(1);
+	PyObject* paramsArray = PyTuple_New(4);
 	if(!paramsArray)
 	{
 		handle_err((char**)out_err, out_err_length, "Failed to create new tuple");
@@ -176,76 +165,17 @@ void call(
 		Py_DecRef(paramsArray);
 	});
 	
-	PyTuple_SetItem(paramsArray, 0, pyParams);
+	PyTuple_SetItem(paramsArray, 0, PyLong_FromUnsignedLongLong(reinterpret_cast<unsigned long long int>(parameters)));
+	PyTuple_SetItem(paramsArray, 1, PyLong_FromUnsignedLongLong(parameters_size));
+	PyTuple_SetItem(paramsArray, 2, PyLong_FromUnsignedLongLong(reinterpret_cast<unsigned long long int>(return_values)));
+	PyTuple_SetItem(paramsArray, 3, PyLong_FromUnsignedLongLong(return_values_size));
 	PyObject* res = PyObject_CallObject(pyfunc, paramsArray);
-	if(!res)
-	{
-		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code returned with an exception! The generated code must return error as str. (something is wrong...");
-		return;
-	}
-
-	PyObject* ret = nullptr;
-	PyObject* out = nullptr;
-	PyObject* errmsg = nullptr;
-
-	scope_guard sgrets([&]()
-	{
-		if(res){ Py_DecRef(res); res = nullptr; }
-		
-		// if(ret && res != ret && ret != Py_None){ Py_DecRef(ret); ret = nullptr; } // crashes examples - getting clean up but by whom?
-		
-		if(out && out != Py_None){ Py_DecRef(out); out = nullptr; }
-		// if(errmsg && errmsg != Py_None){ Py_DecRef(errmsg); errmsg = nullptr; }
-	});
-
-	// if the return values is a tuple:
-	// first parameter is the result - serialized
-	// second parameter is the out parameters - serialized OR empty
-	if(!PyTuple_Check(res))
-	{
-		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code did not return a tuple. Expects a tuple! (something is wrong...");
-		return;
-	}
 	
-	if(PyTuple_Size(res) == 2) // (serialized return value, error string)
+	if(res != Py_None) // returned an error (if None, there's no error)
 	{
-		ret = PyTuple_GetItem(res, 0);
-		errmsg = PyTuple_GetItem(res, 1);
-	}
-	else if(PyTuple_Size(res) == 3) // (serialized return value, serialized parameters value (out params support), error string)
-	{
-		ret = PyTuple_GetItem(res, 0);
-		errmsg = PyTuple_GetItem(res, 1);
-		out = PyTuple_GetItem(res, 2);
-	}
-	else
-	{
-		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code expected a tuple of size 2 or 3 (something is wrong...)");
-		return;
-	}
-	
-	if(errmsg != nullptr && errmsg != Py_None) // error has occurred
-	{
-		const char* perrmsg = PyUnicode_AsUTF8(errmsg);
+		const char* perrmsg = PyUnicode_AsUTF8(res);
 		handle_err((char**)out_err, out_err_length, perrmsg);
 		return;
 	}
-	
-	if(!PyBytes_Check(ret))
-	{
-		handle_err((char**)out_err, out_err_length, "OpenFFI Python guest code must did not return bytes type as expected (something is wrong...)");
-		return;
-	}
-	
-	// get return values
-	// serialized proto results are in "str"
-	*out_err_length = PyBytes_Size(ret);
-	if(*out_err_length == 0) // void param
-	{
-		*out_err = nullptr;
-		return;
-	}
-	*/
-	
 }
 //--------------------------------------------------------------------
