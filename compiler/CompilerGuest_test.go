@@ -1,5 +1,3 @@
-//+build GuestTest
-
 package main
 
 import (
