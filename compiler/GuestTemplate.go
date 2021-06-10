@@ -27,6 +27,26 @@ def load_xllr():
 		xllrHandle = cdll.LoadLibrary(get_filename_to_load('xllr'))
 
 		# set restypes
+		xllrHandle.alloc_args_buffer.restype = c_void_p
+		xllrHandle.alloc_openffi_string_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_string8_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_string16_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_string32_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_size_on_heap.restype = c_void_p
+		
+		xllrHandle.alloc_openffi_float64_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_float32_on_heap.restype = c_void_p
+		
+		xllrHandle.alloc_openffi_int8_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_int16_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_int32_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_int64_on_heap.restype = c_void_p
+
+		xllrHandle.alloc_openffi_uint8_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_uint16_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_uint32_on_heap.restype = c_void_p
+		xllrHandle.alloc_openffi_uint64_on_heap.restype = c_void_p
+
 		xllrHandle.get_openffi_string_element.restype = c_char_p
 		xllrHandle.get_arg_openffi_string.restype = c_char_p
 		xllrHandle.get_arg_openffi_string_array.restype = c_void_p
@@ -70,14 +90,14 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		# unpack parameters
 		bufIndex = 0
 		{{range $index, $elem := $f.Parameters}}
-
+		
 		{{if $elem.IsString}}
 		{{if $elem.IsArray}}
 		# string array (TODO: support utf-16/utf-32)
 		{{$elem.Name}} = []
 		in_{{$elem.Name}}_sizes = pointer(({{ConvertToCPythonType "openffi_size"}} * 1)(0))
 		in_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
-		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_string_array(parameters_buffer, bufIndex, byref(in_{{$elem.Name}}_sizes), byref(in_{{$elem.Name}}_length))
+		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_string_array(c_void_p(parameters_buffer), bufIndex, byref(in_{{$elem.Name}}_sizes), byref(in_{{$elem.Name}}_length))
 	
 		i = 0
 		
@@ -91,7 +111,7 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		{{else}}
 		# string
 		in_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
-		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_string(parameters_buffer, bufIndex, byref(in_{{$elem.Name}}_length))
+		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_string(c_void_p(parameters_buffer), bufIndex, byref(in_{{$elem.Name}}_length))
 		
 		{{$elem.Name}} = string_at(in_{{$elem.Name}}, in_{{$elem.Name}}_length.value).decode('utf-8')
 	
@@ -103,7 +123,7 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		
 		{{$elem.Name}} = []
 		in_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
-		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_{{$elem.Type}}_array(parameters_buffer, bufIndex, byref(in_{{$elem.Name}}_length))
+		in_{{$elem.Name}} = xllrHandle.get_arg_openffi_{{$elem.Type}}_array(c_void_p(parameters_buffer), bufIndex, byref(in_{{$elem.Name}}_length))
 	
 		i = 0
 		
@@ -115,7 +135,7 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{else}}
 		# non-string
-		{{$elem.Name}} = xllrHandle.get_arg_openffi_{{$elem.Type}}(parameters_buffer, bufIndex)
+		{{$elem.Name}} = xllrHandle.get_arg_openffi_{{$elem.Type}}(c_void_p(parameters_buffer), bufIndex)
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{end}}
 		{{end}}
@@ -127,7 +147,8 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		bufIndex = 0
 
 		# pack return values
-		{{range $index, $elem := $f.ReturnValues}}	
+		{{range $index, $elem := $f.ReturnValues}}
+		
 		{{if $elem.IsString}}
 		{{if $elem.IsArray}}
 		# string array
@@ -139,17 +160,18 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		for val in {{$elem.Name}}:
 			encval = val.encode('utf-8')
 			valcptr = xllrHandle.alloc_openffi_string_on_heap(encval, len(encval))
-			xllrHandle.set_openffi_string_element(i, out_{{$elem.Name}}, out_{{$elem.Name}}_sizes, valcptr, len(encval))
+			
+			xllrHandle.set_openffi_string_element(i, c_void_p(out_{{$elem.Name}}), c_void_p(out_{{$elem.Name}}_sizes), c_void_p(valcptr), len(encval))
 			i = i+1
 	
-		xllrHandle.set_arg_openffi_string_array(return_val_buffer, bufIndex, out_{{$elem.Name}}, out_{{$elem.Name}}_sizes, out_{{$elem.Name}}_len)
+		xllrHandle.set_arg_openffi_string_array(c_void_p(return_val_buffer), bufIndex, c_void_p(out_{{$elem.Name}}), c_void_p(out_{{$elem.Name}}_sizes), c_void_p(out_{{$elem.Name}}_len))
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{else}}
 		# string
 		{{$elem.Name}}_encval = {{$elem.Name}}.encode('utf-8')
 		{{$elem.Name}}_pencval = xllrHandle.alloc_openffi_string_on_heap({{$elem.Name}}_encval, len({{$elem.Name}}_encval))
 		{{$elem.Name}}_pencval_len = xllrHandle.alloc_openffi_size_on_heap(len({{$elem.Name}}))
-		xllrHandle.set_arg_openffi_string(return_val_buffer, bufIndex, {{$elem.Name}}_pencval, {{$elem.Name}}_pencval_len)
+		xllrHandle.set_arg_openffi_string(c_void_p(return_val_buffer), bufIndex, c_void_p({{$elem.Name}}_pencval), {{$elem.Name}}_pencval_len)
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{end}}
 		{{else}}
@@ -160,15 +182,15 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 	
 		i = 0
 		for val in {{$elem.Name}}:
-			xllrHandle.set_openffi_{{$elem.Type}}_element(out_{{$elem.Name}}, i, val)
+			xllrHandle.set_openffi_{{$elem.Type}}_element(c_void_p(out_{{$elem.Name}}), i, val)
 			i = i+1
 	
-		xllrHandle.set_arg_openffi_{{$elem.Type}}_array(return_val_buffer, bufIndex, out_{{$elem.Name}}, out_{{$elem.Name}}_len)
+		xllrHandle.set_arg_openffi_{{$elem.Type}}_array(c_void_p(return_val_buffer), bufIndex, c_void_p(out_{{$elem.Name}}), c_void_p(out_{{$elem.Name}}_len))
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{else}}
 		# non-string
 		c{{$elem.Name}} = xllrHandle.alloc_openffi_{{$elem.Type}}_on_heap({{$elem.Name}})
-		xllrHandle.set_arg_openffi_{{$elem.Type}}(return_val_buffer, bufIndex, c{{$elem.Name}})
+		xllrHandle.set_arg_openffi_{{$elem.Type}}(c_void_p(return_val_buffer), bufIndex, c_void_p(c{{$elem.Name}}))
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{end}}
 		{{end}}
