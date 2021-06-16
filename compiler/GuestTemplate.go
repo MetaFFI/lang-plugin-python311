@@ -189,7 +189,7 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}(parameters_buffer , paramet
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{else}}
 		# non-string
-		c{{$elem.Name}} = xllrHandle.alloc_openffi_{{$elem.Type}}_on_heap({{$elem.Name}})
+		c{{$elem.Name}} = xllrHandle.alloc_openffi_{{$elem.Type}}_on_heap({{ConvertToCPythonType $elem.Type}}({{$elem.Name}}))
 		xllrHandle.set_arg_openffi_{{$elem.Type}}(c_void_p(return_val_buffer), bufIndex, c_void_p(c{{$elem.Name}}))
 		bufIndex = bufIndex + {{CalculateArgLength $elem}}
 		{{end}}
