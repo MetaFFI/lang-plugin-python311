@@ -166,7 +166,7 @@ func TestGuest(t *testing.T){
 		t.Fatal(err)
 		return
 	}
-/*
+
 	defer func(){
 		err = os.RemoveAll("temp")
 		if err != nil{
@@ -174,7 +174,7 @@ func TestGuest(t *testing.T){
 			return
 		}
 	}()
-*/
+
 	err = ioutil.WriteFile("./temp/GuestCode.py", []byte(GuestCode), 0600)
 	if err != nil {
 		t.Fatal(err)
