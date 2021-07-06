@@ -14,7 +14,7 @@ int call_guest_test()
 	char lib_dir[100] = {0};
 	sprintf(lib_dir, "%s/xllr.test.so", openffi_home);
 
-	void* lib_handle = dlopen(lib_dir, RTLD_NOW);
+	void* lib_handle = dlopen(lib_dir, RTLD_NOW | RTLD_GLOBAL);
 	if(!lib_handle)
 	{
 		printf("Failed loading library - %s\n", dlerror());
@@ -32,7 +32,12 @@ int call_guest_test()
 }
 */
 import "C"
+import (
+	"os"
+)
 
 func CallHostMock() int{
+	println(os.Getpid())
+	//time.Sleep(1*time.Minute)
 	return int(C.call_guest_test())
 }

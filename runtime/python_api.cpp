@@ -9,6 +9,7 @@
 #include <Python.h>
 #include <sstream>
 #include <map>
+#include "cdt_python3.h"
 
 using namespace openffi::utils;
 
@@ -139,43 +140,71 @@ void free_function(int64_t function_id, char** err, uint32_t* err_len)
 //--------------------------------------------------------------------
 void call(
 	int64_t function_id,
-	void** parameters, uint64_t parameters_size,
-	void** return_values, uint64_t return_values_size,
+	cdt* parameters, uint64_t parameters_size,
+	cdt* return_values, uint64_t return_values_size,
 	char** out_err, uint64_t* out_err_length
 )
 {
-	auto it = loaded_functions.find(function_id);
-	if(it == loaded_functions.end())
+	try
 	{
-		handle_err((char**)out_err, out_err_length, "Requested function has not been loaded");
-		return;
+		auto it = loaded_functions.find(function_id);
+		if (it == loaded_functions.end())
+		{
+			handle_err((char**) out_err, out_err_length, "Requested function has not been loaded");
+			return;
+		}
+		PyObject* pyfunc = it->second;
+		
+		// convert CDT  to Python3
+		
+		cdt_python3 params_cdts(parameters, parameters_size);
+		PyObject* params = params_cdts.parse();
+		
+		scope_guard sgParams([&]()
+		{
+		 Py_DecRef(params);
+		});
+		
+		// call function
+		PyObject* res = PyObject_CallObject(pyfunc, params);
+		
+		// convert results back to CDT
+		// assume types are as expected
+		
+		// check if tuple
+		if(!PyTuple_Check(res))
+		{
+			handle_err((char**) out_err, out_err_length, "Return value should be a tuple");
+			return;
+		}
+		
+		// check 1st return value if error
+		PyObject* returned_err = PyTuple_GetItem(res, 0);
+		if(returned_err != Py_None)
+		{
+			Py_ssize_t err_len;
+			const char* err = PyUnicode_AsUTF8AndSize(returned_err, &err_len);
+			throw std::runtime_error(std::string(err, err_len));
+		}
+		
+		// check 2nd return value is a tuple (of types)
+		PyObject* tuple_types = PyTuple_GetItem(res, 1);
+		if(!PyTuple_Check(tuple_types))
+		{
+			handle_err((char**) out_err, out_err_length, "Tuple types is not a tuple");
+			return;
+		}
+		
+		// 3rd - nth - return value;
+		cdt_python3 return_cdts(return_values, return_values_size);
+		return_cdts.build(res, tuple_types, 2);
+		
 	}
-	PyObject* pyfunc = it->second;
-	
-	// set parameters
-	PyObject* paramsArray = PyTuple_New(4);
-	if(!paramsArray)
+	catch(std::exception& err)
 	{
-		handle_err((char**)out_err, out_err_length, "Failed to create new tuple");
-		return;
-	}
-	
-	scope_guard sgParams([&]()
-	{
-		Py_DecRef(paramsArray);
-	});
-	
-	PyTuple_SetItem(paramsArray, 0, PyLong_FromUnsignedLongLong(reinterpret_cast<unsigned long long int>(parameters)));
-	PyTuple_SetItem(paramsArray, 1, PyLong_FromUnsignedLongLong(parameters_size));
-	PyTuple_SetItem(paramsArray, 2, PyLong_FromUnsignedLongLong(reinterpret_cast<unsigned long long int>(return_values)));
-	PyTuple_SetItem(paramsArray, 3, PyLong_FromUnsignedLongLong(return_values_size));
-	PyObject* res = PyObject_CallObject(pyfunc, paramsArray);
-	
-	if(res != Py_None) // returned an error (if None, there's no error)
-	{
-		const char* perrmsg = PyUnicode_AsUTF8(res);
-		handle_err((char**)out_err, out_err_length, perrmsg);
-		return;
+		*out_err_length = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), *out_err_length+1);
+		strncpy(*out_err, err.what(), *out_err_length);
 	}
 }
 //--------------------------------------------------------------------

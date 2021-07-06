@@ -11,27 +11,33 @@ import ctypes.util
 from typing import List
 import platform
 import os
+from enum import Enum
 `
 
 const HostHelperFunctions = `
-xllrHandle = None
+xllr_handle = None
+python_plugin_handle = None
 
 def free_openffi():
-	global xllrHandle
+	global xllr_handle
 	global runtime_plugin
 
 	err = pointer((c_char * 1)(0))
 	err_len = (c_ulonglong)(0)
-	xllrHandle.free_runtime_plugin(runtime_plugin, len(runtime_plugin), byref(err), byref(err_len))
+	xllr_handle.free_runtime_plugin(runtime_plugin, len(runtime_plugin), byref(err), byref(err_len))
 
-def load_xllr():
-	global xllrHandle
+def load_xllr_and_python_plugin():
+	global xllr_handle
+	global python_plugin_handle
 	
-	if xllrHandle == None:
-		xllrHandle = cdll.LoadLibrary(get_filename_to_load('xllr'))
+	if xllr_handle == None:
+		xllr_handle = cdll.LoadLibrary(get_filename_to_load('xllr'))
+
+	if python_plugin_handle == None:
+		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 
 	# set restypes
-	xllrHandle.get_openffi_string_element.restype = c_char_p
+	xllr_handle.get_openffi_string_element.restype = c_char_p
 
 def get_filename_to_load(fname):
 	osname = platform.system()
@@ -42,8 +48,26 @@ def get_filename_to_load(fname):
 	else:
 		return os.getenv('OPENFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
 
-
-
+class openffi_types:
+	openffi_float64_type = 1
+	openffi_float32_type = 2
+	openffi_int8_type = 4
+	openffi_int16_type = 8
+	openffi_int32_type = 16
+	openffi_int64_type = 32
+	openffi_uint8_type = 64
+	openffi_uint16_type = 128
+	openffi_uint32_type = 256
+	openffi_uint64_type = 512
+	openffi_bool_type = 1024
+	openffi_string_type = 2048
+	openffi_string8_type = 4096
+	openffi_string16_type = 8192
+	openffi_string32_type = 16384
+	openffi_handle_type = 32768
+	openffi_array_type = 65536
+	openffi_pointer_type = 131072
+	openffi_size_type = 262144
 `
 
 const HostFunctionStubsTemplate = `
@@ -57,14 +81,14 @@ const HostFunctionStubsTemplate = `
 runtime_plugin = """xllr.{{$targetLang}}""".encode("utf-8")
 def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{ConvertToPythonTypeFromField $elem}}{{end}}):
 
-	global xllrHandle
+	global xllr_handle
 	global {{$f.PathToForeignFunction.function}}_id
 	global runtime_plugin
+	global python_plugin_handle
 
 	bufIndex = 0
 
-	# load XLLR
-	load_xllr()
+	load_xllr_and_python_plugin()
 
 	# load function
 	if {{$f.PathToForeignFunction.function}}_id == -1:
@@ -74,70 +98,23 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 		err_len = c_uint32()
 		out_err_len = POINTER(c_uint32)(c_void_p(addressof(err_len)))
 
-		{{$f.PathToForeignFunction.function}}_id = xllrHandle.load_function(runtime_plugin, len(runtime_plugin), function_path, len(function_path), {{$f.PathToForeignFunction.function}}_id, out_err, out_err_len)
+		{{$f.PathToForeignFunction.function}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), function_path, len(function_path), {{$f.PathToForeignFunction.function}}_id, out_err, out_err_len)
 		if {{$f.PathToForeignFunction.function}}_id == -1: # failed to load function
 			err_text = string_at(out_err.contents, out_err_len.contents.value)
 			raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 
-	
-	# pack parameters
-	{{$parametersLength := len $f.Parameters}}{{if gt $parametersLength 0}}parametersBuffer = xllrHandle.alloc_args_buffer({{CalculateArgsLength $f.Parameters}}){{end}}
-	{{$returnValuesLength := len $f.ReturnValues}}{{if gt $returnValuesLength 0}}returnValuesBuffer = xllrHandle.alloc_args_buffer({{CalculateArgsLength $f.ReturnValues}}){{end}}
-	
-	{{range $index, $elem := $f.Parameters}}	
-	{{if $elem.IsString}}
-	{{if $elem.IsArray}}
-	# string array
-	in_{{$elem.Name}}_len = {{ConvertToCPythonType "openffi_size"}}(len({{$elem.Name}}))
-	in_{{$elem.Name}} = ({{ConvertToCPythonType "openffi_string"}} * len({{$elem.Name}}))(0)
-	in_{{$elem.Name}}_sizes = ({{ConvertToCPythonType "openffi_size"}} * len({{$elem.Name}}))(0)
-
-	i = 0
-	{{$elem.Name}}_py_array = [] # to keep a reference to the parameters
-	for val in {{$elem.Name}}:
-		encval = val.encode('utf-8')
-		{{$elem.Name}}_py_array.append(encval)
-		xllrHandle.set_openffi_string_element(i, in_{{$elem.Name}}, in_{{$elem.Name}}_sizes, encval, len(encval))
-		i = i+1
-
-	xllrHandle.set_arg_openffi_string_array(parametersBuffer, bufIndex, in_{{$elem.Name}}, in_{{$elem.Name}}_sizes, byref(in_{{$elem.Name}}_len))
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
-	{{else}}
-	# string
-	{{$elem.Name}}_encval = {{$elem.Name}}.encode('utf-8')
-	{{$elem.Name}}_encval_len = {{ConvertToCPythonType "openffi_size"}}(len({{$elem.Name}}_encval))
-	xllrHandle.set_arg_openffi_string(parametersBuffer, bufIndex, {{$elem.Name}}_encval, byref({{$elem.Name}}_encval_len))
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
-	{{end}}
-	{{else}}
-	{{if $elem.IsArray}}
-	# non-string array
-	in_{{$elem.Name}}_len = {{ConvertToCPythonType "openffi_size"}}(len({{$elem.Name}}))
-	in_{{$elem.Name}} = ({{ConvertToCPythonType $elem.Type}} * len({{$elem.Name}}))(0)
-
-	i = 0
-	for val in {{$elem.Name}}:
-		xllrHandle.set_openffi_{{$elem.Type}}_element(in_{{$elem.Name}}, i, val)
-		i = i+1
-
-	xllrHandle.set_arg_openffi_{{$elem.Type}}_array(parametersBuffer, bufIndex, in_{{$elem.Name}}, byref(in_{{$elem.Name}}_len))
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
-	{{else}}
-	# non-string
-	c{{$elem.Name}} = {{ConvertToCPythonType $elem.Type}}({{$elem.Name}})
-	xllrHandle.set_arg_openffi_{{$elem.Type}}(parametersBuffer, bufIndex, byref(c{{$elem.Name}}))
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
-	{{end}}
-	{{end}}
-	{{end}}
+	params = [{{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{end}}]
+	params_types = [{{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} openffi_types.openffi_{{$elem.Type}}_type{{end}}]
+	parameters_buffer_size = ({{ConvertToCPythonType "openffi_size"}})(0)
+	parameters_buffer = python_plugin_handle.convert_python_to_cdt(params, params_types, byref(parameters_buffer_size))
 
 	# call function
 	
 	out_error = ({{ConvertToCPythonType "openffi_string"}} * 1)(0)
 	out_error_len = ({{ConvertToCPythonType "openffi_size"}})(0)
-	xllrHandle.call(runtime_plugin, len(runtime_plugin), \
+	xllr_handle.call(runtime_plugin, len(runtime_plugin), \
 					{{$f.PathToForeignFunction.function}}_id, \
-					parametersBuffer, {{$parametersLength}}, \
+					parameters_buffer, parameters_buffer_size, \
 					returnValuesBuffer, {{$returnValuesLength}}, \
 					out_error, byref(out_error_len))
 	
@@ -155,27 +132,29 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 	# string array (TODO: support utf-16/utf-32)
 	{{$elem.Name}} = []
 	out_{{$elem.Name}}_sizes = pointer(({{ConvertToCPythonType "openffi_size"}} * 1)(0))
-	out_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
-	out_{{$elem.Name}} = xllrHandle.get_arg_openffi_string_array(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}_sizes), byref(out_{{$elem.Name}}_length))
+	out_{{$elem.Name}}_dimensions = ({{ConvertToCPythonType "openffi_size"}})(0)
+	out_{{$elem.Name}}_dimensions_length = ({{ConvertToCPythonType "openffi_size"}}*1)(0)
+	out_{{$elem.Name}} = ({{ConvertToCPythonType "openffi_string"}}*1)(0)
+	bufIndex = xllr_handle.get_arg_openffi_string_array(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}), byref(out_{{$elem.Name}}_sizes), byref(out_{{$elem.Name}}_dimensions_length, byref(out_{{$elem.Name}}_dimensions))
 
 	i = 0
 	
-	for i in range(out_{{$elem.Name}}_length.value):
+	array_size = (xllr_handle.get_openffi_size_element(out_{{$elem.Name}}_dimensions_length, 0))
+
+	for i in range(array_size):
 		val_len = ({{ConvertToCPythonType "openffi_size"}})(0)
-		val = (xllrHandle.get_openffi_string_element(i, out_{{$elem.Name}}, out_{{$elem.Name}}_sizes, byref(val_len)))
+		val = (xllr_handle.get_openffi_string_element(i, out_{{$elem.Name}}, out_{{$elem.Name}}_sizes, byref(val_len)))
 		{{$elem.Name}}.append(string_at(val, val_len.value).decode('utf-8'))
 		i = i+1
 
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
 	{{else}}
 	# string
 	out_{{$elem.Name}} = ({{ConvertToCPythonType "openffi_string"}} * 1)(0)
 	out_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_string"}})(0)
-	xllrHandle.get_arg_openffi_string(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}), byref(out_{{$elem.Name}}_length))
+	bufIndex = xllr_handle.get_arg_openffi_string(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}), byref(out_{{$elem.Name}}_length))
 	
 	{{$elem.Name}} = string_at(out_{{$elem.Name}}, out_{{$elem.Name}}_length.value).decode('utf-8')
 
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
 	{{end}}
 	{{else}}
 	{{if $elem.IsArray}}
@@ -183,21 +162,23 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 	
 	{{$elem.Name}} = []
 	out_{{$elem.Name}} = ({{ConvertToCPythonType $elem.Type}} * 1)(0)
-	out_{{$elem.Name}}_length = ({{ConvertToCPythonType "openffi_size"}})(0)
-	xllrHandle.get_arg_openffi_{{$elem.Type}}_array(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}), byref(out_{{$elem.Name}}_length))
+	out_{{$elem.Name}}_dimensions = ({{ConvertToCPythonType "openffi_size"}})(0)
+	out_{{$elem.Name}}_dimensions_length = ({{ConvertToCPythonType "openffi_size"}}*1)(0)
+	bufIndex = xllr_handle.get_arg_openffi_{{$elem.Type}}_array(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}}), byref(out_{{$elem.Name}}_dimensions_length, byref(out_{{$elem.Name}}_dimensions))
 
 	i = 0
+	array_size = (xllr_handle.get_openffi_size_element(out_{{$elem.Name}}_dimensions_length, 0))
 	
-	for i in out_{{$elem.Name}}_length:
-		val = (xllrHandle.get_{{$elem.Type}}_element(i, out_{{$elem.Name}}))
+	for i in range(array_size):
+		val = (xllr_handle.get_{{$elem.Type}}_element(i, out_{{$elem.Name}}))
 		{{$elem.Name}}.append({{ConvertToPythonType "openffi_size" false}}(val))
 		i = i+1
 
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
 	{{else}}
 	# non-string
-	{{$elem.Name}} = {{ConvertToPythonType "openffi_size" false}}(xllrHandle.get_arg_openffi_{{$elem.Type}}(returnValuesBuffer, bufIndex))
-	bufIndex = bufIndex + {{CalculateArgLength $elem}}
+	out_{{$elem.Name}} = ({{ConvertToCPythonType $elem.Type}})(0)
+	bufIndex = (xllr_handle.get_arg_openffi_{{$elem.Type}}(returnValuesBuffer, bufIndex, byref(out_{{$elem.Name}})))
+	{{$elem.Name}} = ({{ConvertToPythonType "openffi_size" false}})out_{{$elem.Name}}
 	{{end}}
 	{{end}}
 	{{end}}

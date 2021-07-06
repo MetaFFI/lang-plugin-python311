@@ -80,7 +80,8 @@ func (this *GuestCompiler) parseImports() (string, error){
 		for _, f := range m.Functions{
 			if mod, found := f.PathToForeignFunction["module"]; found{
 
-				set[mod] = true
+				importMod := os.ExpandEnv(mod)
+				set[importMod] = true
 			}
 		}
 	}
