@@ -1,5 +1,5 @@
 find_package(Boost REQUIRED COMPONENTS filesystem) # Boost library
-find_package(Python3 REQUIRED COMPONENTS Development Development.Embed) # Python library
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development Development.Embed) # Python library
 
 set(target_name "xllr.python3")
 

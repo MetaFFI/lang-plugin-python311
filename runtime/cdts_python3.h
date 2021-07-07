@@ -3,14 +3,14 @@
 #include <memory>
 #include <Python.h>
 
-class cdt_python3
+class cdts_python3
 {
 private:
 	std::unique_ptr<openffi::runtime::cdts_wrapper> cdts;
 	
 public:
-	explicit cdt_python3(cdt* cdts, openffi_size cdts_length);
-	explicit cdt_python3(openffi_size cdt_count);
+	explicit cdts_python3(cdt* cdts, openffi_size cdts_length);
+	explicit cdts_python3(openffi_size cdt_count);
 	
 	cdt* get_cdts();
 	

@@ -9,7 +9,7 @@
 #include <Python.h>
 #include <sstream>
 #include <map>
-#include "cdt_python3.h"
+#include "cdts_python3.h"
 
 using namespace openffi::utils;
 
@@ -157,7 +157,7 @@ void call(
 		
 		// convert CDT  to Python3
 		
-		cdt_python3 params_cdts(parameters, parameters_size);
+		cdts_python3 params_cdts(parameters, parameters_size);
 		PyObject* params = params_cdts.parse();
 		
 		scope_guard sgParams([&]()
@@ -196,7 +196,7 @@ void call(
 		}
 		
 		// 3rd - nth - return value;
-		cdt_python3 return_cdts(return_values, return_values_size);
+		cdts_python3 return_cdts(return_values, return_values_size);
 		return_cdts.build(res, tuple_types, 2);
 		
 	}
