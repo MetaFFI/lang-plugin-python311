@@ -2,7 +2,7 @@ package main
 
 import "github.com/OpenFFI/plugin-sdk/compiler/go"
 
-var OpenFFITypeToPython3Type = map[string]string{
+var OpenFFITypeToPython3Type = map[compiler.OpenFFIType]string{
 
 	compiler.FLOAT64: "float",
 	compiler.FLOAT32: "float",
@@ -19,7 +19,6 @@ var OpenFFITypeToPython3Type = map[string]string{
 
 	compiler.BOOL: "bool",
 
-	compiler.STRING: "str",
 	compiler.STRING8: "str",
 	compiler.STRING16: "str",
 	compiler.STRING32: "str",

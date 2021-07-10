@@ -4,7 +4,6 @@ import "C"
 import (
 	compiler "github.com/OpenFFI/plugin-sdk/compiler/go"
 	"os"
-	"strings"
 )
 
 var templatesFuncMap = map[string]interface{}{
@@ -22,9 +21,9 @@ func getOpenFFIType(elem *compiler.FieldDefinition) uint64{
 	var val uint64
 	var found bool
 	if elem.Dimensions == 0 {
-		val, found = compiler.TypeToOpenFFIType["openffi_"+elem.Type+"_type"]
+		val, found = compiler.TypeStringToTypeEnum[elem.Type]
 	} else {
-		val, found = compiler.TypeToOpenFFIType["openffi_"+elem.Type+"_array_type"]
+		val, found = compiler.TypeStringToTypeEnum[elem.Type+"_array"]
 	}
 
 	if !found{
@@ -46,9 +45,7 @@ func convertToPythonTypeFromField(definition *compiler.FieldDefinition) string{
 	return convertToPythonType(definition.Type, definition.IsArray())
 }
 //--------------------------------------------------------------------
-func convertToPythonType(openffiType string, isArray bool) string{
-
-	openffiType = strings.ReplaceAll(openffiType, "openffi_", "")
+func convertToPythonType(openffiType compiler.OpenFFIType, isArray bool) string{
 
 	var res string
 
@@ -71,7 +68,6 @@ func convertToPythonType(openffiType string, isArray bool) string{
 		case compiler.BOOL:
 			res = "bool"
 
-		case compiler.STRING: fallthrough
 		case compiler.STRING8: fallthrough
 		case compiler.STRING16: fallthrough
 		case compiler.STRING32:
@@ -88,9 +84,8 @@ func convertToPythonType(openffiType string, isArray bool) string{
 	return res
 }
 //--------------------------------------------------------------------
-func convertToCPythonType(openffiType string) string{
+func convertToCPythonType(openffiType compiler.OpenFFIType) string{
 
-	openffiType = strings.ReplaceAll(openffiType, "openffi_", "")
 
 	switch openffiType{
 		case compiler.FLOAT64: return "c_double"
@@ -106,7 +101,6 @@ func convertToCPythonType(openffiType string) string{
 		case compiler.SIZE: return "c_ulonglong"
 		case compiler.BOOL: return "c_ubyte"
 
-		case compiler.STRING: return "c_char_p"
 		case compiler.STRING8: return "c_char_p"
 		case compiler.STRING16: return "c_wchar_p"
 		case compiler.STRING32: return "c_wchar_p"

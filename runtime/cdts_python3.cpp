@@ -25,7 +25,6 @@ PyObject* cdts_python3::parse()
 	cdts_parse_callbacks cps
 	(
 		[&](void* values_to_set, int index, const openffi_float32& val) { set_numeric_to_tuple<openffi_float32>((PyObject*) values_to_set, index, val, PyFloat_FromDouble); },
-		[&](void* values_to_set, int index, const openffi_float32* val){ set_numeric_to_tuple<openffi_float32>((PyObject*) values_to_set, index, *val, PyFloat_FromDouble); },
 		[&](void* values_to_set, int index, const openffi_float32* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_float32> arr_wrap((openffi_float32*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -33,7 +32,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_float64& val) { set_numeric_to_tuple<openffi_float64>((PyObject*) values_to_set, index, val, PyFloat_FromDouble); },
-		[&](void* values_to_set, int index, const openffi_float64* val){ set_numeric_to_tuple<openffi_float64>((PyObject*) values_to_set, index, *val, PyFloat_FromDouble); },
 		[&](void* values_to_set, int index, const openffi_float64* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_float64> arr_wrap((openffi_float64*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -41,7 +39,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_int8& val) { set_numeric_to_tuple<openffi_int8>((PyObject*) values_to_set, index, val, PyLong_FromLong); },
-		[&](void* values_to_set, int index, const openffi_int8* val){ set_numeric_to_tuple<openffi_int8>((PyObject*) values_to_set, index, *val, PyLong_FromLong); },
 		[&](void* values_to_set, int index, const openffi_int8* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_int8> arr_wrap((openffi_int8*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -49,7 +46,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_int16& val) { set_numeric_to_tuple<openffi_int16>((PyObject*) values_to_set, index, val, PyLong_FromLong); },
-		[&](void* values_to_set, int index, const openffi_int16* val){ set_numeric_to_tuple<openffi_int16>((PyObject*) values_to_set, index, *val, PyLong_FromLong); },
 		[&](void* values_to_set, int index, const openffi_int16* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_int16> arr_wrap((openffi_int16*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -57,7 +53,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_int32& val) { set_numeric_to_tuple<openffi_int32>((PyObject*) values_to_set, index, val, PyLong_FromLong); },
-		[&](void* values_to_set, int index, const openffi_int32* val){ set_numeric_to_tuple<openffi_int32>((PyObject*) values_to_set, index, *val, PyLong_FromLong); },
 		[&](void* values_to_set, int index, const openffi_int32* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_int32> arr_wrap((openffi_int32*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -65,7 +60,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_int64& val) { set_numeric_to_tuple<openffi_int64>((PyObject*) values_to_set, index, val, PyLong_FromLongLong); },
-		[&](void* values_to_set, int index, const openffi_int64* val){ set_numeric_to_tuple<openffi_int64>((PyObject*) values_to_set, index, *val, PyLong_FromLongLong); },
 		[&](void* values_to_set, int index, const openffi_int64* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_int64> arr_wrap((openffi_int64*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -73,7 +67,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_uint8& val) { set_numeric_to_tuple<openffi_uint8>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLong); },
-		[&](void* values_to_set, int index, const openffi_uint8* val){ set_numeric_to_tuple<openffi_uint8>((PyObject*) values_to_set, index, *val, PyLong_FromUnsignedLong); },
 		[&](void* values_to_set, int index, const openffi_uint8* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_uint8> arr_wrap((openffi_uint8*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -81,7 +74,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_uint16& val) { set_numeric_to_tuple<openffi_uint16>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLong); },
-		[&](void* values_to_set, int index, const openffi_uint16* val){ set_numeric_to_tuple<openffi_uint16>((PyObject*) values_to_set, index, *val, PyLong_FromUnsignedLong); },
 		[&](void* values_to_set, int index, const openffi_uint16* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_uint16> arr_wrap((openffi_uint16*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -89,7 +81,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_uint32& val) { set_numeric_to_tuple<openffi_uint32>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLong); },
-		[&](void* values_to_set, int index, const openffi_uint32* val){ set_numeric_to_tuple<openffi_uint32>((PyObject*) values_to_set, index, *val, PyLong_FromUnsignedLong); },
 		[&](void* values_to_set, int index, const openffi_uint32* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_uint32> arr_wrap((openffi_uint32*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -97,7 +88,6 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_uint64& val) { set_numeric_to_tuple<openffi_uint64>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLongLong); },
-		[&](void* values_to_set, int index, const openffi_uint64* val){ set_numeric_to_tuple<openffi_uint64>((PyObject*) values_to_set, index, *val, PyLong_FromUnsignedLongLong); },
 		[&](void* values_to_set, int index, const openffi_uint64* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_uint64> arr_wrap((openffi_uint64*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
@@ -105,31 +95,14 @@ PyObject* cdts_python3::parse()
 		},
 		
 		[&](void* values_to_set, int index, const openffi_bool& val) { set_numeric_to_tuple<openffi_bool>((PyObject*) values_to_set, index, val, PyBool_FromLong); },
-		[&](void* values_to_set, int index, const openffi_bool* val){ set_numeric_to_tuple<openffi_bool>((PyObject*) values_to_set, index, *val, PyBool_FromLong); },
 		[&](void* values_to_set, int index, const openffi_bool* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
 			numeric_n_array_wrapper<openffi_bool> arr_wrap((openffi_bool*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
 			set_numeric_array_to_tuple<openffi_bool>((PyObject*) values_to_set, index, arr_wrap, PyBool_FromLong);
 		},
 		
-		
-		[&](void* values_to_set, int index, const openffi_string& val, const openffi_size& s){
-			set_string_to_tuple<openffi_string, char>((PyObject*) values_to_set, index, val, s, PyUnicode_FromStringAndSize);
-		},
-		[&](void* values_to_set, int index, const openffi_string* val, const openffi_size* s) {
-			set_string_to_tuple<openffi_string, char>((PyObject*) values_to_set, index, *val, *s, PyUnicode_FromStringAndSize);
-		},
-		[&](void* values_to_set, int index, const openffi_string* arr, const openffi_size* strings_lengths, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
-		{
-			string_n_array_wrapper<openffi_string> arr_wrap((openffi_string*)arr, (openffi_size*)strings_lengths, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
-			set_string_array_to_tuple<openffi_string, char>((PyObject*)values_to_set, index, arr_wrap, PyUnicode_FromStringAndSize);
-		},
-		
 		[&](void* values_to_set, int index, const openffi_string8& val, const openffi_size& s){
 			set_string_to_tuple<openffi_string8, char>((PyObject*) values_to_set, index, val, s, PyUnicode_FromStringAndSize);
-		},
-		[&](void* values_to_set, int index, const openffi_string8* val, const openffi_size* s) {
-			set_string_to_tuple<openffi_string8, char>((PyObject*) values_to_set, index, *val, *s, PyUnicode_FromStringAndSize);
 		},
 		[&](void* values_to_set, int index, const openffi_string8* arr, const openffi_size* strings_lengths, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
@@ -137,12 +110,8 @@ PyObject* cdts_python3::parse()
 			set_string_array_to_tuple<openffi_string8, char>((PyObject*)values_to_set, index, arr_wrap, PyUnicode_FromStringAndSize);
 		},
 		
-		
 		[&](void* values_to_set, int index, const openffi_string16& val, const openffi_size& s){
 			set_string_to_tuple<openffi_string16, wchar_t>((PyObject*)values_to_set, index, val, s, PyUnicode_FromWideChar);
-		},
-		[&](void* values_to_set, int index, const openffi_string16* val, const openffi_size* s) {
-			set_string_to_tuple<openffi_string16, wchar_t>((PyObject*)values_to_set, index, *val, *s, PyUnicode_FromWideChar);
 		},
 		[&](void* values_to_set, int index, const openffi_string16* arr, const openffi_size* strings_lengths, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
@@ -152,9 +121,6 @@ PyObject* cdts_python3::parse()
 		
 		[&](void* values_to_set, int index, const openffi_string32& val, const openffi_size& s){
 			set_string_to_tuple<openffi_string32, wchar_t>((PyObject*)values_to_set, index, val, s, PyUnicode_FromWideChar);
-		},
-		[&](void* values_to_set, int index, const openffi_string32* val, const openffi_size* s) {
-			set_string_to_tuple<openffi_string32, wchar_t>((PyObject*)values_to_set, index, *val, *s, PyUnicode_FromWideChar);
 		},
 		[&](void* values_to_set, int index, const openffi_string32* arr, const openffi_size* strings_lengths, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
 		{
@@ -184,18 +150,12 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_float32& val) {
 			set_numeric_to_cdts<openffi_float32>((PyObject*)values_to_set, index+starting_index, val, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_float32*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_float32>((PyObject*)values_to_set, index+starting_index, *val, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_float32*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_float32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
 		},
 		
 		[&](void* values_to_set, int index, openffi_float64& val){
 			set_numeric_to_cdts<openffi_float64>((PyObject*)values_to_set, index+starting_index, val, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
-		},
-		[&](void* values_to_set, int index, openffi_float64*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_float64>((PyObject*)values_to_set, index+starting_index, *val, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
 		},
 		[&](void* values_to_set, int index, openffi_float64*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_float64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
@@ -204,9 +164,6 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_int8& val){
 			set_numeric_to_cdts<openffi_int8>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_int8*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_int8>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_int8*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_int8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
@@ -214,19 +171,12 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_int16& val){
 			set_numeric_to_cdts<openffi_int16>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_int16*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_int16>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_int16*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_int16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
 		
-		
 		[&](void* values_to_set, int index, openffi_int32& val) {
 			set_numeric_to_cdts<openffi_int32>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
-		[&](void* values_to_set, int index, openffi_int32*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_int32>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
 		[&](void* values_to_set, int index, openffi_int32*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_int32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
@@ -235,20 +185,12 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_int64& val) {
 			set_numeric_to_cdts<openffi_int64>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_int64*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_int64>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_int64*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_int64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
 		
-		
-		
 		[&](void* values_to_set, int index, openffi_uint8& val){
 			set_numeric_to_cdts<openffi_uint8>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
-		[&](void* values_to_set, int index, openffi_uint8*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_uint8>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
 		[&](void* values_to_set, int index, openffi_uint8*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_uint8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
@@ -257,18 +199,12 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_uint16& val){
 			set_numeric_to_cdts<openffi_uint16>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_uint16*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_uint16>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_uint16*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_uint16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
 		
 		[&](void* values_to_set, int index, openffi_uint32& val) {
 			set_numeric_to_cdts<openffi_uint32>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
-		[&](void* values_to_set, int index, openffi_uint32*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_uint32>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
 		[&](void* values_to_set, int index, openffi_uint32*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_uint32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
@@ -277,9 +213,6 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_uint64& val) {
 			set_numeric_to_cdts<openffi_uint64>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_uint64*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_uint64>((PyObject*)values_to_set, index+starting_index, *val, PyLong_AsUnsignedLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_uint64*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_uint64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
 		},
@@ -287,38 +220,19 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		[&](void* values_to_set, int index, openffi_bool& val){
 			set_numeric_to_cdts<openffi_bool>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
 		},
-		[&](void* values_to_set, int index, openffi_bool*& val, openffi_bool& free_required){
-			set_numeric_to_cdts<openffi_bool>((PyObject*)values_to_set, index+starting_index, *val, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
-		},
 		[&](void* values_to_set, int index, openffi_bool*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_bool>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
-		},
-		
-		[&](void* values_to_set, int index, openffi_string& val, openffi_size& s){
-			set_string_to_cdts<openffi_string, char>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->openffi_string{ return (openffi_string)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
-		},
-		[&](void* values_to_set, int index, openffi_string*& val, openffi_size*& s, openffi_bool& free_required) {
-			set_string_to_cdts<openffi_string, char>((PyObject*)values_to_set, index+starting_index, *val, *s, [](PyObject* o, Py_ssize_t* s)->openffi_string{ return (openffi_string)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
-		},
-		[&](void* values_to_set, int index, openffi_string*& arr, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
-			set_string_array_to_cdts<openffi_string, char>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->openffi_string{ return (openffi_string)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
 		},
 		
 		[&](void* values_to_set, int index, openffi_string8& val, openffi_size& s) {
 			set_string_to_cdts<openffi_string8, char>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->openffi_string8{ return (openffi_string8)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
 		},
-		[&](void* values_to_set, int index, openffi_string8*& val, openffi_size*& s, openffi_bool& free_required) {
-			set_string_to_cdts<openffi_string8, char>((PyObject*)values_to_set, index+starting_index, *val, *s, [](PyObject* o, Py_ssize_t* s)->openffi_string8{ return (openffi_string8)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
-		},
 		[&](void* values_to_set, int index, openffi_string8*& arr, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
-			set_string_array_to_cdts<openffi_string8, char>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->openffi_string{ return (openffi_string)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
+			set_string_array_to_cdts<openffi_string8, char>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->openffi_string8{ return (openffi_string8)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
 		},
 		
 		[&](void* values_to_set, int index, openffi_string16& val, openffi_size& s) {
 			set_string_to_cdts<openffi_string16, wchar_t>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
-		},
-		[&](void* values_to_set, int index, openffi_string16*& val, openffi_size*& s, openffi_bool& free_required) {
-			set_string_to_cdts<openffi_string16, wchar_t>((PyObject*)values_to_set, index+starting_index, *val, *s, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
 		},
 		[&](void* values_to_set, int index, openffi_string16*& arr, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_string_array_to_cdts<openffi_string16, wchar_t>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
@@ -326,9 +240,6 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		
 		[&](void* values_to_set, int index, openffi_string32& val, openffi_size& s) {
 			set_string_to_cdts<openffi_string32, wchar_t>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
-		},
-		[&](void* values_to_set, int index, openffi_string32*& val, openffi_size*& s, openffi_bool& free_required) {
-			set_string_to_cdts<openffi_string32, wchar_t>((PyObject*)values_to_set, index+starting_index, *val, *s, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
 		},
 		[&](void* values_to_set, int index, openffi_string32*& arr, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_string_array_to_cdts<openffi_string32, wchar_t>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
