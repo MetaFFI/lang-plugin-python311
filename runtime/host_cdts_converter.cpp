@@ -24,15 +24,8 @@ cdt* convert_host_params_to_cdts(PyObject* params, PyObject* params_types)
 	return cdts.get_cdts();
 }
 //--------------------------------------------------------------------
-PyObject* convert_host_return_values_from_cdts(PyObject* return_values_names, cdt* cdt_return_values)
+PyObject* convert_host_return_values_from_cdts(cdt* cdt_return_values, openffi_size return_values_count)
 {
-	if(!PyTuple_Check(return_values_names))
-	{
-		PyErr_SetString(PyExc_ValueError, "params_names is not a tuple as expected");
-		return nullptr;
-	}
-	
-	Py_ssize_t return_values_count = PyTuple_Size(return_values_names);
 	cdts_python3 cdts(cdt_return_values, return_values_count);
 	return cdts.parse();
 }

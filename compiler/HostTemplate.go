@@ -85,8 +85,9 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 			err_text = string_at(out_err.contents, out_err_len.contents.value)
 			raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 
-	params = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{end}})
-	params_types = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{GetOpenFFIType $elem}}{{end}})
+	{{$paramsLength := len $f.Parameters}}
+	params = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{end}}{{if eq $paramsLength 1}},{{end}})
+	params_types = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{GetOpenFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
 	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
 
@@ -107,13 +108,10 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 		raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
 
 	# unpack results
-	# the function sets local variables with the return values names
-	return_values_name = ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}} 'ret_{{$elem.Name}}'{{end}})
-
 	#import time
 	#time.sleep(20)
 
-	ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(py_object(return_values_name), c_void_p(return_values_buffer))
+	ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.ReturnValues}})
 
 	return {{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
 
