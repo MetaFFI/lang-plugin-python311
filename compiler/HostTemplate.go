@@ -92,8 +92,8 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 
 	# call function
 	
-	out_error = ({{ConvertToCPythonType "openffi_string"}} * 1)(0)
-	out_error_len = ({{ConvertToCPythonType "openffi_size"}})(0)
+	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
+	out_error_len = ({{ConvertToCPythonType "size"}})(0)
 	xllr_handle.call(runtime_plugin, len(runtime_plugin), \
 					{{$f.PathToForeignFunction.function}}_id, \
 					parameters_buffer, {{len $f.Parameters}}, \
