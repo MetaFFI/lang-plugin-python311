@@ -191,7 +191,7 @@ void call(
 		PyObject* tuple_types = PyTuple_GetItem(res, 1);
 		if(!PyTuple_Check(tuple_types))
 		{
-			handle_err((char**) out_err, out_err_length, "Tuple types is not a tuple");
+			handle_err((char**) out_err, out_err_length, "tuple_types is not a tuple");
 			return;
 		}
 		

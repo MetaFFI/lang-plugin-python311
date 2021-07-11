@@ -49,8 +49,8 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f
 	try:
 		# call function
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
-		
-		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetOpenFFIType $elem}}{{end}})
+		{{$retvalLength := len $f.ReturnValues}}
+		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetOpenFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
 		return ( None, ret_val_types {{range $index, $elem := $f.ReturnValues}}, {{$elem.Name}}{{end}})
 
