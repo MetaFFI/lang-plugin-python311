@@ -37,7 +37,6 @@ def load_xllr_and_python_plugin():
 		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 
 	# set restypes
-	xllr_handle.get_openffi_string_element.restype = c_char_p
 	python_plugin_handle.convert_host_params_to_cdts.argstype = [py_object, py_object]
 	python_plugin_handle.convert_host_return_values_from_cdts.argstype = [py_object, py_object]
 	python_plugin_handle.convert_host_return_values_from_cdts.restype = py_object
