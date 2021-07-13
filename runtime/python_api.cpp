@@ -1,7 +1,6 @@
 #include <runtime/runtime_plugin_api.h>
 #include <cstdlib>
 #include <cstring>
-#include <utils/scope_guard.hpp>
 #include <utils/function_path_parser.h>
 #include <utils/foreign_function.h>
 #include "utils.h"
@@ -32,13 +31,6 @@ using namespace openffi::utils;
 #define TRUE 1
 #define FALSE 0
 
-#define pyscope()\
-	PyGILState_STATE gstate = PyGILState_Ensure(); \
-	scope_guard sggstate([&]() \
-	{ \
-		PyGILState_Release(gstate); \
-	});
-	
 std::map<int64_t, PyObject*> loaded_functions;
 
 //--------------------------------------------------------------------
@@ -73,7 +65,9 @@ void free_runtime(char** err, uint32_t* err_len)
 	{
 		return;
 	}
-		
+	
+	pyscope();
+	
 	int res = Py_FinalizeEx();
 	if(res == -1)
 	{
@@ -88,7 +82,7 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 	{
 		load_runtime(err, err_len);
 	}
-
+	
 	pyscope();
 	
 	openffi::utils::function_path_parser fp(function_path);
@@ -147,6 +141,8 @@ void call(
 {
 	try
 	{
+		pyscope();
+		
 		auto it = loaded_functions.find(function_id);
 		if (it == loaded_functions.end())
 		{

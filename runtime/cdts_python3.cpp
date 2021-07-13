@@ -1,4 +1,5 @@
 #include "cdts_python3.h"
+#include "objects_table.h"
 
 using namespace openffi::runtime;
 
@@ -21,7 +22,7 @@ cdt* cdts_python3::get_cdts()
 PyObject* cdts_python3::parse()
 {
 	PyObject* res = PyTuple_New((Py_ssize_t)this->cdts->get_cdts_length());
-	
+
 	cdts_parse_callbacks cps
 	(
 		[&](void* values_to_set, int index, const openffi_float32& val) { set_numeric_to_tuple<openffi_float32>((PyObject*) values_to_set, index, val, PyFloat_FromDouble); },
@@ -101,6 +102,27 @@ PyObject* cdts_python3::parse()
 			set_numeric_array_to_tuple<openffi_bool>((PyObject*) values_to_set, index, arr_wrap, PyBool_FromLong);
 		},
 		
+		[&](void* values_to_set, int index, const openffi_handle& val)
+		{
+			auto get_object = [](openffi_handle h)->PyObject*
+			{
+				if(!objects_table::instance().contains((PyObject*)h)){ throw std::runtime_error("Object doesn't exist"); }
+				return (PyObject*)h;
+			};
+			set_numeric_to_tuple<openffi_handle>((PyObject*) values_to_set, index, val, get_object);
+		},
+		[&](void* values_to_set, int index, const openffi_handle* arr, const openffi_size* dimensions_lengths, const openffi_size& dimensions)
+		{
+			auto get_object = [](openffi_handle h)->PyObject*
+			{
+				if(!objects_table::instance().contains((PyObject*)h)){ throw std::runtime_error("Object doesn't exist"); }
+				return (PyObject*)h;
+			};
+			
+			numeric_n_array_wrapper<openffi_handle> arr_wrap((openffi_handle*)arr, (openffi_size*)dimensions_lengths, (openffi_size&)dimensions);
+			set_numeric_array_to_tuple<openffi_handle>((PyObject*) values_to_set, index, arr_wrap, get_object);
+		},
+		
 		[&](void* values_to_set, int index, const openffi_string8& val, const openffi_size& s){
 			set_string_to_tuple<openffi_string8, char>((PyObject*) values_to_set, index, val, s, PyUnicode_FromStringAndSize);
 		},
@@ -128,7 +150,6 @@ PyObject* cdts_python3::parse()
 			set_string_array_to_tuple<openffi_string32, wchar_t>((PyObject*)values_to_set, index, arr_wrap, PyUnicode_FromWideChar);
 		}
 	);
-	
 	this->cdts->parse(res, cps);
 	return res;
 }
@@ -222,6 +243,35 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		},
 		[&](void* values_to_set, int index, openffi_bool*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required){
 			set_numeric_array_to_cdts<openffi_bool>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
+		},
+		
+		[&](void* values_to_set, int index, openffi_handle& val)
+		{
+			auto set_object = [](PyObject* pybj)->openffi_handle
+			{
+				if(!objects_table::instance().contains(pybj))
+				{
+					objects_table::instance().set(pybj);
+				}
+				
+				return (openffi_handle)pybj;
+			};
+			
+			set_numeric_to_cdts<openffi_handle>((PyObject*)values_to_set, index+starting_index, val, set_object, [](PyObject* o)->int{ return 1; });
+		},
+		[&](void* values_to_set, int index, openffi_handle*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, openffi_bool& free_required)
+		{
+			auto set_object = [](PyObject* pybj)->openffi_handle
+			{
+				if(!objects_table::instance().contains(pybj))
+				{
+					objects_table::instance().set(pybj);
+				}
+				
+				return (openffi_handle)pybj;
+			};
+			
+			set_numeric_array_to_cdts<openffi_handle>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, set_object, [](PyObject* o)->int{ return 1; });
 		},
 		
 		[&](void* values_to_set, int index, openffi_string8& val, openffi_size& s) {

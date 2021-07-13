@@ -1,15 +1,15 @@
 find_package(Boost REQUIRED COMPONENTS filesystem) # Boost library
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development Development.Embed) # Python library
+find_package(Python3 REQUIRED COMPONENTS Development Development.Embed) # Python library
 
 set(target_name "xllr.python3")
 
 # build xllr.python3
-file(GLOB SRC_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp ${CMAKE_CURRENT_LIST_DIR}/*.h ${OPENFFI_SDK}/utils/*.cpp ${OPENFFI_SDK}/runtime/*.cpp ${OPENFFI_SDK}/runtime/*.c)
+file(GLOB SRC_FILES ${CMAKE_CURRENT_LIST_DIR}/*.cpp ${CMAKE_CURRENT_LIST_DIR}/*.h ${OPENFFI_SDK}/utils/*.cpp ${OPENFFI_SDK}/runtime/*.cpp ${OPENFFI_SDK}/runtime/*.c ${OPENFFI_SDK}/utils/*.hpp)
 add_library(${target_name}
 			SHARED
 			${SRC_FILES}
 )
-target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} ${Python3_INCLUDE_DIRS} ${OPENFFI_SDK}/runtime/*.h)
+target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} ${Python3_INCLUDE_DIRS} ${OPENFFI_SDK}/runtime/*.h ${OPENFFI_SDK}/utils/*.h)
 
 set_property(TARGET ${target_name} PROPERTY POSITION_INDEPENDENT_CODE ON)
 

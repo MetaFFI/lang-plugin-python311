@@ -95,10 +95,10 @@ def {{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters
 	
 	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.call(runtime_plugin, len(runtime_plugin), \
-					{{$f.PathToForeignFunction.function}}_id, \
-					parameters_buffer, {{len $f.Parameters}}, \
-					return_values_buffer, {{len $f.ReturnValues}}, \
+	xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+					c_ulonglong({{$f.PathToForeignFunction.function}}_id), \
+					c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
+					c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \
 					out_error, byref(out_error_len))
 	
 	
