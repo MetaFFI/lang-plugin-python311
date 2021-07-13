@@ -19,43 +19,43 @@ def host_compiler():
 		raise RuntimeError("Expected result length is 2. Received: "+str(len(res)))
 
 	if res[0] != 0.57721:
-		raise RuntimeError('res[0] != 0.57721')
+		raise RuntimeError('r1 != 0.57721')
 
 	if res[1] - 3.359 > 0.000001:
-		raise RuntimeError('res[1] != 3.359, res[1]='+str(res[1]))
+		raise RuntimeError('r2 != 3.359, r2='+str(r2))
 
 	if res[2] != -11:
-		raise RuntimeError('res[2] != -11')
+		raise RuntimeError('r3 != -11')
 	
 	if res[3] != -21:
-		raise RuntimeError('res[3] != -21')
+		raise RuntimeError('r4 != -21')
 	
 	if res[4] != -31:
-		raise RuntimeError('res[4] != -31')
+		raise RuntimeError('r5 != -31')
 
 	if res[5] != -41:
-		raise RuntimeError('res[5] != -41')
+		raise RuntimeError('r6 != -41')
 
 	if res[6] != 51:
-		raise RuntimeError('res[6] != 51')
+		raise RuntimeError('r7 != 51')
 	
 	if res[7] != 61:
-		raise RuntimeError('res[7] != 61')
+		raise RuntimeError('r8 != 61')
 	
 	if res[8] != 71:
-		raise RuntimeError('res[8] != 71')
+		raise RuntimeError('r9 != 71')
 
 	if res[9] != 81:
-		raise RuntimeError('res[9] != 81')
+		raise RuntimeError('r10 != 81')
 
 	if res[10] != True:
-		raise RuntimeError('res[10] != True')
+		raise RuntimeError('r11 != True')
 
 	if res[11] != 'This is an output':
-		raise RuntimeError('res[11] != This is an output')
+		raise RuntimeError('r12 != This is an output')
 
 	if len(res[12]) != 2:
-		raise RuntimeError('Length of given string[] expected to be 2, while it is '+str(len(res[12])))
+		raise RuntimeError('Length of given string[] expected to be 2, while it is '+str(len(r13)))
 
 	strarray = res[12]
 	if strarray[0] != "return one":
@@ -65,7 +65,7 @@ def host_compiler():
 		raise RuntimeError('strarray[1] != "return two"')
 
 	if len(res[13]) != 5:
-		raise RuntimeError('Length of given uint8[] expected to be 5, while it is '+str(len(res[13])))
+		raise RuntimeError('Length of given uint8[] expected to be 5, while it is '+str(len(r14)))
 
 	barray = res[13]
 	if barray[0] != 20:
