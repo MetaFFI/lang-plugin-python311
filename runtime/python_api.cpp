@@ -170,7 +170,9 @@ void call(
 		// check if tuple
 		if(!PyTuple_Check(res))
 		{
-			handle_err((char**) out_err, out_err_length, "Return value should be a tuple");
+			std::stringstream ss;
+			ss << "Return value should be a tuple. Return value type: " << res->ob_type->tp_name;
+			handle_err_str((char**) out_err, out_err_length, ss.str());
 			return;
 		}
 		

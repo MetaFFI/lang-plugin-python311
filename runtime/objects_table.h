@@ -20,6 +20,8 @@ public:
 	void set(PyObject* obj);
 	void remove(PyObject* obj);
 	bool contains(PyObject* obj) const;
+	
+	size_t size() const;
 };
 
 typedef openffi::utils::singleton<objects_table_impl> objects_table;

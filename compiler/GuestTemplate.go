@@ -48,7 +48,11 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f
 
 	try:
 		# call function
+		{{if $f.IsMethod}}
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{(index $f.Parameters 0).Name }}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}}{{if gt $index 1}},{{end}}{{$elem.Name}}{{end}}{{end}})
+		{{else}}
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
+		{{end}}
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetOpenFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
@@ -56,7 +60,7 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f
 
 	except Exception as e:
 		errdata = traceback.format_exception(*sys.exc_info())
-		return ('\n'.join(errdata))
+		return ('\n'.join(errdata),)
 
 {{end}}
 {{end}}

@@ -106,7 +106,8 @@ PyObject* cdts_python3::parse()
 		{
 			auto get_object = [](openffi_handle h)->PyObject*
 			{
-				if(!objects_table::instance().contains((PyObject*)h)){ throw std::runtime_error("Object doesn't exist"); }
+				if(!objects_table::instance().contains((PyObject*)h)){ throw std::runtime_error("Object doesn't exist in tables object"); }
+				Py_IncRef((PyObject*)h);
 				return (PyObject*)h;
 			};
 			set_numeric_to_tuple<openffi_handle>((PyObject*) values_to_set, index, val, get_object);
@@ -303,8 +304,60 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 	{
 		PyObject* pytype = PyTuple_GetItem(tuple_types, i);
 		types[i] = (openffi_types)PyLong_AsLong(pytype);
+		
+		if(types[i] == openffi_any_type) // if any, replace with real type
+		{
+			PyObject* obj = PyTuple_GetItem(tuple, i+starting_index);
+			types[i] = get_openffi_type(obj);
+		}
 	}
 	
 	this->cdts->build(types, types_length, tuple, cbs);
+}
+//--------------------------------------------------------------------
+openffi_types cdts_python3::get_openffi_type(PyObject* obj)
+{
+	if(strcmp(obj->ob_type->tp_name, "str") == 0)
+	{
+		return openffi_string8_type;
+	}
+	else if(strcmp(obj->ob_type->tp_name, "int") == 0)
+	{
+		return openffi_int64_type;
+	}
+	else if(strcmp(obj->ob_type->tp_name, "float") == 0)
+	{
+		return openffi_float64_type;
+	}
+	else if(strcmp(obj->ob_type->tp_name, "bool") == 0)
+	{
+		return openffi_bool_type;
+	}
+	else if(strcmp(obj->ob_type->tp_name, "list") == 0)
+	{
+		if(PyList_Size(obj) > 0)
+		{
+			PyObject* elem = PyList_GetItem(obj, 0);
+			openffi_type elemtype = get_openffi_type(elem);
+			return (openffi_types)(openffi_array_type | elemtype);
+		}
+		
+		return openffi_handle_array_type;
+	}
+	else if(strcmp(obj->ob_type->tp_name, "tuple") == 0)
+	{
+		if(PyTuple_Size(obj) > 0)
+		{
+			PyObject* elem = PyTuple_GetItem(obj, 0);
+			openffi_type elemtype = get_openffi_type(elem);
+			return (openffi_types)(openffi_array_type | elemtype);
+		}
+		
+		return openffi_handle_array_type;
+	}
+	else // handle
+	{
+		return openffi_handle_type;
+	}
 }
 //--------------------------------------------------------------------

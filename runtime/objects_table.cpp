@@ -16,7 +16,7 @@ void objects_table_impl::set(PyObject* obj)
 	std::unique_lock l(m); // TODO need to use upgradable lock!
 	
 	auto it = this->objects.find(obj);
-	if(it == this->objects.end()){
+	if(it != this->objects.end()){
 		return;
 	}
 	
@@ -40,6 +40,13 @@ void objects_table_impl::remove(PyObject* obj)
 bool objects_table_impl::contains(PyObject* obj) const
 {
 	std::shared_lock l(m);
-	return this->objects.find(obj) == this->objects.end();
+	
+	return this->objects.find(obj) != this->objects.end();
+}
+//--------------------------------------------------------------------
+size_t objects_table_impl::size() const
+{
+	std::shared_lock l(m);
+	return this->objects.size();
 }
 //--------------------------------------------------------------------
