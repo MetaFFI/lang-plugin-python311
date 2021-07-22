@@ -116,7 +116,7 @@ PyObject* cdts_python3::parse()
 		{
 			auto get_object = [](openffi_handle h)->PyObject*
 			{
-				if(!objects_table::instance().contains((PyObject*)h)){ throw std::runtime_error("Object doesn't exist"); }
+				if(!objects_table::instance().contains((PyObject*)h)){ return PyLong_FromUnsignedLongLong((int64_t)h); }
 				return (PyObject*)h;
 			};
 			
