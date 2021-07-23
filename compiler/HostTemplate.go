@@ -36,6 +36,10 @@ def load_xllr_and_python_plugin():
 	if python_plugin_handle == None:
 		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 
+		err = pointer((c_char * 1)(0))
+		err_len = (c_ulonglong)(0)
+		python_plugin_handle.load_runtime(byref(err), byref(err_len)) # in order to initialize python environment (e.g. define openffi_handle class)
+
 	# set restypes
 	python_plugin_handle.convert_host_params_to_cdts.argstype = [py_object, py_object]
 	python_plugin_handle.convert_host_return_values_from_cdts.argstype = [py_object, py_object]

@@ -34,14 +34,15 @@ using namespace openffi::utils;
 std::map<int64_t, PyObject*> loaded_functions;
 
 //--------------------------------------------------------------------
-void load_package_path()
+void initialize_environment()
 {
 	std::string curpath(boost::filesystem::current_path().string());
 	std::stringstream ss;
 	ss << "import sys" << std::endl;
-	//ss << "import site" << std::endl;
-	//ss << "sys.path.append(site.USER_SITE)" << std::endl;
 	ss << "sys.path.append('" << curpath << "')" << std::endl;
+	ss << "class openffi_handle:" << std::endl;
+	ss << "\tdef __init__(self, h):" << std::endl;
+	ss << "\t\tself.handle = h" << std::endl << std::endl;
 	
 	PyRun_SimpleString(ss.str().c_str());
 }
@@ -56,7 +57,7 @@ void load_runtime(char** err, uint32_t* err_len)
 	
 	pyscope();
 	
-	load_package_path();
+	initialize_environment();
 }
 //--------------------------------------------------------------------
 void free_runtime(char** err, uint32_t* err_len)

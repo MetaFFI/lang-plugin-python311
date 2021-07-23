@@ -1,5 +1,6 @@
 #include "cdts_python3.h"
 #include "objects_table.h"
+#include "py_openffi_handle.h"
 
 using namespace openffi::runtime;
 
@@ -106,7 +107,12 @@ PyObject* cdts_python3::parse()
 		{
 			auto get_object = [](openffi_handle h)->PyObject*
 			{
-				if(!objects_table::instance().contains((PyObject*)h)){ throw std::runtime_error("Object doesn't exist in tables object"); }
+				if(h == NULL){ throw std::runtime_error("received NULL handle"); }
+				
+				if(!objects_table::instance().contains((PyObject*)h))
+				{
+					return new_py_openffi_handle(h);
+				}
 				Py_IncRef((PyObject*)h);
 				return (PyObject*)h;
 			};
@@ -116,7 +122,11 @@ PyObject* cdts_python3::parse()
 		{
 			auto get_object = [](openffi_handle h)->PyObject*
 			{
-				if(!objects_table::instance().contains((PyObject*)h)){ return PyLong_FromUnsignedLongLong((int64_t)h); }
+				if(!objects_table::instance().contains((PyObject*)h))
+				{
+					return new_py_openffi_handle(h);
+				}
+				Py_IncRef((PyObject*)h);
 				return (PyObject*)h;
 			};
 			
@@ -252,6 +262,19 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 			{
 				if(!objects_table::instance().contains(pybj))
 				{
+					// if openffi handle - pass as it is.
+					if(strcmp(pybj->ob_type->tp_name, "openffi_handle") == 0)
+					{
+						PyObject* pyhandle = PyObject_GetAttrString(pybj, "handle");
+						if(!pyhandle)
+						{
+							throw std::runtime_error("handle attribute is not found in openffi_handle object");
+						}
+						
+						return (openffi_handle)PyLong_AsUnsignedLongLong(pyhandle);
+					}
+					
+					// a python object
 					objects_table::instance().set(pybj);
 				}
 				
@@ -266,6 +289,19 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 			{
 				if(!objects_table::instance().contains(pybj))
 				{
+					// if openffi handle - pass as it is.
+					if(strcmp(pybj->ob_type->tp_name, "openffi_handle") == 0)
+					{
+						PyObject* pyhandle = PyObject_GetAttrString(pybj, "handle");
+						if(!pyhandle)
+						{
+							throw std::runtime_error("handle attribute is not found in openffi_handle object");
+						}
+						
+						return (openffi_handle)PyLong_AsUnsignedLongLong(pyhandle);
+					}
+					
+					// a python object
 					objects_table::instance().set(pybj);
 				}
 				

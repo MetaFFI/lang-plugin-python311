@@ -32,6 +32,7 @@ private:
 	
 	static openffi_types get_openffi_type(PyObject* pyobj);
 	
+	
 	template<typename T>
 	PyObject* create_list(const T& p)
 	{
