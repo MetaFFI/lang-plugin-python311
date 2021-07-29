@@ -9,6 +9,7 @@ const HostImports = `
 from ctypes import *
 import ctypes.util
 from typing import List
+from typing import Any
 import platform
 import os
 from enum import Enum

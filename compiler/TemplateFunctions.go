@@ -76,6 +76,9 @@ func convertToPythonType(openffiType compiler.OpenFFIType, isArray bool) string{
 		case compiler.HANDLE:
 			res = "py_object"
 
+		case compiler.ANY:
+			res = "Any"
+
 		default:
 			panic("Unsupported OpenFFI Type "+openffiType)
 	}
