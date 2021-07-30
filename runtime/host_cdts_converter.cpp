@@ -27,7 +27,7 @@ cdt* convert_host_params_to_cdts(PyObject* params, PyObject* params_types)
 	return cdts.get_cdts();
 }
 //--------------------------------------------------------------------
-PyObject* convert_host_return_values_from_cdts(cdt* cdt_return_values, openffi_size return_values_count)
+PyObject* convert_host_return_values_from_cdts(cdt* cdt_return_values, metaffi_size return_values_count)
 {
 	pyscope();
 	

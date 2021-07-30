@@ -2,7 +2,7 @@ package main
 
 import "C"
 import (
-	compiler "github.com/OpenFFI/plugin-sdk/compiler/go"
+	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
 	"os"
 )
 
@@ -12,11 +12,11 @@ var templatesFuncMap = map[string]interface{}{
 	"ConvertToPythonTypeFromField": convertToPythonTypeFromField,
 	"GetEnvVar":            getEnvVar,
 	"Add":                  add,
-	"GetOpenFFIType":       getOpenFFIType,
+	"GetMetaFFIType":       getMetaFFIType,
 }
 
 //--------------------------------------------------------------------
-func getOpenFFIType(elem *compiler.FieldDefinition) uint64{
+func getMetaFFIType(elem *compiler.FieldDefinition) uint64{
 
 	var val uint64
 	var found bool
@@ -45,11 +45,11 @@ func convertToPythonTypeFromField(definition *compiler.FieldDefinition) string{
 	return convertToPythonType(definition.Type, definition.IsArray())
 }
 //--------------------------------------------------------------------
-func convertToPythonType(openffiType compiler.OpenFFIType, isArray bool) string{
+func convertToPythonType(metaffiType compiler.MetaFFIType, isArray bool) string{
 
 	var res string
 
-	switch openffiType{
+	switch metaffiType{
 		case compiler.FLOAT64: fallthrough
 		case compiler.FLOAT32:
 			res = "float"
@@ -80,7 +80,7 @@ func convertToPythonType(openffiType compiler.OpenFFIType, isArray bool) string{
 			res = "Any"
 
 		default:
-			panic("Unsupported OpenFFI Type "+openffiType)
+			panic("Unsupported MetaFFI Type "+metaffiType)
 	}
 
 	if isArray{
@@ -90,10 +90,10 @@ func convertToPythonType(openffiType compiler.OpenFFIType, isArray bool) string{
 	return res
 }
 //--------------------------------------------------------------------
-func convertToCPythonType(openffiType compiler.OpenFFIType) string{
+func convertToCPythonType(metaffiType compiler.MetaFFIType) string{
 
 
-	switch openffiType{
+	switch metaffiType{
 		case compiler.FLOAT64: return "c_double"
 		case compiler.FLOAT32: return "c_float"
 		case compiler.INT8: return "c_byte"
@@ -112,7 +112,7 @@ func convertToCPythonType(openffiType compiler.OpenFFIType) string{
 		case compiler.STRING32: return "c_wchar_p"
 
 		default:
-			panic("Unsupported OpenFFI Type "+openffiType)
+			panic("Unsupported MetaFFI Type "+metaffiType)
 	}
 }
 //--------------------------------------------------------------------

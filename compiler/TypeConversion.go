@@ -1,8 +1,8 @@
 package main
 
-import "github.com/OpenFFI/plugin-sdk/compiler/go"
+import "github.com/MetaFFI/plugin-sdk/compiler/go"
 
-var OpenFFITypeToPython3Type = map[compiler.OpenFFIType]string{
+var MetaFFITypeToPython3Type = map[compiler.MetaFFIType]string{
 
 	compiler.FLOAT64: "float",
 	compiler.FLOAT32: "float",

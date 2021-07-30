@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	compiler "github.com/OpenFFI/plugin-sdk/compiler/go"
+	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -34,7 +34,7 @@ func (this *HostCompiler) Compile() (outputFileName string, err error){
 	}
 
 	// write to output
-	outputFileName = this.outputDir+string(os.PathSeparator)+this.outputFilename+"_OpenFFIHost.py"
+	outputFileName = this.outputDir+string(os.PathSeparator)+this.outputFilename+"_MetaFFIHost.py"
 	err = ioutil.WriteFile( outputFileName, []byte(code), 0600)
 	if err != nil{
 		return "", fmt.Errorf("Failed to write host code to %v. Error: %v", this.outputDir+this.outputFilename, err)

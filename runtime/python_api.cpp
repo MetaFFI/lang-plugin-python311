@@ -10,7 +10,7 @@
 #include <map>
 #include "cdts_python3.h"
 
-using namespace openffi::utils;
+using namespace metaffi::utils;
 
 #define handle_err(err, err_len, desc) \
 	*err_len = strlen( desc ); \
@@ -40,7 +40,7 @@ void initialize_environment()
 	std::stringstream ss;
 	ss << "import sys" << std::endl;
 	ss << "sys.path.append('" << curpath << "')" << std::endl;
-	ss << "class openffi_handle:" << std::endl;
+	ss << "class metaffi_handle:" << std::endl;
 	ss << "\tdef __init__(self, h):" << std::endl;
 	ss << "\t\tself.handle = h" << std::endl << std::endl;
 	
@@ -86,10 +86,10 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 	
 	pyscope();
 	
-	openffi::utils::function_path_parser fp(function_path);
+	metaffi::utils::function_path_parser fp(function_path);
 	
 	// TODO: can pymod be released?!
-	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_openffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
+	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_metaffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
 	
 	if(!pymod)
 	{

@@ -6,11 +6,11 @@
 class cdts_python3
 {
 private:
-	std::unique_ptr<openffi::runtime::cdts_wrapper> cdts;
+	std::unique_ptr<metaffi::runtime::cdts_wrapper> cdts;
 	
 public:
-	explicit cdts_python3(cdt* cdts, openffi_size cdts_length);
-	explicit cdts_python3(openffi_size cdt_count);
+	explicit cdts_python3(cdt* cdts, metaffi_size cdts_length);
+	explicit cdts_python3(metaffi_size cdt_count);
 	
 	cdt* get_cdts();
 	
@@ -30,7 +30,7 @@ public:
 
 private:
 	
-	static openffi_types get_openffi_type(PyObject* pyobj);
+	static metaffi_types get_metaffi_type(PyObject* pyobj);
 	
 	
 	template<typename T>
@@ -63,7 +63,7 @@ private:
 	}
 	//--------------------------------------------------------------------
 	template<typename T, typename char_t>
-	void set_string_to_tuple(PyObject* tuple, int index, const T& val, const openffi_size& size, const std::function<PyObject*(const char_t*, Py_ssize_t)>& ConvFunc)
+	void set_string_to_tuple(PyObject* tuple, int index, const T& val, const metaffi_size& size, const std::function<PyObject*(const char_t*, Py_ssize_t)>& ConvFunc)
 	{
 		PyObject* pyval = ConvFunc((char_t*)val, size);
 		if(!pyval)
@@ -82,11 +82,11 @@ private:
 	}
 	//--------------------------------------------------------------------
 	template<typename T>
-	void set_numeric_array_to_tuple(PyObject* tuple, int cdts_index, const openffi::runtime::numeric_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(T)>& ConvFunc)
+	void set_numeric_array_to_tuple(PyObject* tuple, int cdts_index, const metaffi::runtime::numeric_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(T)>& ConvFunc)
 	{
 		PyObject* list = create_list(arr_wrap);
 		
-		openffi_size index[1] = { 0 };
+		metaffi_size index[1] = { 0 };
 		
 		for(int i=0 ; i<arr_wrap.dimensions_lengths[0] ; i++)
 		{
@@ -109,18 +109,18 @@ private:
 	}
 	//--------------------------------------------------------------------
 	template<typename T, typename char_t>
-	void set_string_array_to_tuple(PyObject* tuple, int cdts_index, const openffi::runtime::string_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(const char_t*, Py_ssize_t)>& c_to_pyobject)
+	void set_string_array_to_tuple(PyObject* tuple, int cdts_index, const metaffi::runtime::string_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(const char_t*, Py_ssize_t)>& c_to_pyobject)
 	{
 		PyObject* list = create_list(arr_wrap);
 		
-		openffi_size index[1] = { 0 };
+		metaffi_size index[1] = { 0 };
 		
 		for(int i=0 ; i<arr_wrap.dimensions_lengths[0] ; i++)
 		{
 			index[0] = i;
 			
 			T str;
-			openffi_size s;
+			metaffi_size s;
 			arr_wrap.get_elem_at(index, 1, &str, &s);
 			
 			PyObject* elem = c_to_pyobject((char_t*)str, (Py_ssize_t)s);
@@ -162,7 +162,7 @@ private:
 	}
 	
 	template<typename T>
-	void set_numeric_array_to_cdts(PyObject* tuple, int index, T*& arr, openffi_size*& dimensions_lengths, openffi_size& dimensions, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
+	void set_numeric_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
@@ -188,7 +188,7 @@ private:
 		}
 		
 		dimensions = 1; // TODO: handle multi-dimensions
-		dimensions_lengths = (openffi_size*)malloc(sizeof(openffi_size));
+		dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
 		dimensions_lengths[0] = size;
 		arr = (T*)malloc(sizeof(T)*size);
 		
@@ -207,7 +207,7 @@ private:
 	}
 	
 	template<typename T, typename char_t>
-	void set_string_to_cdts(PyObject* tuple, int index, T& val, openffi_size& s, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
+	void set_string_to_cdts(PyObject* tuple, int index, T& val, metaffi_size& s, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
@@ -229,7 +229,7 @@ private:
 	}
 	
 	template<typename T, typename char_t>
-	void set_string_array_to_cdts(PyObject* tuple, int index, T*& arr, openffi_size*& strings_lengths, openffi_size*& dimensions_lengths, openffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
+	void set_string_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
@@ -255,10 +255,10 @@ private:
 		}
 		
 		dimensions = 1; // TODO: handle multi-dimensions
-		dimensions_lengths = (openffi_size*)malloc(sizeof(openffi_size));
+		dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
 		dimensions_lengths[0] = size;
 		
-		strings_lengths = (openffi_size*)malloc(sizeof(openffi_size)*size);
+		strings_lengths = (metaffi_size*)malloc(sizeof(metaffi_size)*size);
 		arr = (T*)malloc(sizeof(T)*size);
 		
 		for(int i=0 ; i<size ; i++)

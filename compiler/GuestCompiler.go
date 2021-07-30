@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	compiler "github.com/OpenFFI/plugin-sdk/compiler/go"
+	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -30,7 +30,7 @@ func (this *GuestCompiler) Compile() (outputFileName string, err error){
 	}
 
 	// write to output
-	outputFullFileName := fmt.Sprintf("%v%v%v_OpenFFIGuest.py", this.outputDir, string(os.PathSeparator), this.outputFilename)
+	outputFullFileName := fmt.Sprintf("%v%v%v_MetaFFIGuest.py", this.outputDir, string(os.PathSeparator), this.outputFilename)
 	err = ioutil.WriteFile(outputFullFileName, []byte(code), 0600)
 	if err != nil{
 		return "", fmt.Errorf("Failed to write dynamic library to %v. Error: %v", this.outputDir+this.outputFilename, err)

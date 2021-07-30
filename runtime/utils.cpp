@@ -2,7 +2,7 @@
 #include <utils/scope_guard.hpp>
 #include <Python.h>
 
-using namespace openffi::utils;
+using namespace metaffi::utils;
 
 //--------------------------------------------------------------------
 std::string get_py_error(void)
