@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
+	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -11,13 +11,13 @@ import (
 
 //--------------------------------------------------------------------
 type HostCompiler struct{
-	def *compiler.IDLDefinition
+	def *IDL.IDLDefinition
 	outputDir string
 	hostOptions map[string]string
 	outputFilename string
 }
 //--------------------------------------------------------------------
-func NewHostCompiler(definition *compiler.IDLDefinition, outputDir string, outputFilename string, hostOptions map[string]string) *HostCompiler{
+func NewHostCompiler(definition *IDL.IDLDefinition, outputDir string, outputFilename string, hostOptions map[string]string) *HostCompiler{
 
 	return &HostCompiler{def: definition,
 		outputDir: outputDir,

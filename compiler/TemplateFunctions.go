@@ -2,7 +2,7 @@ package main
 
 import "C"
 import (
-	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
+	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"os"
 )
 
@@ -16,14 +16,14 @@ var templatesFuncMap = map[string]interface{}{
 }
 
 //--------------------------------------------------------------------
-func getMetaFFIType(elem *compiler.FieldDefinition) uint64{
+func getMetaFFIType(elem *IDL.ArgDefinition) uint64{
 
 	var val uint64
 	var found bool
 	if elem.Dimensions == 0 {
-		val, found = compiler.TypeStringToTypeEnum[elem.Type]
+		val, found = IDL.TypeStringToTypeEnum[elem.Type]
 	} else {
-		val, found = compiler.TypeStringToTypeEnum[elem.Type+"_array"]
+		val, found = IDL.TypeStringToTypeEnum[elem.Type+"_array"]
 	}
 
 	if !found{
@@ -41,42 +41,42 @@ func getEnvVar(env string) string{
 	return os.Getenv(env)
 }
 //--------------------------------------------------------------------
-func convertToPythonTypeFromField(definition *compiler.FieldDefinition) string{
+func convertToPythonTypeFromField(definition *IDL.ArgDefinition) string{
 	return convertToPythonType(definition.Type, definition.IsArray())
 }
 //--------------------------------------------------------------------
-func convertToPythonType(metaffiType compiler.MetaFFIType, isArray bool) string{
+func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string{
 
 	var res string
 
 	switch metaffiType{
-		case compiler.FLOAT64: fallthrough
-		case compiler.FLOAT32:
+		case IDL.FLOAT64: fallthrough
+		case IDL.FLOAT32:
 			res = "float"
 
-		case compiler.INT8: fallthrough
-		case compiler.INT16: fallthrough
-		case compiler.INT32: fallthrough
-		case compiler.INT64: fallthrough
-		case compiler.UINT8: fallthrough
-		case compiler.UINT16: fallthrough
-		case compiler.UINT32: fallthrough
-		case compiler.UINT64: fallthrough
-		case compiler.SIZE:
+		case IDL.INT8: fallthrough
+		case IDL.INT16: fallthrough
+		case IDL.INT32: fallthrough
+		case IDL.INT64: fallthrough
+		case IDL.UINT8: fallthrough
+		case IDL.UINT16: fallthrough
+		case IDL.UINT32: fallthrough
+		case IDL.UINT64: fallthrough
+		case IDL.SIZE:
 			res = "int"
 
-		case compiler.BOOL:
+		case IDL.BOOL:
 			res = "bool"
 
-		case compiler.STRING8: fallthrough
-		case compiler.STRING16: fallthrough
-		case compiler.STRING32:
+		case IDL.STRING8: fallthrough
+		case IDL.STRING16: fallthrough
+		case IDL.STRING32:
 			res = "str"
 
-		case compiler.HANDLE:
+		case IDL.HANDLE:
 			res = "py_object"
 
-		case compiler.ANY:
+		case IDL.ANY:
 			res = "Any"
 
 		default:
@@ -90,26 +90,26 @@ func convertToPythonType(metaffiType compiler.MetaFFIType, isArray bool) string{
 	return res
 }
 //--------------------------------------------------------------------
-func convertToCPythonType(metaffiType compiler.MetaFFIType) string{
+func convertToCPythonType(metaffiType IDL.MetaFFIType) string{
 
 
 	switch metaffiType{
-		case compiler.FLOAT64: return "c_double"
-		case compiler.FLOAT32: return "c_float"
-		case compiler.INT8: return "c_byte"
-		case compiler.INT16: return "c_short"
-		case compiler.INT32: return "c_int"
-		case compiler.INT64: return "c_longlong"
-		case compiler.UINT8: return "c_ubyte"
-		case compiler.UINT16: return "c_ushort"
-		case compiler.UINT32: return "c_uint"
-		case compiler.UINT64: return "c_ulonglong"
-		case compiler.SIZE: return "c_ulonglong"
-		case compiler.BOOL: return "c_ubyte"
+		case IDL.FLOAT64: return "c_double"
+		case IDL.FLOAT32: return "c_float"
+		case IDL.INT8: return "c_byte"
+		case IDL.INT16: return "c_short"
+		case IDL.INT32: return "c_int"
+		case IDL.INT64: return "c_longlong"
+		case IDL.UINT8: return "c_ubyte"
+		case IDL.UINT16: return "c_ushort"
+		case IDL.UINT32: return "c_uint"
+		case IDL.UINT64: return "c_ulonglong"
+		case IDL.SIZE: return "c_ulonglong"
+		case IDL.BOOL: return "c_ubyte"
 
-		case compiler.STRING8: return "c_char_p"
-		case compiler.STRING16: return "c_wchar_p"
-		case compiler.STRING32: return "c_wchar_p"
+		case IDL.STRING8: return "c_char_p"
+		case IDL.STRING16: return "c_wchar_p"
+		case IDL.STRING32: return "c_wchar_p"
 
 		default:
 			panic("Unsupported MetaFFI Type "+metaffiType)

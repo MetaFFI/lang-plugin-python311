@@ -6,10 +6,9 @@
 cdt* convert_host_params_to_cdts(PyObject* params, PyObject* params_types)
 {
 	pyscope();
-	
 	if(!PyTuple_Check(params))
 	{
-		PyErr_SetString(PyExc_ValueError, "params_names is not a tuple as expected");
+		PyErr_SetString(PyExc_ValueError, "params is not a tuple as expected");
 		return nullptr;
 	}
 	

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
+	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"html/template"
 	"io/ioutil"
 	"os"
@@ -11,12 +11,12 @@ import (
 
 //--------------------------------------------------------------------
 type GuestCompiler struct{
-	def *compiler.IDLDefinition
+	def *IDL.IDLDefinition
 	outputDir string
 	outputFilename string
 }
 //--------------------------------------------------------------------
-func NewGuestCompiler(definition *compiler.IDLDefinition, outputDir string, outputFilename string) *GuestCompiler{
+func NewGuestCompiler(definition *IDL.IDLDefinition, outputDir string, outputFilename string) *GuestCompiler{
 
 	return &GuestCompiler{def: definition, outputDir: outputDir, outputFilename: outputFilename}
 }
@@ -78,7 +78,7 @@ func (this *GuestCompiler) parseImports() (string, error){
 
 	for _, m := range this.def.Modules{
 		for _, f := range m.Functions{
-			if mod, found := f.PathToForeignFunction["module"]; found{
+			if mod, found := f.FunctionPath["module"]; found{
 
 				importMod := os.ExpandEnv(mod)
 				set[importMod] = true
