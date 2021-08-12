@@ -353,8 +353,8 @@ class {{$c.Name}}:
 
 		return {{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
 	{{end}} {{/* end getter */}}
-	{{if $f.Setter}}
-	def set_{{$f.Setter.Name}}(self):
+	{{if $f.Setter}}{{ $p := index $f.Setter.Parameters 1 }}
+	def {{$f.Setter.Name}}(self, {{$p.Name}} ):
 		global xllr_handle
 		global {{$c.Name}}_{{$f.Setter.Name}}_id
 		global runtime_plugin
@@ -423,7 +423,7 @@ class {{$c.Name}}:
 	{{range $methindex, $f := $c.Methods}}
 	def {{$f.Name}}(self{{range $index, $elem := $f.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}{{end}}):
 		global xllr_handle
-		global {{$f.Name}}_{{$f.Name}}_id
+		global {{$c.Name}}_{{$f.Name}}_id
 		global runtime_plugin
 		global python_plugin_handle
 	
