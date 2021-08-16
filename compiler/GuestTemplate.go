@@ -19,13 +19,22 @@ import {{$i}}{{end}}
 `
 
 const GuestHelperFunctions = `
-xllrHandle = None
 
+"""
+xllrHandle = None
 def load_xllr():
 	global xllrHandle
 	
 	if xllrHandle == None:
 		xllrHandle = cdll.LoadLibrary(get_filename_to_load('xllr'))
+"""
+
+python_plugin_handle = None
+def load_python_plugin():
+	global python_plugin_handle
+	
+	if python_plugin_handle == None:
+		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 
 def get_filename_to_load(fname):
 	osname = platform.system()
@@ -39,21 +48,34 @@ def get_filename_to_load(fname):
 
 const GuestFunctionXLLRTemplate = `
 {{range $mindex, $m := .Modules}}
-# Code to call foreign functions in module {{$m.Name}}
-{{range $findex, $f := $m.Functions}}
-# Call to foreign {{$f.PathToForeignFunction.function}}
-def EntryPoint_{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
-	global xllrHandle
 
-	load_xllr()
+{{range $findex, $f := $m.Globals}}
+{{if $f.Getter}}{{$retvalLength := len $f.Getter.ReturnValues}}
+def EntryPoint_{{$f.Getter.Name}}():
+	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+	return (None, ret_val_types, {{$f.Getter.FunctionPath.module}}.{{$f.Name}})
+
+{{end}}{{/* end getter */}}
+{{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
+def EntryPoint_{{$f.Setter.Name}}(val):
+	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val
+	return (None, ret_val_types)
+
+{{end}}{{/* end setter */}}
+{{end}}{{/* end globals */}}
+
+
+{{range $findex, $f := $m.Functions}}
+# Call to foreign {{$f.Name}}
+def EntryPoint_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+	#global xllrHandle
+
+	#load_xllr()
 
 	try:
 		# call function
-		{{if $f.IsMethod}}
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{(index $f.Parameters 0).Name }}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}}{{if gt $index 1}},{{end}}{{$elem.Name}}{{end}}{{end}})
-		{{else}}
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.PathToForeignFunction.module}}.{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
-		{{end}}
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
@@ -63,6 +85,85 @@ def EntryPoint_{{$f.PathToForeignFunction.function}}({{range $index, $elem := $f
 		errdata = traceback.format_exception(*sys.exc_info())
 		return ('\n'.join(errdata),)
 
-{{end}}
-{{end}}
+{{end}}{{/* End function */}}
+
+{{range $classindex, $c := $m.Classes}}
+{{range $cstrindex, $f := $c.Constructors}}
+def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+	try:
+		# call constructor
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
+		
+		{{$retvalLength := len $f.ReturnValues}}
+		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+
+		return ( None, ret_val_types {{range $index, $elem := $f.ReturnValues}}, {{$elem.Name}}{{end}})
+
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+{{end}}{{/* End Constructors */}}
+
+{{range $findex, $f := $c.Fields}}
+{{if $f.Getter}}
+def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}(obj):
+	try:
+
+		{{$retvalLength := len $f.Getter.ReturnValues}}
+		ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+
+		return (None, ret_val_types, obj.{{$f.Name}})
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+
+{{end}}{{/* End Getter */}}
+{{if $f.Setter}}
+def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}(obj, val):
+	try:
+
+		obj.{{$f.Name}} = val
+
+		{{$retvalLength := len $f.Setter.ReturnValues}}
+		ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+
+		return (None, ret_val_types)
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+
+{{end}}{{/* End Setter */}}
+{{end}}{{/* End Fields */}}
+
+{{range $methindex, $f := $c.Methods}}
+def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+	try:
+		# call method
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{(index $f.Parameters 0).Name }}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}}{{if gt $index 1}},{{end}}{{$elem.Name}}{{end}}{{end}})
+		
+		{{$retvalLength := len $f.ReturnValues}}
+		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+
+		return ( None, ret_val_types {{range $index, $elem := $f.ReturnValues}}, {{$elem.Name}}{{end}})
+		
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+	
+{{end}}{{/* End methods */}}
+
+{{if $c.Releaser}}
+def EntryPoint_{{$c.Name}}_{{$c.Releaser.Name}}({{range $index, $elem := $c.Releaser.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+	try:
+		# call release object
+		{{ $h := index $c.Releaser.Parameters 0 }}
+		python_plugin_handle.release_object({{$h.Name}})
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+{{end}}{{/* End Releaser */}}
+
+{{end}}{{/* End Classes */}}
+
+{{end}}{{/* End modules */}}
 `

@@ -50,3 +50,8 @@ size_t objects_table_impl::size() const
 	return this->objects.size();
 }
 //--------------------------------------------------------------------
+void release_object(metaffi_handle h)
+{
+	objects_table::instance().remove((PyObject*)h);
+}
+//--------------------------------------------------------------------

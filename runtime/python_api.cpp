@@ -152,11 +152,9 @@ void call(
 		}
 		PyObject* pyfunc = it->second;
 		
-		// convert CDT  to Python3
-		
+		// convert CDT to Python3
 		cdts_python3 params_cdts(parameters, parameters_size);
 		PyObject* params = params_cdts.parse();
-		
 		scope_guard sgParams([&]()
 		{
 		 Py_DecRef(params);
@@ -168,11 +166,19 @@ void call(
 		// convert results back to CDT
 		// assume types are as expected
 		
+		if(!res)
+		{
+			std::stringstream ss;
+			ss << "Return NULL from Python function. Return type should be Tuple";
+			handle_err_str((char**) out_err, out_err_length, ss.str());
+			return;
+		}
+		
 		// check if tuple
 		if(!PyTuple_Check(res))
 		{
 			std::stringstream ss;
-			ss << "Return value should be a tuple. Return value type: " << res->ob_type->tp_name;
+			ss << "Return value should be a tuple. Returned value type: " << res->ob_type->tp_name;
 			handle_err_str((char**) out_err, out_err_length, ss.str());
 			return;
 		}

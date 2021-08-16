@@ -260,6 +260,10 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		{
 			auto set_object = [](PyObject* pybj)->metaffi_handle
 			{
+				if(pybj == Py_None){
+					return nullptr;
+				}
+				
 				if(!objects_table::instance().contains(pybj))
 				{
 					// if metaffi handle - pass as it is.

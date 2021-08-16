@@ -5,6 +5,8 @@
 #include <runtime/metaffi_primitives.h>
 #include <shared_mutex>
 
+extern "C" void release_object(metaffi_handle h);
+
 class objects_table_impl
 {
 private:
