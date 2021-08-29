@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -18,6 +19,13 @@ type HostCompiler struct{
 }
 //--------------------------------------------------------------------
 func NewHostCompiler(definition *IDL.IDLDefinition, outputDir string, outputFilename string, hostOptions map[string]string) *HostCompiler{
+
+	if strings.Contains(outputFilename, "#"){
+		toRemove := outputFilename[strings.LastIndex(outputFilename, string(os.PathSeparator))+1:strings.Index(outputFilename, "#")+1]
+		outputFilename = strings.ReplaceAll(outputFilename, toRemove, "")
+	}
+
+	outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")
 
 	return &HostCompiler{def: definition,
 		outputDir: outputDir,

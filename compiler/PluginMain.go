@@ -18,7 +18,7 @@ func NewPython3LanguagePluginMain() *LanguagePluginMain{
 	return this
 }
 //--------------------------------------------------------------------
-func (this *LanguagePluginMain) CompileToGuest(idlDefinition *IDL.IDLDefinition, outputPath string) error{
+func (this *LanguagePluginMain) CompileToGuest(idlDefinition *IDL.IDLDefinition, outputPath string, _ string, _ string) error{
 
 	cmp := NewCompiler(idlDefinition, outputPath)
 	_, err := cmp.CompileGuest()

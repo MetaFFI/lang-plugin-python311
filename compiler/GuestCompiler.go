@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -17,6 +18,13 @@ type GuestCompiler struct{
 }
 //--------------------------------------------------------------------
 func NewGuestCompiler(definition *IDL.IDLDefinition, outputDir string, outputFilename string) *GuestCompiler{
+
+	if strings.Contains(outputFilename, "#"){
+		toRemove := outputFilename[strings.LastIndex(outputFilename, string(os.PathSeparator))+1:strings.Index(outputFilename, "#")+1]
+		outputFilename = strings.ReplaceAll(outputFilename, toRemove, "")
+	}
+
+	outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")
 
 	return &GuestCompiler{def: definition, outputDir: outputDir, outputFilename: outputFilename}
 }
