@@ -166,7 +166,7 @@ private:
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
-		if(obj != Py_None)
+		if(obj == Py_None)
 		{
 			arr = nullptr;
 			dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
@@ -219,7 +219,7 @@ private:
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
-		if(obj != Py_None)
+		if(obj == Py_None)
 		{
 			val = nullptr;
 			s = 0;
@@ -248,7 +248,7 @@ private:
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
-		if(obj != Py_None)
+		if(obj == Py_None)
 		{
 			arr = nullptr;
 			dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
