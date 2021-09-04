@@ -122,7 +122,7 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 			function_id = it.first + 1;
 		}
 	}
-	
+		
 	loaded_functions[function_id] = pyfunc;
 	
 	return function_id;
@@ -157,7 +157,7 @@ void call(
 		PyObject* params = params_cdts.parse();
 		scope_guard sgParams([&]()
 		{
-		 Py_DecRef(params);
+			Py_DecRef(params);
 		});
 		
 		// call function

@@ -2,8 +2,10 @@ package main
 
 import "C"
 import (
+	"fmt"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"os"
+	"strings"
 )
 
 var templatesFuncMap = map[string]interface{}{
@@ -20,11 +22,12 @@ func getMetaFFIType(elem *IDL.ArgDefinition) uint64{
 
 	var val uint64
 	var found bool
-	if elem.Dimensions == 0 {
-		val, found = IDL.TypeStringToTypeEnum[elem.Type]
-	} else {
-		val, found = IDL.TypeStringToTypeEnum[elem.Type+"_array"]
+
+	if elem.Dimensions == 0 && strings.HasSuffix(string(elem.Type), "_array"){
+		panic(fmt.Sprintf("Argument %v type is %v, although its dimensions are larger than 0", elem.Name, elem.Type))
 	}
+
+	val, found = IDL.TypeStringToTypeEnum[elem.Type]
 
 	if !found{
 		panic("Requested type is not supported: "+elem.Type)

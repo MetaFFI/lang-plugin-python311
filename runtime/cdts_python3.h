@@ -166,6 +166,14 @@ private:
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
+		if(obj != Py_None)
+		{
+			arr = nullptr;
+			dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
+			dimensions_lengths[0] = 0;
+			return;
+		}
+		
 		if(!PyList_Check(obj) && !PyTuple_Check(obj))
 		{
 			std::stringstream ss;
@@ -211,6 +219,13 @@ private:
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
+		if(obj != Py_None)
+		{
+			val = nullptr;
+			s = 0;
+			return;
+		}
+		
 		if(!check_pyobject(obj))
 		{
 			std::stringstream ss;
@@ -232,6 +247,13 @@ private:
 	void set_string_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
+		
+		if(obj != Py_None)
+		{
+			arr = nullptr;
+			dimensions_lengths = (metaffi_size*)malloc(sizeof(metaffi_size));
+			dimensions_lengths[0] = 0;
+		}
 		
 		if(!PyList_Check(obj) && !PyTuple_Check(obj))
 		{
@@ -267,7 +289,7 @@ private:
 			if(!check_pyobject(cur_item))
 			{
 				std::stringstream ss;
-				ss << "Expecting string type at index: " << index << ". Given type is: " << cur_item->ob_type->tp_name;
+				ss << "Expecting string type (in array) at index: " << index << ". Given type is: " << cur_item->ob_type->tp_name;
 				throw std::runtime_error(ss.str());
 			}
 			

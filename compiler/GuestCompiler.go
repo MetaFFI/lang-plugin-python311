@@ -85,12 +85,16 @@ func (this *GuestCompiler) parseImports() (string, error){
 	set := make(map[string]bool)
 
 	for _, m := range this.def.Modules{
-		for _, f := range m.Functions{
-			if mod, found := f.FunctionPath["module"]; found{
+		importMod := m.GetFunctionPathSet("module")
+		for _, im := range importMod{
+			set[im] = true
+		}
+	}
 
-				importMod := os.ExpandEnv(mod)
-				set[importMod] = true
-			}
+	for _, m := range this.def.Modules{
+		for _, e := range m.ExternalResources{
+			importMod := os.ExpandEnv(e)
+			set[importMod] = true
 		}
 	}
 
