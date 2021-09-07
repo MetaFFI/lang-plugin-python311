@@ -40,6 +40,7 @@ void initialize_environment()
 	std::stringstream ss;
 	ss << "import sys" << std::endl;
 	ss << "sys.path.append('" << curpath << "')" << std::endl;
+	ss << "sys.path.append('" << getenv("METAFFI_HOME") << "')" << std::endl;
 	ss << "class metaffi_handle:" << std::endl;
 	ss << "\tdef __init__(self, h):" << std::endl;
 	ss << "\t\tself.handle = h" << std::endl << std::endl;
@@ -47,6 +48,7 @@ void initialize_environment()
 	PyRun_SimpleString(ss.str().c_str());
 }
 //--------------------------------------------------------------------
+PyThreadState* _save = NULL;
 void load_runtime(char** err, uint32_t* err_len)
 {
 	// load python runtime
@@ -55,9 +57,12 @@ void load_runtime(char** err, uint32_t* err_len)
 		Py_InitializeEx(1); // 1 means register signal handlers
 	}
 	
+	metaffi::utils::scope_guard save_thread([&](){ _save = PyEval_SaveThread(); });
 	pyscope();
 	
 	initialize_environment();
+	
+	
 }
 //--------------------------------------------------------------------
 void free_runtime(char** err, uint32_t* err_len)
@@ -67,7 +72,7 @@ void free_runtime(char** err, uint32_t* err_len)
 		return;
 	}
 	
-	pyscope();
+	PyEval_RestoreThread(_save);
 	
 	int res = Py_FinalizeEx();
 	if(res == -1)
