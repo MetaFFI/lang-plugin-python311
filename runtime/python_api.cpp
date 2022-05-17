@@ -57,11 +57,9 @@ void load_runtime(char** err, uint32_t* err_len)
 		Py_InitializeEx(1); // 1 means register signal handlers
 	}
 	
-	metaffi::utils::scope_guard save_thread([&](){ _save = PyEval_SaveThread(); });
+	metaffi::utils::scope_guard save_thread([&](){ PyGILState_Ensure(); _save = PyEval_SaveThread();});
 	pyscope();
-	
 	initialize_environment();
-	
 	
 }
 //--------------------------------------------------------------------
@@ -138,11 +136,11 @@ void free_function(int64_t function_id, char** err, uint32_t* err_len)
 	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
-void call(
+void xcall(
 	int64_t function_id,
-	cdt* parameters, uint64_t parameters_size,
-	cdt* return_values, uint64_t return_values_size,
-	char** out_err, uint64_t* out_err_length
+	cdt* parameters, uint64_t parameters_len,
+	cdt* return_values, uint64_t return_values_len,
+	char** out_err, uint64_t* out_err_len
 )
 {
 	try
@@ -152,19 +150,17 @@ void call(
 		auto it = loaded_functions.find(function_id);
 		if (it == loaded_functions.end())
 		{
-			handle_err((char**) out_err, out_err_length, "Requested function has not been loaded");
+			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
 			return;
 		}
 		PyObject* pyfunc = it->second;
-		
 		// convert CDT to Python3
-		cdts_python3 params_cdts(parameters, parameters_size);
+		cdts_python3 params_cdts(parameters, parameters_len);
 		PyObject* params = params_cdts.parse();
 		scope_guard sgParams([&]()
 		{
 			Py_DecRef(params);
 		});
-		
 		// call function
 		PyObject* res = PyObject_CallObject(pyfunc, params);
 		
@@ -175,7 +171,7 @@ void call(
 		{
 			std::stringstream ss;
 			ss << "Return NULL from Python function. Return type should be Tuple";
-			handle_err_str((char**) out_err, out_err_length, ss.str());
+			handle_err_str((char**) out_err, out_err_len, ss.str());
 			return;
 		}
 		
@@ -184,7 +180,7 @@ void call(
 		{
 			std::stringstream ss;
 			ss << "Return value should be a tuple. Returned value type: " << res->ob_type->tp_name;
-			handle_err_str((char**) out_err, out_err_length, ss.str());
+			handle_err_str((char**) out_err, out_err_len, ss.str());
 			return;
 		}
 		
@@ -201,20 +197,20 @@ void call(
 		PyObject* tuple_types = PyTuple_GetItem(res, 1);
 		if(!PyTuple_Check(tuple_types))
 		{
-			handle_err((char**) out_err, out_err_length, "tuple_types is not a tuple");
+			handle_err((char**) out_err, out_err_len, "tuple_types is not a tuple");
 			return;
 		}
 		
 		// 3rd - nth - return value;
-		cdts_python3 return_cdts(return_values, return_values_size);
+		cdts_python3 return_cdts(return_values, return_values_len);
 		return_cdts.build(res, tuple_types, 2);
 		
 	}
 	catch(std::exception& err)
 	{
-		*out_err_length = strlen(err.what());
-		*out_err = (char*)calloc(sizeof(char), *out_err_length+1);
-		strncpy(*out_err, err.what(), *out_err_length);
+		*out_err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), *out_err_len + 1);
+		strncpy(*out_err, err.what(), *out_err_len);
 	}
 }
 //--------------------------------------------------------------------

@@ -12,7 +12,7 @@ cdts_python3::cdts_python3(cdt* cdts, metaffi_size cdts_length)
 //--------------------------------------------------------------------
 cdts_python3::cdts_python3(metaffi_size cdt_count)
 {
-	this->cdts = std::make_unique<cdts_wrapper>(cdt_count);
+	this->cdts = std::make_unique<cdts_wrapper>((cdt*)malloc(sizeof(cdt)*cdt_count), cdt_count);
 }
 //--------------------------------------------------------------------
 cdt* cdts_python3::get_cdts()

@@ -155,7 +155,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{
 {{if $c.Releaser}}
 def EntryPoint_{{$c.Name}}_{{$c.Releaser.Name}}({{range $index, $elem := $c.Releaser.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
-		# call release object
+		# xcall release object
 		{{ $h := index $c.Releaser.Parameters 0 }}
 		python_plugin_handle.release_object({{$h.Name}})
 	except Exception as e:

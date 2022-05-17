@@ -43,7 +43,7 @@ def load_xllr_and_python_plugin():
 
 	# set restypes
 	python_plugin_handle.convert_host_params_to_cdts.argstype = [py_object, py_object]
-	python_plugin_handle.convert_host_return_values_from_cdts.argstype = [py_object, py_object]
+	python_plugin_handle.convert_host_return_values_from_cdts.argstype = [c_void_p, c_uint64]
 	python_plugin_handle.convert_host_return_values_from_cdts.restype = py_object
 
 def get_filename_to_load(fname):
@@ -300,7 +300,7 @@ class {{$c.Name}}:
 		
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 						c_ulonglong({{$c.Name}}_{{$f.Name}}_id), \
 						c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
 						c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \

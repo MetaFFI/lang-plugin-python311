@@ -19,10 +19,8 @@ cdt* convert_host_params_to_cdts(PyObject* params, PyObject* params_types)
 	}
 	
 	// get the data from the local objects
-	cdts_python3 cdts(PyTuple_Size(params));
-	
+	cdts_python3 cdts( PyTuple_Size(params));
 	cdts.build(params, params_types, 0);
-	
 	return cdts.get_cdts();
 }
 //--------------------------------------------------------------------

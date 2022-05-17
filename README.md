@@ -33,7 +33,7 @@ By parsing `.proto` file using *ProtoParser* (`CLI/utils/ProtoParser.go`) the pl
 
 Compiles IDL to **Python3 module** (`.py` file) called from XLLR to the foreign function.
 
-The function assumes Protobuf serialization code is available in the output path. MetaFFI makes sure of that using `compile_serialization` function. Notice MetaFFI will not call `compile_serialization` function if `--skip-compile-serialization` option switch is set.
+The function assumes Protobuf serialization code is available in the output path. MetaFFI makes sure of that using `compile_serialization` function. Notice MetaFFI will not xcall `compile_serialization` function if `--skip-compile-serialization` option switch is set.
 
 Steps of the function:
 1. Parse `.proto` modules (i.e. Proto `service`s)
@@ -60,7 +60,7 @@ Steps of the function:
 2. Creates TemplateParameters instance with the parsed data
 3. Generates the foreign function stubs code using **HostTemplate** and Go's `test/template` package. HostTemplate generates for each module and for each function within the module a "foreign function" stub. The stub returns the return values of the foreign function & wrap the code in try/except. The function does the following:
     1. Serialize parameters using Protobuf
-    2. Call XLLR which passes the **foreign function stub** as the function to call & receive return values or error
+    2. Call XLLR which passes the **foreign function stub** as the function to xcall & receive return values or error
     3. In case of error, return raise `RuntimeError`
     4. Deserialize the return values
     5. Return result to the caller

@@ -31,7 +31,7 @@ std::string get_py_error(void)
 	PyObject* msg = PyObject_CallMethod(pvalue, "__str__", nullptr);
 	if(!msg)
 	{
-		return std::string("Failed to get error description: call to method \"__str__\" failed");
+		return std::string("Failed to get error description: xcall to method \"__str__\" failed");
 	}
 	
 	scope_guard sgmsg([&]()

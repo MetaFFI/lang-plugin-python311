@@ -64,12 +64,12 @@ def f(paramsVal: bytes) -> Tuple[bytes,str]
 *out_params* are not supported and ignored in Python3 plugin.
 
 ```
-void call(
+void xcall(
     
     // module foreign function is in. lazy load module if not loaded.
     const char* module_name, uint32_t module_name_len,
     
-    // function name to call
+    // function name to xcall
     const char* func_name, uint32_t func_name_len,
     
     // serialized parameters
