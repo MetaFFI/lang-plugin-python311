@@ -43,8 +43,10 @@ def load_xllr_and_python_plugin():
 
 	# set restypes
 	python_plugin_handle.convert_host_params_to_cdts.argstype = [py_object, py_object]
+	python_plugin_handle.convert_host_params_to_cdts.restype = c_void_p
 	python_plugin_handle.convert_host_return_values_from_cdts.argstype = [c_void_p, c_uint64]
 	python_plugin_handle.convert_host_return_values_from_cdts.restype = py_object
+	xllr_handle.alloc_cdts_buffer.restype = c_void_p
 
 def get_filename_to_load(fname):
 	osname = platform.system()
@@ -180,11 +182,11 @@ def {{$f.Getter.Name}}():
 	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Getter.ReturnValues}})
 
-	# call function
+	# xcall function
 	
 	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+	xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 					c_ulonglong({{$f.Getter.Name}}_id), \
 					c_void_p(parameters_buffer), c_ulonglong({{len $f.Getter.Parameters}}), \
 					c_void_p(return_values_buffer), c_ulonglong({{len $f.Getter.ReturnValues}}), \
@@ -214,11 +216,11 @@ def set_{{$f.Setter.Name}}():
 	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Setter.ReturnValues}})
 
-	# call function
+	# xcall function
 	
 	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+	xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 					c_ulonglong({{$f.Setter.Name}}_id), \
 					c_void_p(parameters_buffer), c_ulonglong({{len $f.Setter.Parameters}}), \
 					c_void_p(return_values_buffer), c_ulonglong({{len $f.Setter.ReturnValues}}), \
@@ -255,11 +257,11 @@ def {{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{
 	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
 
-	# call function
+	# xcall function
 	
 	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+	xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 					c_ulonglong({{$f.Name}}_id), \
 					c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
 					c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \
@@ -296,7 +298,7 @@ class {{$c.Name}}:
 		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
 	
-		# call function
+		# xcall function
 		
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
@@ -332,11 +334,11 @@ class {{$c.Name}}:
 		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Getter.ReturnValues}})
 	
-		# call function
+		# xcall function
 		
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 						c_ulonglong({{$c.Name}}_{{$f.Getter.Name}}_id), \
 						c_void_p(parameters_buffer), c_ulonglong({{len $f.Getter.Parameters}}), \
 						c_void_p(return_values_buffer), c_ulonglong({{len $f.Getter.ReturnValues}}), \
@@ -366,11 +368,11 @@ class {{$c.Name}}:
 		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Setter.ReturnValues}})
 	
-		# call function
+		# xcall function
 		
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 						c_ulonglong({{$c.Name}}_{{$f.Setter.Name}}_id), \
 						c_void_p(parameters_buffer), c_ulonglong({{len $f.Setter.Parameters}}), \
 						c_void_p(return_values_buffer), c_ulonglong({{len $f.Setter.ReturnValues}}), \
@@ -403,11 +405,11 @@ class {{$c.Name}}:
 		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 		return_values_buffer = xllr_handle.alloc_cdts_buffer(0)
 	
-		# call function
+		# xcall function
 		
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 						c_ulonglong({{$c.Name}}_{{$f.Name}}_id), \
 						c_void_p(parameters_buffer), c_ulonglong(1), \
 						c_void_p(return_values_buffer), c_ulonglong(0), \
@@ -433,11 +435,11 @@ class {{$c.Name}}:
 		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
 		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
 	
-		# call function
+		# xcall function
 		
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.call(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
+		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
 						c_ulonglong({{$c.Name}}_{{$f.Name}}_id), \
 						c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
 						c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \

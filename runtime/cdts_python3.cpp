@@ -107,7 +107,7 @@ PyObject* cdts_python3::parse()
 		{
 			auto get_object = [](metaffi_handle h)->PyObject*
 			{
-				if(h == NULL){ return Py_None; }
+				if(h == nullptr){ return Py_None; }
 				
 				if(!objects_table::instance().contains((PyObject*)h))
 				{

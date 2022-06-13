@@ -1,6 +1,13 @@
 #include "utils.h"
 #include <utils/scope_guard.hpp>
+
+#ifdef _DEBUG
+#undef _DEBUG
 #include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
 
 using namespace metaffi::utils;
 

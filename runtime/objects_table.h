@@ -1,9 +1,16 @@
 #pragma once
 #include <utils/singleton.hpp>
-#include <Python.h>
 #include <set>
 #include <runtime/metaffi_primitives.h>
 #include <shared_mutex>
+
+#ifdef _DEBUG
+#undef _DEBUG
+#include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
 
 extern "C" void release_object(metaffi_handle h);
 

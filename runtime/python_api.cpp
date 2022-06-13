@@ -5,10 +5,17 @@
 #include <utils/foreign_function.h>
 #include "utils.h"
 #include <boost/filesystem.hpp>
-#include <Python.h>
 #include <sstream>
 #include <map>
 #include "cdts_python3.h"
+
+#ifdef _DEBUG
+#undef _DEBUG
+#include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
 
 using namespace metaffi::utils;
 

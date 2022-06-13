@@ -153,7 +153,7 @@ def f1(p1: float, p2: float, p3: int, p4: int, p5: int, p6: int, p7: int, p8: in
 //--------------------------------------------------------------------
 func TestGuest(t *testing.T){
 
-	def, err := IDL.NewIDLDefinition(idl_guest)
+	def, err := IDL.NewIDLDefinitionFromJSON(idl_guest)
 	if err != nil{
 		t.Fatal(err)
 		return

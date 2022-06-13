@@ -1,7 +1,13 @@
 #pragma once
 #include <runtime/cdts_wrapper.h>
 #include <memory>
+#ifdef _DEBUG
+#undef _DEBUG
 #include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
 
 class cdts_python3
 {
