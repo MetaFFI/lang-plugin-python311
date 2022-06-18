@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <corecrt.h> // <-- required as a python bug workaround (https://github.com/microsoft/onnxruntime/issues/9735)
+#endif
 
 #include "py_metaffi_handle.h"
 #include "utils.h"
