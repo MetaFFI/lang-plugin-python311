@@ -33,7 +33,7 @@ int call_guest_test()
 	return ((int (*) (const char*, const char*))res)("xllr.python3", "package=GuestCode,function=f1,metaffi_guest_lib=test_MetaFFIGuest,entrypoint_function=EntryPoint_f1");
 }
 #else
-#include <windows.h>
+#include <Windows.h>
 int call_guest_test()
 {
 	const char* metaffi_home = getenv("METAFFI_HOME");
@@ -59,12 +59,7 @@ int call_guest_test()
 #endif
 */
 import "C"
-import (
-	"os"
-)
 
 func CallHostMock() int{
-	println(os.Getpid())
-	//time.Sleep(1*time.Minute)
 	return int(C.call_guest_test())
 }

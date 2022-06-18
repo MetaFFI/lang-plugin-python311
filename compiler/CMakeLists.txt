@@ -17,8 +17,12 @@ add_custom_command(TARGET ${target_name}
 
 
 # Unitest
-add_test(NAME compiler_python3_gotest
-		COMMAND ${GOEXEC} test
+add_test(NAME compiler_python3_gotest_host
+		COMMAND ${GOEXEC} test --run Host
+		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+
+add_test(NAME compiler_python3_gotest_guest
+		COMMAND ${GOEXEC} test --run Guest
 		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
 # Copy to metaffi directory

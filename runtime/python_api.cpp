@@ -8,6 +8,7 @@
 #include <sstream>
 #include <map>
 #include "cdts_python3.h"
+#include <regex>
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -46,13 +47,16 @@ void initialize_environment()
 	std::string curpath(boost::filesystem::current_path().string());
 	std::stringstream ss;
 	ss << "import sys" << std::endl;
-	ss << "sys.path.append('" << curpath << "')" << std::endl;
-	ss << "sys.path.append('" << getenv("METAFFI_HOME") << "')" << std::endl;
 	ss << "class metaffi_handle:" << std::endl;
 	ss << "\tdef __init__(self, h):" << std::endl;
 	ss << "\t\tself.handle = h" << std::endl << std::endl;
-	
 	PyRun_SimpleString(ss.str().c_str());
+	
+	PyObject *sys_path = PySys_GetObject("path");
+	PyList_Append(sys_path, PyUnicode_FromString(curpath.c_str()));
+	PyList_Append(sys_path, PyUnicode_FromString(getenv("METAFFI_HOME")));
+	PySys_SetObject("path", sys_path);
+	
 }
 //--------------------------------------------------------------------
 PyThreadState* _save = NULL;
@@ -97,8 +101,6 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 	pyscope();
 	
 	metaffi::utils::function_path_parser fp(function_path);
-	
-	// TODO: can pymod be released?!
 	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_metaffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
 	
 	if(!pymod)
