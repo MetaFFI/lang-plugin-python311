@@ -21,5 +21,5 @@ else()
 	set(BOOST_ROOT          /usr/include/boost)
 endif()
 
-include(compiler/CMakeLists.txt)
-include(runtime/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/compiler/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/runtime/CMakeLists.txt)

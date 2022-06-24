@@ -27,7 +27,7 @@ func getMetaFFIType(elem *IDL.ArgDefinition) uint64 {
 		panic(fmt.Sprintf("Argument %v type is %v, although its dimensions are larger than 0", elem.Name, elem.Type))
 	}
 	
-	if elem.Dimensions > 0 {
+	if elem.Dimensions > 0 && !strings.HasSuffix(string(elem.Type), "_array") {
 		elem.Type = IDL.MetaFFIType(string(elem.Type) + "_array")
 	}
 	

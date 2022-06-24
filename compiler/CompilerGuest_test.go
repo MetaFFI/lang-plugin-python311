@@ -148,59 +148,97 @@ def f1(p1: float, p2: float, p3: int, p4: int, p5: int, p6: int, p7: int, p8: in
 `
 
 //--------------------------------------------------------------------
-func TestGuest(t *testing.T){
-
+func TestGuest(t *testing.T) {
+	
 	def, err := IDL.NewIDLDefinitionFromJSON(idl_guest)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 		return
 	}
-
+	
 	_ = os.RemoveAll("temp")
-
+	
 	err = os.Mkdir("temp", 0700)
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 		return
 	}
-
-	defer func(){
+	
+	defer func() {
 		err = os.RemoveAll("temp")
-		if err != nil{
+		if err != nil {
 			t.Fatal(err)
 			return
 		}
 	}()
-
+	
 	err = ioutil.WriteFile("./temp/GuestCode.py", []byte(GuestCode), 0600)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-
+	
 	cmp := NewCompiler(def, "temp")
 	_, err = cmp.CompileGuest()
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 		return
 	}
-
+	
 	err = os.Chdir("temp")
-	if err != nil{
+	if err != nil {
 		t.Fatal(err)
 	}
-
-	defer func(){
+	
+	defer func() {
 		err = os.Chdir("..")
-		if err != nil{
+		if err != nil {
 			t.Fatal(err)
 			return
 		}
 	}()
-
-
-	if CallHostMock() != 0{
+	
+	if CallHostMock() != 0 {
 		t.Fatal("Failed calling guest")
 	}
 }
+
+//--------------------------------------------------------------------
+func TestPyExtractorGuest(t *testing.T) {
+	
+	const pathIDLPlugin = "../../idl-plugin-py/"
+	
+	idlPyExtractor, err := os.ReadFile(pathIDLPlugin + "py_extractor.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	def, err := IDL.NewIDLDefinitionFromJSON(string(idlPyExtractor))
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	err = os.Mkdir("temp", 0700)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	
+	defer func() {
+		err = os.RemoveAll("temp")
+		if err != nil {
+			t.Fatal(err)
+			return
+		}
+	}()
+	
+	cmp := NewCompiler(def, "temp")
+	_, err = cmp.CompileGuest()
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	
+}
+
 //--------------------------------------------------------------------
