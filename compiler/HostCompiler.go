@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
-	"html/template"
+	"text/template"
 	"io/ioutil"
 	"os"
 	"path/filepath"

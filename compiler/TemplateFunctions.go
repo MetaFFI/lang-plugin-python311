@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -15,6 +16,142 @@ var templatesFuncMap = map[string]interface{}{
 	"GetEnvVar":                    getEnvVar,
 	"Add":                          add,
 	"GetMetaFFIType":               getMetaFFIType,
+	"XCall":                        xcall,
+	"GenerateCodeAllocateCDTS":     generateCodeAllocateCDTS,
+	"GenerateCodeXCall":            generateCodeXCall,
+	"GenerateCodeReturnValues":     generateCodeReturnValues,
+	"GenerateCodeGlobals":          generateCodeGlobals,
+	"GenerateCodeReturn":           generateReturn,
+}
+
+//--------------------------------------------------------------------
+func generateCodeGlobals(name string, indent int) string {
+
+	indentStr := ""
+	for i := 0 ; i<indent ; i++{
+		indentStr += "\t"
+	}
+
+	code := fmt.Sprintf("global xllr_handle\n%vglobal %v_id\n%vglobal runtime_plugin\n%vglobal python_plugin_handle", indentStr, name, indentStr, indentStr)
+	
+	return code
+}
+
+//--------------------------------------------------------------------
+func generateReturn(retvals []*IDL.ArgDefinition) string {
+	code := "return "
+	retcode := make([]string, 0)
+	for i, _ := range retvals {
+		retcode = append(retcode, fmt.Sprintf("ret_vals[%v]", i))
+	}
+	code += strings.Join(retcode, ",")
+	
+	return code
+}
+
+//--------------------------------------------------------------------
+func generateCodeReturnValues(parameters []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
+	/*
+		{{if gt $retLength 0}}
+		# unpack results
+		ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.Getter.ReturnValues}})
+		return {{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
+		{{end}}
+	*/
+	
+	if len(retvals) == 0 {
+		return ""
+	}
+	
+	var retvalsIndex int
+	if len(parameters) == 0 {
+		retvalsIndex = 0
+	} else {
+		retvalsIndex = 1
+	}
+	
+	return fmt.Sprintf(`ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(xcall_params), %v)`, retvalsIndex)
+	
+}
+
+//--------------------------------------------------------------------
+func generateCodeXCall(className string, funcName string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string {
+	/*
+		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
+		out_error_len = ({{ConvertToCPythonType "size"}})(0)
+		xllr_handle.{{XCall $f.Getter.Parameters $f.Getter.ReturnValues}}(c_ulonglong({{$f.Getter.Name}}_id), c_void_p(xcall_params), out_error, byref(out_error_len))
+	
+		# check for error
+		if out_error != None and out_error[0] != None:
+			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
+			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
+	*/
+	indentStr := ""
+    for i := 0 ; i<indent ; i++{
+        indentStr += "\t"
+    }
+
+	var name string
+	if className != "" {
+		name += className + "_"
+	}
+	name += funcName
+	
+	code := fmt.Sprintf("out_error = (%v * 1)(0)\n", convertToCPythonType("string8"))
+	code += fmt.Sprintf("%vout_error_len = (%v)(0)\n", indentStr, convertToCPythonType("size"))
+	if len(params) > 0 || len(retvals) > 0{
+		code += fmt.Sprintf("%vxllr_handle.%v(c_ulonglong(%v_id), c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, xcall(params, retvals), name)
+	} else {
+		code += fmt.Sprintf("%vxllr_handle.%v(c_ulonglong(%v_id), out_error, byref(out_error_len))", indentStr, xcall(params, retvals), name)
+	}
+	code += fmt.Sprintf("%v\n", indentStr)
+	code += fmt.Sprintf("%vif out_error != None and out_error[0] != None:\n", indentStr)
+	code += fmt.Sprintf("%v\terr_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')\n", indentStr)
+	code += fmt.Sprintf("%v\traise RuntimeError('\\n'+err_msg.replace(\"\\\\n\", \"\\n\"))\n", indentStr)
+	
+	return code
+}
+
+//--------------------------------------------------------------------
+func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, isObjectMember bool) string {
+	/*
+		{{$paramsLength := len $f.Getter.Parameters}}
+		{{$retLength := len $f.Getter.ReturnValues}}
+	
+		{{if gt $paramsLength 0}}
+		params = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{if eq $paramsLength 1}},{{end}}{{end}}) // For object, ignore first parameter and use self.obj_handle
+		params_types = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
+		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), {{$retLength}})
+		{{else if gt $retLength 0}}
+		xcall_params = xllr_handle.alloc_cdts_buffer(0, {{len $f.Getter.ReturnValues}})
+		{{end}}
+	*/
+	
+	if len(params) > 0 { // use convert_host_params_to_cdts to allocate CDTS
+		code := `xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object((%v,)), py_object((%v,)), %v)`
+		
+		paramsNames := make([]string, 0)
+		paramsTypes := make([]string, 0)
+		
+		for i, p := range params {
+
+			if isObjectMember && i == 0{
+				paramsNames = append(paramsNames, "self.obj_handle")
+			} else {
+				paramsNames = append(paramsNames, fmt.Sprintf("%v", p.Name))
+			}
+
+			paramsTypes = append(paramsTypes, strconv.FormatUint(getMetaFFIType(p), 10))
+		}
+
+		return fmt.Sprintf(code, strings.Join(paramsNames, ","), strings.Join(paramsTypes, ","), len(retvals))
+	} else if len(retvals) > 0{
+		code := `xcall_params = xllr_handle.alloc_cdts_buffer(0, %v)`
+		return fmt.Sprintf(code, len(retvals))
+	} else {
+		return ""
+	}
+
 }
 
 //--------------------------------------------------------------------
@@ -53,6 +190,21 @@ func getEnvVar(env string) string {
 //--------------------------------------------------------------------
 func convertToPythonTypeFromField(definition *IDL.ArgDefinition) string {
 	return convertToPythonType(definition.Type, definition.IsArray())
+}
+
+//--------------------------------------------------------------------
+func xcall(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
+	
+	// name of xcall
+	if len(params) > 0 && len(retvals) > 0 {
+		return "xcall_params_ret"
+	} else if len(params) > 0 {
+		return "xcall_params_no_ret"
+	} else if len(retvals) > 0 {
+		return "xcall_no_params_ret"
+	} else {
+		return "xcall_no_params_no_ret"
+	}
 }
 
 //--------------------------------------------------------------------

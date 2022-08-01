@@ -17,7 +17,8 @@
 #else
 #include <Python.h>
 #endif
-
+#include <chrono>
+#include <ctime>
 using namespace metaffi::utils;
 
 #define handle_err(err, err_len, desc) \
@@ -91,7 +92,7 @@ void free_runtime(char** err, uint32_t* err_len)
 	}
 }
 //--------------------------------------------------------------------
-int64_t load_function(const char* function_path, uint32_t function_path_len, char** err, uint32_t* err_len)
+int64_t load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)
 {
 	if(!Py_IsInitialized())
 	{
@@ -118,13 +119,13 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, cha
 		handle_err((char**)err, err_len, "Cannot find function in module!");
 		return -1;
 	}
-
+#ifdef _DEBUG
 	if(!PyCallable_Check(pyfunc))
 	{
 		handle_err((char**)err, err_len, "Requested function found in module, but it is not a function!");
 		return -1;
 	}
-	
+#endif
 	// place in loaded functions
 	int64_t function_id = loaded_functions.empty() ? 0 : -1;
 	for(auto& it : loaded_functions) // make function_id the highest number
@@ -145,11 +146,90 @@ void free_function(int64_t function_id, char** err, uint32_t* err_len)
 	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
-void xcall(
-	int64_t function_id,
-	cdt* parameters, uint64_t parameters_len,
-	cdt* return_values, uint64_t return_values_len,
-	char** out_err, uint64_t* out_err_len
+void xcall_params_ret(
+		int64_t function_id,
+		cdts params_ret[2],
+		char** out_err, uint64_t* out_err_len
+)
+{
+	try
+	{
+		pyscope();
+		auto it = loaded_functions.find(function_id);
+		if (it == loaded_functions.end())
+		{
+			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
+			return;
+		}
+		
+		PyObject* pyfunc = it->second;
+		// convert CDT to Python3
+		cdts_python3 params_cdts(params_ret[0].pcdt, params_ret[0].len);
+		PyObject* params = params_cdts.parse();
+		scope_guard sgParams([&]()
+		{
+			Py_DecRef(params);
+		});
+		
+		// call function
+		PyObject* res = PyObject_CallObject(pyfunc, params);
+		
+		// convert results back to CDT
+		// assume types are as expected
+		
+		if(!res)
+		{
+			std::stringstream ss;
+			ss << "Return NULL from Python function. Return type should be Tuple. Error: " << get_py_error();
+			handle_err_str((char**) out_err, out_err_len, ss.str());
+			return;
+		}
+		
+		// check if tuple
+#ifdef _DEBUG
+		if(!PyTuple_Check(res))
+		{
+			std::stringstream ss;
+			ss << "Return value should be a tuple. Returned value type: " << res->ob_type->tp_name;
+			handle_err_str((char**) out_err, out_err_len, ss.str());
+			return;
+		}
+#endif
+		// check 1st return value if error
+		PyObject* returned_err = PyTuple_GetItem(res, 0);
+		if(returned_err != Py_None)
+		{
+			Py_ssize_t err_len;
+			const char* err = PyUnicode_AsUTF8AndSize(returned_err, &err_len);
+			throw std::runtime_error(std::string(err, err_len));
+		}
+		
+		// check 2nd return value is a tuple (of types)
+		PyObject* tuple_types = PyTuple_GetItem(res, 1);
+#ifdef _DEBUG
+		if(!PyTuple_Check(tuple_types))
+		{
+			handle_err((char**) out_err, out_err_len, "tuple_types is not a tuple");
+			return;
+		}
+#endif
+		// 3rd - nth - return value;
+		cdts_python3 return_cdts(params_ret[1].pcdt, params_ret[1].len);
+		return_cdts.build(res, tuple_types, 2);
+		
+	}
+	catch(std::exception& err)
+	{
+		*out_err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), *out_err_len + 1);
+		strncpy(*out_err, err.what(), *out_err_len);
+	}
+}
+//--------------------------------------------------------------------
+void xcall_no_params_ret(
+		int64_t function_id,
+		cdts return_values[1],
+		char** out_err, uint64_t* out_err_len
 )
 {
 	try
@@ -162,29 +242,24 @@ void xcall(
 			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
 			return;
 		}
+		
 		PyObject* pyfunc = it->second;
-		// convert CDT to Python3
-		cdts_python3 params_cdts(parameters, parameters_len);
-		PyObject* params = params_cdts.parse();
-		scope_guard sgParams([&]()
-		{
-			Py_DecRef(params);
-		});
+		
 		// call function
-		PyObject* res = PyObject_CallObject(pyfunc, params);
+		
+		PyObject* res = PyObject_CallObject(pyfunc, nullptr);
 		
 		// convert results back to CDT
 		// assume types are as expected
-		
 		if(!res)
 		{
 			std::stringstream ss;
-			ss << "Return NULL from Python function. Return type should be Tuple";
+			ss << "Return NULL from Python function. Return type should be Tuple. Error: " << get_py_error();
 			handle_err_str((char**) out_err, out_err_len, ss.str());
 			return;
 		}
-		
 		// check if tuple
+#ifdef _DEBUG
 		if(!PyTuple_Check(res))
 		{
 			std::stringstream ss;
@@ -192,7 +267,7 @@ void xcall(
 			handle_err_str((char**) out_err, out_err_len, ss.str());
 			return;
 		}
-		
+#endif
 		// check 1st return value if error
 		PyObject* returned_err = PyTuple_GetItem(res, 0);
 		if(returned_err != Py_None)
@@ -204,16 +279,140 @@ void xcall(
 		
 		// check 2nd return value is a tuple (of types)
 		PyObject* tuple_types = PyTuple_GetItem(res, 1);
+#ifdef _DEBUG
 		if(!PyTuple_Check(tuple_types))
 		{
 			handle_err((char**) out_err, out_err_len, "tuple_types is not a tuple");
 			return;
 		}
-		
+#endif
 		// 3rd - nth - return value;
-		cdts_python3 return_cdts(return_values, return_values_len);
+		cdts_python3 return_cdts(return_values[0].pcdt, return_values[0].len);
 		return_cdts.build(res, tuple_types, 2);
 		
+	}
+	catch(std::exception& err)
+	{
+		*out_err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), *out_err_len + 1);
+		strncpy(*out_err, err.what(), *out_err_len);
+	}
+}
+//--------------------------------------------------------------------
+void xcall_params_no_ret(
+		int64_t function_id,
+		cdts parameters[1],
+		char** out_err, uint64_t* out_err_len
+)
+{
+	try
+	{
+		pyscope();
+		auto it = loaded_functions.find(function_id);
+		if (it == loaded_functions.end())
+		{
+			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
+			return;
+		}
+		
+		PyObject* pyfunc = it->second;
+		// convert CDT to Python3
+		cdts_python3 params_cdts(parameters[0].pcdt, parameters[0].len);
+		PyObject* params = params_cdts.parse();
+		scope_guard sgParams([&]()
+		                     {
+			                     Py_DecRef(params);
+		                     });
+		
+		// call function
+		PyObject* res = PyObject_CallObject(pyfunc, params);
+		
+		// convert results back to CDT
+		// assume types are as expected
+		
+		if(!res)
+		{
+			std::stringstream ss;
+			ss << "Return NULL from Python function. Return type should be Tuple. Error: " << get_py_error();
+			handle_err_str((char**) out_err, out_err_len, ss.str());
+			return;
+		}
+		
+		// check if tuple
+#ifdef _DEBUG
+		if(!PyTuple_Check(res))
+		{
+			std::stringstream ss;
+			ss << "Return value should be a tuple. Returned value type: " << res->ob_type->tp_name;
+			handle_err_str((char**) out_err, out_err_len, ss.str());
+			return;
+		}
+#endif
+		// check 1st return value if error
+		PyObject* returned_err = PyTuple_GetItem(res, 0);
+		if(returned_err != Py_None)
+		{
+			Py_ssize_t err_len;
+			const char* err = PyUnicode_AsUTF8AndSize(returned_err, &err_len);
+			throw std::runtime_error(std::string(err, err_len));
+		}
+		
+	}
+	catch(std::exception& err)
+	{
+		*out_err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), *out_err_len + 1);
+		strncpy(*out_err, err.what(), *out_err_len);
+	}
+}
+//--------------------------------------------------------------------
+void xcall_no_params_no_ret(
+		int64_t function_id,
+		char** out_err, uint64_t* out_err_len
+)
+{
+	try
+	{
+		pyscope();
+		auto it = loaded_functions.find(function_id);
+		if (it == loaded_functions.end())
+		{
+			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
+			return;
+		}
+		
+		PyObject* pyfunc = it->second;
+		
+		// call function
+		PyObject* res = PyObject_CallObject(pyfunc, nullptr);
+		
+		// convert results back to CDT
+		// assume types are as expected
+		if(!res)
+		{
+			std::stringstream ss;
+			ss << "Return NULL from Python function. Return type should be Tuple. Error: " << get_py_error();
+			handle_err_str((char**) out_err, out_err_len, ss.str());
+			return;
+		}
+		// check if tuple
+#ifdef _DEBUG
+		if(!PyTuple_Check(res))
+		{
+			std::stringstream ss;
+			ss << "Return value should be a tuple. Returned value type: " << res->ob_type->tp_name;
+			handle_err_str((char**) out_err, out_err_len, ss.str());
+			return;
+		}
+#endif
+		// check 1st return value if error
+		PyObject* returned_err = PyTuple_GetItem(res, 0);
+		if(returned_err != Py_None)
+		{
+			Py_ssize_t err_len;
+			const char* err = PyUnicode_AsUTF8AndSize(returned_err, &err_len);
+			throw std::runtime_error(std::string(err, err_len));
+		}
 	}
 	catch(std::exception& err)
 	{

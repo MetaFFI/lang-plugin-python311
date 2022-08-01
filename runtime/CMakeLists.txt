@@ -20,9 +20,9 @@ target_link_libraries(${target_name} Boost::filesystem Python3::Python)
 target_link_directories(${target_name} PUBLIC ${Python3_LIBRARY_DIRS})
 
 if(WIN32)
-	target_link_directories(${target_name} PUBLIC ${BOOST_LIBRARYDIR})
+	target_link_directories(${target_name} PUBLIC ${BOOST_LIBRARYDIR} $ENV{METAFFI_HOME})
 else()
-	target_link_libraries(${target_name} ${Boost_LIBRARIES})
+	target_link_libraries(${target_name} ${Boost_LIBRARIES} $ENV{METAFFI_HOME})
 endif()
 
 # Copy to metaffi directory

@@ -1,5 +1,6 @@
 #pragma once
 #include <runtime/cdts_wrapper.h>
+#include<unordered_map>
 #include <memory>
 #ifdef _DEBUG
 #undef _DEBUG
@@ -9,14 +10,35 @@
 #include <Python.h>
 #endif
 
+/*
+struct cstr_cmp : public std::binary_function<const char*, const char*, bool>
+{
+	bool operator()(const char*& l, const char*& r) const{ return strcmp( l, r ) == 0; }
+};
+
+struct cstr_hash_func
+{
+	int operator()(char* str)const
+	{
+		int seed = 131;//31  131 1313 13131131313 etc//
+		int hash = 0;
+		while(*str)
+		{
+			hash = (hash * seed) + (*str);
+			str ++;
+		}
+		
+		return hash & (0x7FFFFFFF);
+	}
+};
+*/
 class cdts_python3
 {
 private:
-	std::unique_ptr<metaffi::runtime::cdts_wrapper> cdts;
+	metaffi::runtime::cdts_wrapper cdts;
 	
 public:
 	explicit cdts_python3(cdt* cdts, metaffi_size cdts_length);
-	explicit cdts_python3(metaffi_size cdt_count);
 	
 	cdt* get_cdts();
 	
@@ -36,23 +58,29 @@ public:
 
 private:
 	
+	static metaffi::runtime::cdts_build_callbacks build_callback;
+	static metaffi::runtime::cdts_parse_callbacks parse_callback;
+	static std::unordered_map<std::string, metaffi_types> pytypes_to_metaffi_types;
+	
+	
+	
 	static metaffi_types get_metaffi_type(PyObject* pyobj);
 	
 	
 	template<typename T>
-	PyObject* create_list(const T& p)
+	static PyObject* create_list(const T& p)
 	{
+#ifdef _DEBUG
 		if(p.dimensions == 0){ throw std::runtime_error("array with 0 dimensions"); }
 		if(p.dimensions > 1){ throw std::runtime_error("multi-dimensions array is not supported yet"); }
-		
+#endif
 		return PyList_New(p.dimensions_lengths[0]);
 	}
 	//--------------------------------------------------------------------
 	template<typename T>
-	void set_numeric_to_tuple(PyObject* tuple, int index, const T& val, const std::function<PyObject*(T)>& ConvFunc)
+	static void set_numeric_to_tuple(PyObject* tuple, int index, const T& val, const std::function<PyObject*(T)>& ConvFunc)
 	{
 		PyObject* pyval = ConvFunc(val);
-		
 		if(!pyval)
 		{
 			std::stringstream ss;
@@ -69,7 +97,7 @@ private:
 	}
 	//--------------------------------------------------------------------
 	template<typename T, typename char_t>
-	void set_string_to_tuple(PyObject* tuple, int index, const T& val, const metaffi_size& size, const std::function<PyObject*(const char_t*, Py_ssize_t)>& ConvFunc)
+	static void set_string_to_tuple(PyObject* tuple, int index, const T& val, const metaffi_size& size, const std::function<PyObject*(const char_t*, Py_ssize_t)>& ConvFunc)
 	{
 		PyObject* pyval = ConvFunc((char_t*)val, size);
 		if(!pyval)
@@ -88,7 +116,7 @@ private:
 	}
 	//--------------------------------------------------------------------
 	template<typename T>
-	void set_numeric_array_to_tuple(PyObject* tuple, int cdts_index, const metaffi::runtime::numeric_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(T)>& ConvFunc)
+	static void set_numeric_array_to_tuple(PyObject* tuple, int cdts_index, const metaffi::runtime::numeric_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(T)>& ConvFunc)
 	{
 		PyObject* list = create_list(arr_wrap);
 		
@@ -115,7 +143,7 @@ private:
 	}
 	//--------------------------------------------------------------------
 	template<typename T, typename char_t>
-	void set_string_array_to_tuple(PyObject* tuple, int cdts_index, const metaffi::runtime::string_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(const char_t*, Py_ssize_t)>& c_to_pyobject)
+	static void set_string_array_to_tuple(PyObject* tuple, int cdts_index, const metaffi::runtime::string_n_array_wrapper<T>& arr_wrap, const std::function<PyObject*(const char_t*, Py_ssize_t)>& c_to_pyobject)
 	{
 		PyObject* list = create_list(arr_wrap);
 		
@@ -153,22 +181,23 @@ private:
 	//====================================================================
 
 	template<typename T>
-	void set_numeric_to_cdts(PyObject* tuple, int index, T& val, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
+	static void set_numeric_to_cdts(PyObject* tuple, int index, T& val, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
-		
+
+#ifdef _DEBUG
 		if(!check_pyobject(obj))
 		{
 			std::stringstream ss;
 			ss << "Expecting numeric type at index: " << index << ". Given type is: " << obj->ob_type->tp_name;
 			throw std::runtime_error(ss.str());
 		}
-		
+#endif
 		val = pyobject_to_c(obj);
 	}
 	
 	template<typename T>
-	void set_numeric_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
+	static void set_numeric_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
@@ -179,14 +208,14 @@ private:
 			dimensions_lengths[0] = 0;
 			return;
 		}
-		
+#ifdef _DEBUG
 		if(!PyList_Check(obj) && !PyTuple_Check(obj))
 		{
 			std::stringstream ss;
 			ss << "Expecting list/tuple type at index: " << index << ". Given type is: " << obj->ob_type->tp_name;
 			throw std::runtime_error(ss.str());
 		}
-		
+#endif
 		std::function<PyObject*(PyObject*, Py_ssize_t)> get_item;
 		Py_ssize_t size;
 		
@@ -221,7 +250,7 @@ private:
 	}
 	
 	template<typename T, typename char_t>
-	void set_string_to_cdts(PyObject* tuple, int index, T& val, metaffi_size& s, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
+	static void set_string_to_cdts(PyObject* tuple, int index, T& val, metaffi_size& s, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		
@@ -231,14 +260,14 @@ private:
 			s = 0;
 			return;
 		}
-		
+#ifdef _DEBUG
 		if(!check_pyobject(obj))
 		{
 			std::stringstream ss;
 			ss << "Expecting string type at index: " << index << ". Given type is: " << obj->ob_type->tp_name;
 			throw std::runtime_error(ss.str());
 		}
-		
+#endif
 		char_t* temp = pyobject_to_c(obj, (Py_ssize_t*)&s); // temp "memory deallocated by python"
 		if(s == 0) // size was not stored in python string
 		{
@@ -250,7 +279,7 @@ private:
 	}
 	
 	template<typename T, typename char_t>
-	void set_string_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
+	static void set_string_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
 		PyObject* obj = PyTuple_GetItem(tuple, index);
 		

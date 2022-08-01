@@ -50,12 +50,19 @@ def load_xllr_and_python_plugin():
 
 def get_filename_to_load(fname):
 	osname = platform.system()
+	if os.getenv('METAFFI_HOME') is None:
+		os.environ['METAFFI_HOME'] = '/mnt/c/src/github.com/MetaFFI/out/ubuntu/x64/debug'
+		#raise RuntimeError('No METAFFI_HOME environment variable')
+	elif fname is None:
+		raise RuntimeError('fname is None')
+
 	if osname == 'Windows':
 		return os.getenv('METAFFI_HOME')+'\\'+ fname + '.dll'
 	elif osname == 'Darwin':
 		return os.getenv('METAFFI_HOME')+'/' + fname + '.dylib'
 	else:
 		return os.getenv('METAFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
+
 `
 
 const (
@@ -103,13 +110,13 @@ out_err_len = POINTER(c_uint32)(c_void_p(addressof(err_len)))
 
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}
-{{$f.Getter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString}}'.encode("utf-8")), {{$f.Getter.Name}}_id, out_err, out_err_len)
+{{$f.Getter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString}}'.encode("utf-8")), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len)
 if {{$f.Getter.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 {{end}}
 {{if $f.Setter}}
-{{$f.Setter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString}}'.encode("utf-8")), {{$f.Setter.Name}}_id, out_err, out_err_len)
+{{$f.Setter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString}}'.encode("utf-8")), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len)
 if {{$f.Setter.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -117,7 +124,7 @@ if {{$f.Setter.Name}}_id == -1: # failed to load function
 {{end}} {{/* end globals */}}
 
 {{range $findex, $f := $m.Functions}}
-{{$f.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.FunctionPathAsString}}'.encode("utf-8")), {{$f.Name}}_id, out_err, out_err_len)
+{{$f.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.FunctionPathAsString}}'.encode("utf-8")), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len)
 if {{$f.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -125,7 +132,7 @@ if {{$f.Name}}_id == -1: # failed to load function
 
 {{range $cindex, $c := $m.Classes}}
 {{range $cstrindex, $cstr := $c.Constructors}}
-{{$c.Name}}_{{$cstr.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$cstr.FunctionPathAsString}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, out_err, out_err_len)
+{{$c.Name}}_{{$cstr.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$cstr.FunctionPathAsString}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len)
 if {{$c.Name}}_{{$cstr.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -133,13 +140,13 @@ if {{$c.Name}}_{{$cstr.Name}}_id == -1: # failed to load function
 
 {{range $findex, $f := $c.Fields}}
 {{if $f.Getter}}
-{{$c.Name}}_{{$f.Getter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$f.Getter.Name}}_id, out_err, out_err_len)
+{{$c.Name}}_{{$f.Getter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len)
 if {{$c.Name}}_{{$f.Getter.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 {{end}}
 {{if $f.Setter}}
-{{$c.Name}}_{{$f.Setter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$f.Setter.Name}}_id, out_err, out_err_len)
+{{$c.Name}}_{{$f.Setter.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len)
 if {{$c.Name}}_{{$f.Setter.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -147,14 +154,14 @@ if {{$c.Name}}_{{$f.Setter.Name}}_id == -1: # failed to load function
 {{end}} {{/* End fields */}}
 
 {{range $methindex, $meth := $c.Methods}}
-{{$c.Name}}_{{$meth.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$meth.FunctionPathAsString}}'.encode("utf-8"), len('{{$meth.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$meth.Name}}_id, out_err, out_err_len)
+{{$c.Name}}_{{$meth.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$meth.FunctionPathAsString}}'.encode("utf-8"), len('{{$meth.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len)
 if {{$c.Name}}_{{$meth.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 {{end}}
 
 {{if $c.Releaser}}
-{{$c.Name}}_{{$c.Releaser.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$c.Releaser.FunctionPathAsString}}'.encode("utf-8"), len('{{$c.Releaser.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$c.Releaser.Name}}_id, out_err, out_err_len)
+{{$c.Name}}_{{$c.Releaser.Name}}_id = xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$c.Releaser.FunctionPathAsString}}'.encode("utf-8"), len('{{$c.Releaser.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len)
 if {{$c.Name}}_{{$c.Releaser.Name}}_id == -1: # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -171,71 +178,31 @@ if {{$c.Name}}_{{$c.Releaser.Name}}_id == -1: # failed to load function
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}
 def {{$f.Getter.Name}}():
-	global xllr_handle
-	global {{$f.Getter.Name}}_id
-	global runtime_plugin
-	global python_plugin_handle
 
-	{{$paramsLength := len $f.Getter.Parameters}}
-	params = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{if eq $paramsLength 1}},{{end}}{{end}})
-	params_types = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Getter.ReturnValues}})
+	{{GenerateCodeGlobals $f.Getter.Name 1}}
+
+	{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues false}}
 
 	# xcall function
-	
-	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-					c_ulonglong({{$f.Getter.Name}}_id), \
-					c_void_p(parameters_buffer), c_ulonglong({{len $f.Getter.Parameters}}), \
-					c_void_p(return_values_buffer), c_ulonglong({{len $f.Getter.ReturnValues}}), \
-					out_error, byref(out_error_len))
-			
-	# check for error
-	if out_error != None and out_error[0] != None:
-		err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-		raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
+	{{GenerateCodeXCall "" $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 1}}
 
-	# unpack results
 
-	ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.Getter.ReturnValues}})
+	{{GenerateCodeReturnValues $f.Getter.Parameters $f.Getter.ReturnValues}}
+	{{GenerateCodeReturn $f.Getter.ReturnValues}}
 
-	return {{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
 {{end}} {{/* end getter */}}
 {{if $f.Setter}}
 def set_{{$f.Setter.Name}}():
-	global xllr_handle
-	global {{$f.Setter.Name}}_id
-	global runtime_plugin
-	global python_plugin_handle
+	{{GenerateCodeGlobals $f.Setter.Name 1}}
 
-	{{$paramsLength := len $f.Setter.Parameters}}
-	params = ({{range $index, $elem := $f.Setter.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{if eq $paramsLength 1}},{{end}}{{end}})
-	params_types = ({{range $index, $elem := $f.Setter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Setter.ReturnValues}})
+	{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues false}}
 
 	# xcall function
-	
-	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-					c_ulonglong({{$f.Setter.Name}}_id), \
-					c_void_p(parameters_buffer), c_ulonglong({{len $f.Setter.Parameters}}), \
-					c_void_p(return_values_buffer), c_ulonglong({{len $f.Setter.ReturnValues}}), \
-					out_error, byref(out_error_len))
-			
-	# check for error
-	if out_error != None and out_error[0] != None:
-		err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-		raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
+	{{GenerateCodeXCall "" $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 1}}
 
-	# unpack results
+	{{GenerateCodeReturnValues $f.Setter.Parameters $f.Setter.ReturnValues}}
+	{{GenerateCodeReturn $f.ReturnValues}}
 
-	ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.Setter.ReturnValues}})
-
-	return {{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
 {{end}}{{/* end setter */}}
 {{end}}{{/* end fields */}}
 
@@ -243,219 +210,98 @@ def set_{{$f.Setter.Name}}():
 # Call to foreign {{$f.Name}}
 def {{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{ConvertToPythonTypeFromField $elem}}{{end}}):
 
-	global xllr_handle
-	global {{$f.Name}}_id
-	global runtime_plugin
-	global python_plugin_handle
+	{{GenerateCodeGlobals $f.Name 1}}
 
-	if python_plugin_handle is None:
-		raise RuntimeError('handle is None')
-
-	{{$paramsLength := len $f.Parameters}}
-	params = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{end}}{{if eq $paramsLength 1}},{{end}})
-	params_types = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-	parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-	return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
+	{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues false}}
 
 	# xcall function
-	
-	out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-	out_error_len = ({{ConvertToCPythonType "size"}})(0)
-	xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-					c_ulonglong({{$f.Name}}_id), \
-					c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
-					c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \
-					out_error, byref(out_error_len))
-	
-	
-	# check for error
-	if out_error != None and out_error[0] != None:
-		err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-		raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
+	{{GenerateCodeXCall "" $f.Name $f.Parameters $f.ReturnValues 1}}
 
-	# unpack results
-
-	ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.ReturnValues}})
-
-	return {{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
+	{{GenerateCodeReturnValues $f.Parameters $f.ReturnValues}}
+	{{GenerateCodeReturn $f.ReturnValues}}
 {{end}}
 
 {{range $classindex, $c := $m.Classes}}
 # Class to call methods of foreign class {{$c.Name}}
 class {{$c.Name}}:
-	obj_handle = None
 	
 	{{range $cstrindex, $f := $c.Constructors}}
 	def __init__(self {{range $index, $elem := $f.Parameters}}, {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}):
-		global xllr_handle
-		global {{$c.Name}}_{{$f.Name}}_id
-		global runtime_plugin
-		global python_plugin_handle
-	
-		{{$paramsLength := len $f.Parameters}}
-		params = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{end}}{{if eq $paramsLength 1}},{{end}})
-		params_types = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
+
+		{{$fullName := (print $c.Name "_" $f.Name)}}
+		{{GenerateCodeGlobals $fullName 2}}
+
+		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues true}}
 	
 		# xcall function
-		
-		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-						c_ulonglong({{$c.Name}}_{{$f.Name}}_id), \
-						c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
-						c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \
-						out_error, byref(out_error_len))
-		
-		
-		# check for error
-		if out_error != None and out_error[0] != None:
-			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
-	
+		{{GenerateCodeXCall $c.Name $f.Name $f.Parameters $f.ReturnValues 2}}
+
 		# unpack results
 	
-		ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.ReturnValues}})
+		{{GenerateCodeReturnValues $f.Parameters $f.ReturnValues}}
+
 		self.obj_handle = ret_vals[0] # NOTICE: assuming first ret_val is the handle
 	{{end}}
 
 	{{range $findex, $f := $c.Fields}}
 	{{if $f.Getter}}
 	def {{$f.Getter.Name}}(self):
-		global xllr_handle
-		global {{$c.Name}}_{{$f.Getter.Name}}_id
-		global runtime_plugin
-		global python_plugin_handle
+		{{$fullName := (print $c.Name "_" $f.Getter.Name)}}
+		{{GenerateCodeGlobals $fullName 2}}
 	
-		{{$paramsLength := len $f.Getter.Parameters}}
-		params = (self.obj_handle {{range $index, $elem := $f.Getter.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}{{end}}{{if eq $paramsLength 1}},{{end}}{{end}})
-		params_types = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Getter.ReturnValues}})
+		{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues true}}
 	
 		# xcall function
-		
-		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-						c_ulonglong({{$c.Name}}_{{$f.Getter.Name}}_id), \
-						c_void_p(parameters_buffer), c_ulonglong({{len $f.Getter.Parameters}}), \
-						c_void_p(return_values_buffer), c_ulonglong({{len $f.Getter.ReturnValues}}), \
-						out_error, byref(out_error_len))
-				
-		# check for error
-		if out_error != None and out_error[0] != None:
-			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
-	
-		# unpack results
-	
-		ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.Getter.ReturnValues}})
+		{{GenerateCodeXCall $c.Name $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 2}}
 
-		return {{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
+		{{GenerateCodeReturnValues $f.Getter.Parameters $f.Getter.ReturnValues}}
+		{{GenerateCodeReturn $f.Getter.ReturnValues}}
+
+
 	{{end}} {{/* end getter */}}
 	{{if $f.Setter}}{{ $p := index $f.Setter.Parameters 1 }}
 	def {{$f.Setter.Name}}(self, {{$p.Name}} ):
-		global xllr_handle
-		global {{$c.Name}}_{{$f.Setter.Name}}_id
-		global runtime_plugin
-		global python_plugin_handle
-	
-		{{$paramsLength := len $f.Setter.Parameters}}
-		params = (self.obj_handle {{range $index, $elem := $f.Setter.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}{{end}}{{if eq $paramsLength 1}},{{end}}{{end}})
-		params_types = ({{range $index, $elem := $f.Setter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.Setter.ReturnValues}})
-	
-		# xcall function
-		
-		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-						c_ulonglong({{$c.Name}}_{{$f.Setter.Name}}_id), \
-						c_void_p(parameters_buffer), c_ulonglong({{len $f.Setter.Parameters}}), \
-						c_void_p(return_values_buffer), c_ulonglong({{len $f.Setter.ReturnValues}}), \
-						out_error, byref(out_error_len))
-				
-		# check for error
-		if out_error != None and out_error[0] != None:
-			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
-	
-		# unpack results
-	
-		ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.Setter.ReturnValues}})
+		{{$fullName := (print $c.Name "_" $f.Setter.Name)}}
+		{{GenerateCodeGlobals $fullName 2}}
 
-		return {{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
+		{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues true}}
+
+		# xcall function
+		{{GenerateCodeXCall $c.Name $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 2}}
+
+		{{GenerateCodeReturnValues $f.Setter.Parameters $f.Setter.ReturnValues}}
+		{{GenerateCodeReturn $f.Setter.ReturnValues}}
 	{{end}}{{/* end setter */}}
 	{{end}}{{/* end fields */}}
 
 	{{if $c.Releaser}}{{$f := $c.Releaser}}
 	# released foreign object handle
 	def __del__(self):
-		global xllr_handle
-		global {{$c.Name}}_{{$f.Name}}_id
-		global runtime_plugin
-		global python_plugin_handle
-	
+		{{$fullName := (print $c.Name "_" $f.Name)}}
+		{{GenerateCodeGlobals $fullName 2}}
+
 		{{$paramsLength := len $f.Parameters}}{{$h := index $f.Parameters 0}}
 		params = (self.obj_handle,)
 		params_types = ({{GetMetaFFIType $h}},)
-		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-		return_values_buffer = xllr_handle.alloc_cdts_buffer(0)
-	
+		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
+
 		# xcall function
-		
-		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-						c_ulonglong({{$c.Name}}_{{$f.Name}}_id), \
-						c_void_p(parameters_buffer), c_ulonglong(1), \
-						c_void_p(return_values_buffer), c_ulonglong(0), \
-						out_error, byref(out_error_len))
-		
-		
-		# check for error
-		if out_error != None and out_error[0] != None:
-			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
+		{{GenerateCodeXCall "" $fullName $f.Parameters $f.ReturnValues 2}}
 	{{end}}
 
 	{{range $methindex, $f := $c.Methods}}
 	def {{$f.Name}}(self{{range $index, $elem := $f.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}{{end}}):
-		global xllr_handle
-		global {{$c.Name}}_{{$f.Name}}_id
-		global runtime_plugin
-		global python_plugin_handle
+		{{$fullName := (print $c.Name "_" $f.Name)}}
+		{{GenerateCodeGlobals $fullName 2}}
 	
-		{{$paramsLength := len $f.Parameters}}
-		params = (self.obj_handle {{range $index, $elem := $f.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}{{end}}{{if eq $paramsLength 1}},{{end}}{{end}})
-		params_types = ({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
-		parameters_buffer = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
-		return_values_buffer = xllr_handle.alloc_cdts_buffer({{len $f.ReturnValues}})
-	
+		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues true}}
+
 		# xcall function
-		
-		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.xcall(c_char_p(runtime_plugin), c_ulonglong(len(runtime_plugin)), \
-						c_ulonglong({{$c.Name}}_{{$f.Name}}_id), \
-						c_void_p(parameters_buffer), c_ulonglong({{len $f.Parameters}}), \
-						c_void_p(return_values_buffer), c_ulonglong({{len $f.ReturnValues}}), \
-						out_error, byref(out_error_len))
-		
-		
-		# check for error
-		if out_error != None and out_error[0] != None:
-			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
+		{{GenerateCodeXCall "" $fullName $f.Parameters $f.ReturnValues 2}}
 	
 		# unpack results
-	
-		ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.ReturnValues}})
-
-		return {{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
+		{{GenerateCodeReturnValues $f.Parameters $f.ReturnValues}}
+		{{GenerateCodeReturn $f.ReturnValues}}
 	{{end}}
 
 {{end}}

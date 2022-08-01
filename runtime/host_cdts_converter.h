@@ -12,6 +12,6 @@
 
 extern "C"
 {
-	cdt* convert_host_params_to_cdts(PyObject* params_names, PyObject* params_types);
-	PyObject* convert_host_return_values_from_cdts(cdt* cdt_return_values, metaffi_size return_values_count);
+	cdts* convert_host_params_to_cdts(PyObject* params_names, PyObject* params_types, metaffi_size return_values_size);
+	PyObject* convert_host_return_values_from_cdts(cdts* pcdts, int index);
 }

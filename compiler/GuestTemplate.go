@@ -44,6 +44,7 @@ def get_filename_to_load(fname):
 		return os.getenv('METAFFI_HOME')+'/' + fname + '.dylib'
 	else:
 		return os.getenv('METAFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
+
 `
 
 const GuestFunctionXLLRTemplate = `
