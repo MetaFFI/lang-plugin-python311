@@ -12,7 +12,7 @@ const idl_guest = `{"idl_filename": "test","idl_extension": ".json","idl_filenam
 const GuestCode = `
 from typing import List
 
-def f1(p1: float, p2: float, p3: int, p4: int, p5: int, p6: int, p7: int, p8: int, p9: int, p10: int, p11: bool, p12: str, p13: List[str], p14: List[int])-> List[str]:
+def f1(p1: float, p2: float, p3: int, p4: int, p5: int, p6: int, p7: int, p8: int, p9: int, p10: int, p11: bool, p12: str, p13: List[str], p14: List[int]):
 
 	""" This function expects the parameters (in that order):
 		double = 3.141592

@@ -13,7 +13,6 @@ const compilerTestCode = `
 from test_MetaFFIHost import *
 
 def host_compiler():
-
 	res = f1(3.141592, 2.71, -10, -20, -30, -40, 50, 60, 70, 80, True, 'This is an input', ["element one", "element two"], [2, 4, 6, 8, 10])
 	
 	if len(res) != 14:
@@ -126,14 +125,16 @@ func TestHost(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-	
+
 	var buildCmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		buildCmd = exec.Command("cmd.exe", "/c", "python3", "CompilerTestCode_test.py")
 	} else {
 		buildCmd = exec.Command("python3", "CompilerTestCode_test.py")
 	}
+
 	buildCmd.Dir = "./temp"
+
 	output, err := buildCmd.CombinedOutput()
 	if err != nil {
 		println(string(output))

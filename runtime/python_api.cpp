@@ -19,6 +19,7 @@
 #endif
 #include <chrono>
 #include <ctime>
+#include <utility>
 using namespace metaffi::utils;
 
 #define handle_err(err, err_len, desc) \
@@ -40,8 +41,27 @@ using namespace metaffi::utils;
 #define TRUE 1
 #define FALSE 0
 
-std::map<int64_t, PyObject*> loaded_functions;
+std::vector<foreign_function_entrypoint_signature_params_ret_t> params_ret_functions;
+std::vector<foreign_function_entrypoint_signature_params_no_ret_t> params_no_ret_functions;
+std::vector<foreign_function_entrypoint_signature_no_params_ret_t> no_params_ret_functions;
+std::vector<foreign_function_entrypoint_signature_no_params_no_ret_t> no_params_no_ret_functions;
 
+
+extern "C"
+{
+	void set_entrypoint(const char* entrypoint_name, void* pfunction);
+	void xcall_params_ret(PyObject* pyfunc, cdts params_ret[2], char** out_err, uint64_t* out_err_len);
+	void xcall_params_no_ret(PyObject* pyfunc, cdts parameters[1], char** out_err, uint64_t* out_err_len);
+	void xcall_no_params_ret(PyObject* pyfunc, cdts return_values[1], char** out_err, uint64_t* out_err_len);
+	void xcall_no_params_no_ret(PyObject* pyfunc, char** out_err, uint64_t* out_err_len);
+}
+
+//--------------------------------------------------------------------
+std::unordered_map<std::string, void*> foreign_entities;
+void set_entrypoint(const char* entrypoint_name, void* pfunction)
+{
+	foreign_entities[entrypoint_name] = pfunction;
+}
 //--------------------------------------------------------------------
 void initialize_environment()
 {
@@ -92,7 +112,7 @@ void free_runtime(char** err, uint32_t* err_len)
 	}
 }
 //--------------------------------------------------------------------
-int64_t load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)
+void* load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)
 {
 	if(!Py_IsInitialized())
 	{
@@ -102,52 +122,34 @@ int64_t load_function(const char* function_path, uint32_t function_path_len, int
 	pyscope();
 	
 	metaffi::utils::function_path_parser fp(function_path);
+	
 	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_metaffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
 	
 	if(!pymod)
 	{
 		// error has occurred
 		handle_py_err(err, err_len);
-		return -1;
+		return nullptr;
 	}
-
-	// load function
-	PyObject* pyfunc = PyObject_GetAttrString(pymod, fp[function_path_entry_entrypoint_function].c_str());
 	
-	if(!pyfunc)
+	auto entrypoint_fptr = foreign_entities.find(fp[function_path_entry_entrypoint_function]);
+	if(entrypoint_fptr == foreign_entities.end())
 	{
-		handle_err((char**)err, err_len, "Cannot find function in module!");
-		return -1;
+		handle_err(err, err_len, "Did not find foreign function");
+		return nullptr;
 	}
-#ifdef _DEBUG
-	if(!PyCallable_Check(pyfunc))
-	{
-		handle_err((char**)err, err_len, "Requested function found in module, but it is not a function!");
-		return -1;
-	}
-#endif
-	// place in loaded functions
-	int64_t function_id = loaded_functions.empty() ? 0 : -1;
-	for(auto& it : loaded_functions) // make function_id the highest number
-	{
-		if(function_id <= it.first)
-		{
-			function_id = it.first + 1;
-		}
-	}
-		
-	loaded_functions[function_id] = pyfunc;
 	
-	return function_id;
+	return (void*)entrypoint_fptr->second;
+	
 }
 //--------------------------------------------------------------------
-void free_function(int64_t function_id, char** err, uint32_t* err_len)
+void free_function(void* pff, char** err, uint32_t* err_len)
 {
 	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
 void xcall_params_ret(
-		int64_t function_id,
+		PyObject* pyfunc,
 		cdts params_ret[2],
 		char** out_err, uint64_t* out_err_len
 )
@@ -155,14 +157,7 @@ void xcall_params_ret(
 	try
 	{
 		pyscope();
-		auto it = loaded_functions.find(function_id);
-		if (it == loaded_functions.end())
-		{
-			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
-			return;
-		}
-		
-		PyObject* pyfunc = it->second;
+	
 		// convert CDT to Python3
 		cdts_python3 params_cdts(params_ret[0].pcdt, params_ret[0].len);
 		PyObject* params = params_cdts.parse();
@@ -170,10 +165,10 @@ void xcall_params_ret(
 		{
 			Py_DecRef(params);
 		});
-		
+	
 		// call function
 		PyObject* res = PyObject_CallObject(pyfunc, params);
-		
+	
 		// convert results back to CDT
 		// assume types are as expected
 		
@@ -227,7 +222,7 @@ void xcall_params_ret(
 }
 //--------------------------------------------------------------------
 void xcall_no_params_ret(
-		int64_t function_id,
+		PyObject* pyfunc,
 		cdts return_values[1],
 		char** out_err, uint64_t* out_err_len
 )
@@ -236,14 +231,6 @@ void xcall_no_params_ret(
 	{
 		pyscope();
 		
-		auto it = loaded_functions.find(function_id);
-		if (it == loaded_functions.end())
-		{
-			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
-			return;
-		}
-		
-		PyObject* pyfunc = it->second;
 		
 		// call function
 		
@@ -300,7 +287,7 @@ void xcall_no_params_ret(
 }
 //--------------------------------------------------------------------
 void xcall_params_no_ret(
-		int64_t function_id,
+		PyObject* pyfunc,
 		cdts parameters[1],
 		char** out_err, uint64_t* out_err_len
 )
@@ -308,14 +295,7 @@ void xcall_params_no_ret(
 	try
 	{
 		pyscope();
-		auto it = loaded_functions.find(function_id);
-		if (it == loaded_functions.end())
-		{
-			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
-			return;
-		}
 		
-		PyObject* pyfunc = it->second;
 		// convert CDT to Python3
 		cdts_python3 params_cdts(parameters[0].pcdt, parameters[0].len);
 		PyObject* params = params_cdts.parse();
@@ -367,21 +347,13 @@ void xcall_params_no_ret(
 }
 //--------------------------------------------------------------------
 void xcall_no_params_no_ret(
-		int64_t function_id,
+		PyObject* pyfunc,
 		char** out_err, uint64_t* out_err_len
 )
 {
 	try
 	{
 		pyscope();
-		auto it = loaded_functions.find(function_id);
-		if (it == loaded_functions.end())
-		{
-			handle_err((char**) out_err, out_err_len, "Requested function has not been loaded");
-			return;
-		}
-		
-		PyObject* pyfunc = it->second;
 		
 		// call function
 		PyObject* res = PyObject_CallObject(pyfunc, nullptr);

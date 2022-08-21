@@ -20,14 +20,6 @@ import {{$i}}{{end}}
 
 const GuestHelperFunctions = `
 
-"""
-xllrHandle = None
-def load_xllr():
-	global xllrHandle
-	
-	if xllrHandle == None:
-		xllrHandle = cdll.LoadLibrary(get_filename_to_load('xllr'))
-"""
 
 python_plugin_handle = None
 def load_python_plugin():
@@ -35,6 +27,11 @@ def load_python_plugin():
 	
 	if python_plugin_handle == None:
 		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
+		python_plugin_handle.set_entrypoint.argstype = [c_char_p, c_void_p]
+		python_plugin_handle.xcall_params_ret.argstype = [py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_params_no_ret.argstype = [py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_no_params_ret.argstype = [py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_no_params_no_ret.argstype = [py_object, POINTER(c_char_p), POINTER(c_ulonglong)]
 
 def get_filename_to_load(fname):
 	osname = platform.system()
@@ -45,6 +42,7 @@ def get_filename_to_load(fname):
 	else:
 		return os.getenv('METAFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
 
+load_python_plugin()
 `
 
 const GuestFunctionXLLRTemplate = `
@@ -52,12 +50,14 @@ const GuestFunctionXLLRTemplate = `
 
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}{{$retvalLength := len $f.Getter.ReturnValues}}
+{{GenerateCEntryPoint $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 0}}
 def EntryPoint_{{$f.Getter.Name}}():
 	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	return (None, ret_val_types, {{$f.Getter.FunctionPath.module}}.{{$f.Name}})
 
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
+{{GenerateCEntryPoint $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 0}}
 def EntryPoint_{{$f.Setter.Name}}(val):
 	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val
@@ -69,11 +69,8 @@ def EntryPoint_{{$f.Setter.Name}}(val):
 
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.Name}}
+{{GenerateCEntryPoint $f.Name $f.Parameters $f.ReturnValues 0}}
 def EntryPoint_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
-	#global xllrHandle
-
-	#load_xllr()
-
 	try:
 		# call function
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
@@ -90,6 +87,7 @@ def EntryPoint_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}}
 
 {{range $classindex, $c := $m.Classes}}
 {{range $cstrindex, $f := $c.Constructors}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.Name) $f.Parameters $f.ReturnValues 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# call constructor
@@ -107,6 +105,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{
 
 {{range $findex, $f := $c.Fields}}
 {{if $f.Getter}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.Getter.Name) $f.Getter.Parameters $f.Getter.ReturnValues 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}(obj):
 	try:
 
@@ -120,6 +119,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}(obj):
 
 {{end}}{{/* End Getter */}}
 {{if $f.Setter}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.Setter.Name) $f.Setter.Parameters $f.Setter.ReturnValues 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}(obj, val):
 	try:
 
@@ -137,6 +137,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}(obj, val):
 {{end}}{{/* End Fields */}}
 
 {{range $methindex, $f := $c.Methods}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.Name) $f.Parameters $f.ReturnValues 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# call method
@@ -154,6 +155,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{
 {{end}}{{/* End methods */}}
 
 {{if $c.Releaser}}
+{{GenerateCEntryPoint (print $c.Name "_" $c.Releaser.Name) $c.Releaser.Parameters $c.Releaser.ReturnValues 0}}
 def EntryPoint_{{$c.Name}}_{{$c.Releaser.Name}}({{range $index, $elem := $c.Releaser.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# xcall release object

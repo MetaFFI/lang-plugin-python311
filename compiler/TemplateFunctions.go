@@ -16,14 +16,68 @@ var templatesFuncMap = map[string]interface{}{
 	"GetEnvVar":                    getEnvVar,
 	"Add":                          add,
 	"GetMetaFFIType":               getMetaFFIType,
-	"XCall":                        xcall,
 	"GenerateCodeAllocateCDTS":     generateCodeAllocateCDTS,
 	"GenerateCodeXCall":            generateCodeXCall,
 	"GenerateCodeReturnValues":     generateCodeReturnValues,
 	"GenerateCodeGlobals":          generateCodeGlobals,
 	"GenerateCodeReturn":           generateReturn,
+	"GetCFuncType":                 getCFuncType,
+	"GenerateCEntryPoint":          generateCEntryPoint,
 }
 
+func generateCEntryPoint(name string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string{
+
+	indentStr := ""
+    for i := 0 ; i<indent ; i++{
+        indentStr += "\t"
+    }
+
+	res := ""
+
+	if len(params) > 0 && len(retvals) > 0{
+		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
+		res += fmt.Sprintf("%v\tprint('in CEntryPoint_%v 1')\n", indentStr, name)
+		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
+		res += fmt.Sprintf("%v\tprint('in CEntryPoint_%v 2')\n", indentStr, name)
+		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+	} else if len(params) > 0 {
+        res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+        res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
+        res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+        res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_no_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
+        res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+    } else if len(retvals) > 0 {
+        res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+        res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
+        res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+        res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
+        res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+    } else {
+        res += fmt.Sprintf("%v@CFUNCTYPE(None, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+        res += fmt.Sprintf("%vdef CEntryPoint_%v(out_err, out_err_len):\n", indentStr, name)
+        res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+        res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_no_ret(py_object(EntryPoint_%v), out_err, out_err_len)\n", indentStr, name)
+        res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+    }
+
+    return res
+}
+
+//--------------------------------------------------------------------
+func getCFuncType(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string{
+
+	if len(params) > 0 && len(retvals) > 0{
+		return "cfunctype_params_ret"
+	} else if len(params) > 0 {
+		return "cfunctype_params_no_ret"
+	} else if len(retvals) > 0 {
+		return "cfunctype_no_params_ret"
+	} else {
+		return "cfunctype_no_params_no_ret"
+	}
+}
 //--------------------------------------------------------------------
 func generateCodeGlobals(name string, indent int) string {
 
@@ -100,9 +154,9 @@ func generateCodeXCall(className string, funcName string, params []*IDL.ArgDefin
 	code := fmt.Sprintf("out_error = (%v * 1)(0)\n", convertToCPythonType("string8"))
 	code += fmt.Sprintf("%vout_error_len = (%v)(0)\n", indentStr, convertToCPythonType("size"))
 	if len(params) > 0 || len(retvals) > 0{
-		code += fmt.Sprintf("%vxllr_handle.%v(c_ulonglong(%v_id), c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, xcall(params, retvals), name)
+		code += fmt.Sprintf("%v%v_id(c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, name)
 	} else {
-		code += fmt.Sprintf("%vxllr_handle.%v(c_ulonglong(%v_id), out_error, byref(out_error_len))", indentStr, xcall(params, retvals), name)
+		code += fmt.Sprintf("%v%v_id(out_error, byref(out_error_len))", indentStr, name)
 	}
 	code += fmt.Sprintf("%v\n", indentStr)
 	code += fmt.Sprintf("%vif out_error != None and out_error[0] != None:\n", indentStr)
@@ -191,22 +245,6 @@ func getEnvVar(env string) string {
 func convertToPythonTypeFromField(definition *IDL.ArgDefinition) string {
 	return convertToPythonType(definition.Type, definition.IsArray())
 }
-
-//--------------------------------------------------------------------
-func xcall(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
-	
-	// name of xcall
-	if len(params) > 0 && len(retvals) > 0 {
-		return "xcall_params_ret"
-	} else if len(params) > 0 {
-		return "xcall_params_no_ret"
-	} else if len(retvals) > 0 {
-		return "xcall_no_params_ret"
-	} else {
-		return "xcall_no_params_no_ret"
-	}
-}
-
 //--------------------------------------------------------------------
 func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string {
 	
