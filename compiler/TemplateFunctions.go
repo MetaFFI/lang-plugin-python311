@@ -37,10 +37,8 @@ func generateCEntryPoint(name string, params []*IDL.ArgDefinition, retvals []*ID
 	if len(params) > 0 && len(retvals) > 0{
 		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
 		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
-		res += fmt.Sprintf("%v\tprint('in CEntryPoint_%v 1')\n", indentStr, name)
 		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
 		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
-		res += fmt.Sprintf("%v\tprint('in CEntryPoint_%v 2')\n", indentStr, name)
 		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
 	} else if len(params) > 0 {
         res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)

@@ -178,8 +178,8 @@ func TestGuest(t *testing.T) {
 		return
 	}
 	
-	cmp := NewCompiler(def, "temp")
-	_, err = cmp.CompileGuest()
+	cmp := NewGuestCompiler()
+	err = cmp.Compile(def, "temp", "", "", "")
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -232,8 +232,8 @@ func TestPyExtractorGuest(t *testing.T) {
 		}
 	}()
 	
-	cmp := NewCompiler(def, "temp")
-	_, err = cmp.CompileGuest()
+	cmp := NewGuestCompiler()
+	err = cmp.Compile(def, "temp", "", "", "")
 	if err != nil {
 		t.Fatal(err)
 		return

@@ -104,17 +104,17 @@ func TestHost(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-
-	defer func(){
+	/*
+	defer func() {
 		err = os.RemoveAll("temp")
-		if err != nil{
+		if err != nil {
 			t.Fatal(err)
 			return
 		}
 	}()
-
-	cmp := NewCompiler(def, "./temp")
-	_, err = cmp.CompileHost(nil)
+	*/
+	cmp := NewHostCompiler()
+	err = cmp.Compile(def, "./temp", "", nil)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -125,16 +125,16 @@ func TestHost(t *testing.T) {
 		t.Fatal(err)
 		return
 	}
-
+	
 	var buildCmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		buildCmd = exec.Command("cmd.exe", "/c", "python3", "CompilerTestCode_test.py")
 	} else {
 		buildCmd = exec.Command("python3", "CompilerTestCode_test.py")
 	}
-
+	
 	buildCmd.Dir = "./temp"
-
+	
 	output, err := buildCmd.CombinedOutput()
 	if err != nil {
 		println(string(output))
