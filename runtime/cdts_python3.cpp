@@ -320,7 +320,7 @@ std::unordered_map<std::string, metaffi_types> cdts_python3::pytypes_to_metaffi_
 };
 
 //--------------------------------------------------------------------
-cdts_python3::cdts_python3(cdt* cdts, metaffi_size cdts_length):cdts(cdts, cdts_length)
+cdts_python3::cdts_python3(cdt* cdts, metaffi_size cdts_length): cdts(cdts, cdts_length)
 {
 }
 //--------------------------------------------------------------------

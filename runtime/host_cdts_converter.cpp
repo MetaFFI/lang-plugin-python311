@@ -36,7 +36,7 @@
 		
 		// get the data from the local objects
 		cdts* cdts_buf = xllr_alloc_cdts_buffer(PyTuple_Size(params), return_values_size);
-		cdts_python3 pycdts( cdts_buf[0].pcdt, cdts_buf[0].len );
+		cdts_python3 pycdts(cdts_buf[0].pcdt, cdts_buf[0].len );
 		pycdts.build(params, params_types, 0);
 		
 		return cdts_buf;
