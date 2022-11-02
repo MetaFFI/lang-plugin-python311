@@ -45,7 +45,7 @@ func (this *HostCompiler) Compile(definition *IDL.IDLDefinition, outputDir strin
 	// generate code
 	code, err := this.generateCode()
 	if err != nil {
-		return fmt.Errorf("Failed to generate guest code: %v", err)
+		return fmt.Errorf("Failed to generate host code: %v", err)
 	}
 	
 	// write to output
@@ -75,9 +75,9 @@ func (this *HostCompiler) parseHeader() (string, error) {
 //--------------------------------------------------------------------
 func (this *HostCompiler) parseForeignStubs() (string, error) {
 	
-	tmp, err := template.New("host").Funcs(templatesFuncMap).Parse(HostFunctionStubsTemplate)
+	tmp, err := template.New("Python HostFunctionStubsTemplate").Funcs(templatesFuncMap).Parse(HostFunctionStubsTemplate)
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse HostFunctionStubsTemplate: %v", err)
+		return "", fmt.Errorf("Failed to parse Python HostFunctionStubsTemplate: %v", err)
 	}
 	
 	buf := strings.Builder{}
