@@ -1,7 +1,7 @@
 #include "objects_table.h"
 
 //--------------------------------------------------------------------
-void objects_table_impl::free()
+void python3_objects_table_impl::free()
 {
 	std::unique_lock l(m);
 	
@@ -11,7 +11,7 @@ void objects_table_impl::free()
 	}
 }
 //--------------------------------------------------------------------
-void objects_table_impl::set(PyObject* obj)
+void python3_objects_table_impl::set(PyObject* obj)
 {
 	std::unique_lock l(m); // TODO need to use upgradable lock!
 	
@@ -24,7 +24,7 @@ void objects_table_impl::set(PyObject* obj)
 	this->objects.insert(obj);
 }
 //--------------------------------------------------------------------
-void objects_table_impl::remove(PyObject* obj)
+void python3_objects_table_impl::remove(PyObject* obj)
 {
 	std::unique_lock l(m);
 	
@@ -37,21 +37,21 @@ void objects_table_impl::remove(PyObject* obj)
 	this->objects.erase(obj);
 }
 //--------------------------------------------------------------------
-bool objects_table_impl::contains(PyObject* obj) const
+bool python3_objects_table_impl::contains(PyObject* obj) const
 {
 	std::shared_lock l(m);
 	
 	return this->objects.find(obj) != this->objects.end();
 }
 //--------------------------------------------------------------------
-size_t objects_table_impl::size() const
+size_t python3_objects_table_impl::size() const
 {
 	std::shared_lock l(m);
 	return this->objects.size();
 }
 //--------------------------------------------------------------------
-void release_object(metaffi_handle h)
+void python3_release_object(metaffi_handle h)
 {
-	objects_table::instance().remove((PyObject*)h);
+	python3_objects_table::instance().remove((PyObject*)h);
 }
 //--------------------------------------------------------------------

@@ -93,7 +93,7 @@ cdts_build_callbacks cdts_python3::build_callback
 				return nullptr;
 			}
 			
-			if(!objects_table::instance().contains(pybj))
+			if(!python3_objects_table::instance().contains(pybj))
 			{
 				// if metaffi handle - pass as it is.
 				if(strcmp(pybj->ob_type->tp_name, "metaffi_handle") == 0)
@@ -108,7 +108,7 @@ cdts_build_callbacks cdts_python3::build_callback
 				}
 				
 				// a python object
-				objects_table::instance().set(pybj);
+				python3_objects_table::instance().set(pybj);
 			}
 			
 			return (metaffi_handle)pybj;
@@ -124,7 +124,7 @@ cdts_build_callbacks cdts_python3::build_callback
 				return nullptr;
 			}
 			
-			if(!objects_table::instance().contains(pybj))
+			if(!python3_objects_table::instance().contains(pybj))
 			{
 				// if metaffi handle - pass as it is.
 				if(strcmp(pybj->ob_type->tp_name, "metaffi_handle") == 0)
@@ -139,7 +139,7 @@ cdts_build_callbacks cdts_python3::build_callback
 				}
 				
 				// a python object
-				objects_table::instance().set(pybj);
+				python3_objects_table::instance().set(pybj);
 			}
 			
 			return (metaffi_handle)pybj;
@@ -254,7 +254,7 @@ cdts_parse_callbacks cdts_python3::parse_callback
 		auto get_object = [](metaffi_handle h)->PyObject*
 		{
 			if(h == nullptr){ return Py_None; }
-			if(!objects_table::instance().contains((PyObject*)h))
+			if(!python3_objects_table::instance().contains((PyObject*)h))
 			{
 				return new_py_metaffi_handle(h);
 			}
@@ -268,7 +268,7 @@ cdts_parse_callbacks cdts_python3::parse_callback
 	{
 		auto get_object = [](metaffi_handle h)->PyObject*
 		{
-			if(!objects_table::instance().contains((PyObject*)h))
+			if(!python3_objects_table::instance().contains((PyObject*)h))
 			{
 				return new_py_metaffi_handle(h);
 			}
