@@ -10,6 +10,7 @@ from ctypes import *
 import ctypes.util
 from typing import List
 from typing import Any
+from typing import Tuple
 import platform
 import os
 from enum import Enum
@@ -47,7 +48,7 @@ def load_xllr_and_python_plugin():
 	python_plugin_handle.convert_host_return_values_from_cdts.argstype = [c_void_p, c_uint64]
 	python_plugin_handle.convert_host_return_values_from_cdts.restype = py_object
 	xllr_handle.alloc_cdts_buffer.restype = c_void_p
-	xllr_handle.load_function.restype = c_void_p
+	xllr_handle.load_function.restype = CFUNCTYPE(None)
 
 def get_filename_to_load(fname):
 	osname = platform.system()
@@ -67,7 +68,7 @@ def get_filename_to_load(fname):
 
 const (
 	HostFunctionStubsTemplate = `
-
+{{ $idl := . }}
 cfunctype_params_ret = CFUNCTYPE(None)
 cfunctype_params_ret.argtypes = [c_void_p, POINTER(POINTER(c_ubyte)), POINTER(c_ulonglong)]
 cfunctype_params_no_ret = CFUNCTYPE(None)
@@ -115,18 +116,19 @@ err = POINTER(c_ubyte)()
 out_err = POINTER(POINTER(c_ubyte))(c_void_p(addressof(err)))
 err_len = c_uint32()
 out_err_len = POINTER(c_uint32)(c_void_p(addressof(err_len)))
-	
+
+{{ $idl := . }}
 {{range $mindex, $m := .Modules}}
 
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}
-{{$f.Getter.Name}}_id = {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString}}'.encode("utf-8")), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len))
+{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
 if {{$f.Getter.Name}}_id == {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 {{end}}
 {{if $f.Setter}}
-{{$f.Setter.Name}}_id = {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString}}'.encode("utf-8")), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len))
+{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
 if {{$f.Setter.Name}}_id == {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -134,7 +136,7 @@ if {{$f.Setter.Name}}_id == {{GetCFuncType $f.Setter.Parameters $f.Setter.Return
 {{end}} {{/* end globals */}}
 
 {{range $findex, $f := $m.Functions}}
-{{$f.Name}}_id = {{GetCFuncType $f.Parameters $f.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.FunctionPathAsString}}'.encode("utf-8")), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len))
+{{$f.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.FunctionPathAsString $idl}}'.encode("utf-8")), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
 if {{$f.Name}}_id == {{GetCFuncType $f.Parameters $f.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -142,7 +144,7 @@ if {{$f.Name}}_id == {{GetCFuncType $f.Parameters $f.ReturnValues}}(0): # failed
 
 {{range $cindex, $c := $m.Classes}}
 {{range $cstrindex, $cstr := $c.Constructors}}
-{{$c.Name}}_{{$cstr.Name}}_id = {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$cstr.FunctionPathAsString}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len))
+{{$c.Name}}_{{$cstr.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}})
 if {{$c.Name}}_{{$cstr.Name}}_id == {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -150,13 +152,13 @@ if {{$c.Name}}_{{$cstr.Name}}_id == {{GetCFuncType $cstr.Parameters $cstr.Return
 
 {{range $findex, $f := $c.Fields}}
 {{if $f.Getter}}
-{{$c.Name}}_{{$f.Getter.Name}}_id = {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len))
+{{$c.Name}}_{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
 if {{$c.Name}}_{{$f.Getter.Name}}_id == {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 {{end}}
 {{if $f.Setter}}
-{{$c.Name}}_{{$f.Setter.Name}}_id = {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len))
+{{$c.Name}}_{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
 if {{$c.Name}}_{{$f.Setter.Name}}_id == {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -164,14 +166,14 @@ if {{$c.Name}}_{{$f.Setter.Name}}_id == {{GetCFuncType $f.Setter.Parameters $f.S
 {{end}} {{/* End fields */}}
 
 {{range $methindex, $meth := $c.Methods}}
-{{$c.Name}}_{{$meth.Name}}_id = {{GetCFuncType $meth.Parameters $meth.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$meth.FunctionPathAsString}}'.encode("utf-8"), len('{{$meth.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len))
+{{$c.Name}}_{{$meth.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$meth.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$meth.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
 if {{$c.Name}}_{{$meth.Name}}_id == {{GetCFuncType $meth.Parameters $meth.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 {{end}}
 
 {{if $c.Releaser}}
-{{$c.Name}}_{{$c.Releaser.Name}}_id = {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}}(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$c.Releaser.FunctionPathAsString}}'.encode("utf-8"), len('{{$c.Releaser.FunctionPathAsString}}'.encode("utf-8")), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len))
+{{$c.Name}}_{{$c.Releaser.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), '{{$c.Releaser.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$c.Releaser.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
 if {{$c.Name}}_{{$c.Releaser.Name}}_id ==  {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}}(0): # failed to load function
 	err_text = string_at(out_err.contents, out_err_len.contents.value)
 	raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -293,14 +295,14 @@ class {{$c.Name}}:
 		{{$paramsLength := len $f.Parameters}}{{$h := index $f.Parameters 0}}
 		params = (self.obj_handle,)
 		params_types = ({{GetMetaFFIType $h}},)
-		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types))
+		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), 0)
 
 		# xcall function
 		{{GenerateCodeXCall "" $fullName $f.Parameters $f.ReturnValues 2}}
 	{{end}}
 
 	{{range $methindex, $f := $c.Methods}}
-	def {{$f.Name}}(self{{range $index, $elem := $f.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}{{end}}):
+	def {{$f.Name}}{{GenerateMethodSignature $f}}:
 		{{$fullName := (print $c.Name "_" $f.Name)}}
 		{{GenerateCodeGlobals $fullName 2}}
 	
@@ -314,7 +316,14 @@ class {{$c.Name}}:
 		{{GenerateCodeReturn $f.ReturnValues}}
 	{{end}}
 
+{{/* declare static methods */}}
+{{range $methindex, $f := $c.Methods}}
+{{if not $f.InstanceRequired}}
+{{$c.Name}}.{{$f.Name}} = staticmethod({{$c.Name}}.{{$f.Name}})
 {{end}}
+{{end}}
+
+{{end}} {{/* End Class */}}
 
 {{end}}
 `

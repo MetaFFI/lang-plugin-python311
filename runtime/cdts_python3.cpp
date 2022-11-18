@@ -104,13 +104,15 @@ cdts_build_callbacks cdts_python3::build_callback
 						throw std::runtime_error("handle attribute is not found in metaffi_handle object");
 					}
 					
-					return (metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle);
+					auto res = (metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle);
+					
+					return res;
 				}
-				
+			
 				// a python object
 				python3_objects_table::instance().set(pybj);
-			}
-			
+			};
+		
 			return (metaffi_handle)pybj;
 		};
 		
@@ -368,6 +370,7 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 	}
 	
 	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
+	
 	if(types_length > 50){
 		delete types;
 	}

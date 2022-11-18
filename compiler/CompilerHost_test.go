@@ -13,8 +13,9 @@ const compilerTestCode = `
 from test_MetaFFIHost import *
 
 def host_compiler():
+
 	res = f1(3.141592, 2.71, -10, -20, -30, -40, 50, 60, 70, 80, True, 'This is an input', ["element one", "element two"], [2, 4, 6, 8, 10])
-	
+
 	if len(res) != 14:
 		raise RuntimeError("Expected result length is 2. Received: "+str(len(res)))
 

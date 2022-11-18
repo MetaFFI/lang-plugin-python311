@@ -23,50 +23,84 @@ var templatesFuncMap = map[string]interface{}{
 	"GenerateCodeReturn":           generateReturn,
 	"GetCFuncType":                 getCFuncType,
 	"GenerateCEntryPoint":          generateCEntryPoint,
+	"GenerateMethodSignature":      generateMethodSignature,
 }
 
-func generateCEntryPoint(name string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string{
+//--------------------------------------------------------------------
+func generateMethodSignature(meth *IDL.MethodDefinition) string {
+	//{{if $f.InstanceRequired}}self{{end}}{{range $index, $elem := $f.Parameters}}{{if gt $index 0}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}{{end}}->{{ConvertToPythonTypeFromField $restype}}
+	params := make([]string, 0)
+	retvals := make([]string, 0)
 
+	for i, p := range meth.Parameters {
+		if i == 0 && meth.InstanceRequired{
+			params = append(params, "self")
+		} else {
+			params = append(params, fmt.Sprintf("%v:%v", p.Name, convertToPythonTypeFromField(p)))
+		}
+	}
+	
+	for _, r := range meth.ReturnValues {
+		retvals = append(retvals, convertToPythonTypeFromField(r))
+	}
+	
+	paramsString := strings.Join(params, ",")
+	
+	retvalString := ""
+	if len(retvals) == 0 {
+		retvalString = "None"
+	} else if len(retvals) == 1 {
+		retvalString = retvals[0]
+	} else { // > 1
+		retvalString = fmt.Sprintf("Tuple[%v]", strings.Join(retvals, ","))
+	}
+	
+	return fmt.Sprintf("(%v)->%v", paramsString, retvalString)
+}
+
+//--------------------------------------------------------------------
+func generateCEntryPoint(name string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string {
+	
 	indentStr := ""
-    for i := 0 ; i<indent ; i++{
-        indentStr += "\t"
-    }
-
+	for i := 0; i < indent; i++ {
+		indentStr += "\t"
+	}
+	
 	res := ""
-
-	if len(params) > 0 && len(retvals) > 0{
+	
+	if len(params) > 0 && len(retvals) > 0 {
 		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
 		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
 		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
 		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
 		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
 	} else if len(params) > 0 {
-        res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-        res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
-        res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-        res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_no_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
-        res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
-    } else if len(retvals) > 0 {
-        res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-        res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
-        res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-        res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
-        res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
-    } else {
-        res += fmt.Sprintf("%v@CFUNCTYPE(None, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-        res += fmt.Sprintf("%vdef CEntryPoint_%v(out_err, out_err_len):\n", indentStr, name)
-        res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-        res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_no_ret(py_object(EntryPoint_%v), out_err, out_err_len)\n", indentStr, name)
-        res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
-    }
-
-    return res
+		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
+		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_no_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
+		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+	} else if len(retvals) > 0 {
+		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
+		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_ret(py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, name)
+		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+	} else {
+		res += fmt.Sprintf("%v@CFUNCTYPE(None, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
+		res += fmt.Sprintf("%vdef CEntryPoint_%v(out_err, out_err_len):\n", indentStr, name)
+		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
+		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_no_ret(py_object(EntryPoint_%v), out_err, out_err_len)\n", indentStr, name)
+		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+	}
+	
+	return res
 }
 
 //--------------------------------------------------------------------
-func getCFuncType(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string{
-
-	if len(params) > 0 && len(retvals) > 0{
+func getCFuncType(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
+	
+	if len(params) > 0 && len(retvals) > 0 {
 		return "cfunctype_params_ret"
 	} else if len(params) > 0 {
 		return "cfunctype_params_no_ret"
@@ -76,14 +110,15 @@ func getCFuncType(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) str
 		return "cfunctype_no_params_no_ret"
 	}
 }
+
 //--------------------------------------------------------------------
 func generateCodeGlobals(name string, indent int) string {
-
+	
 	indentStr := ""
-	for i := 0 ; i<indent ; i++{
+	for i := 0; i < indent; i++ {
 		indentStr += "\t"
 	}
-
+	
 	code := fmt.Sprintf("global xllr_handle\n%vglobal %v_id\n%vglobal runtime_plugin\n%vglobal python_plugin_handle", indentStr, name, indentStr, indentStr)
 	
 	return code
@@ -139,10 +174,10 @@ func generateCodeXCall(className string, funcName string, params []*IDL.ArgDefin
 			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
 	*/
 	indentStr := ""
-    for i := 0 ; i<indent ; i++{
-        indentStr += "\t"
-    }
-
+	for i := 0; i < indent; i++ {
+		indentStr += "\t"
+	}
+	
 	var name string
 	if className != "" {
 		name += className + "_"
@@ -151,13 +186,13 @@ func generateCodeXCall(className string, funcName string, params []*IDL.ArgDefin
 	
 	code := fmt.Sprintf("out_error = (%v * 1)(0)\n", convertToCPythonType("string8"))
 	code += fmt.Sprintf("%vout_error_len = (%v)(0)\n", indentStr, convertToCPythonType("size"))
-	if len(params) > 0 || len(retvals) > 0{
+	if len(params) > 0 || len(retvals) > 0 {
 		code += fmt.Sprintf("%v%v_id(c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, name)
 	} else {
 		code += fmt.Sprintf("%v%v_id(out_error, byref(out_error_len))", indentStr, name)
 	}
 	code += fmt.Sprintf("%v\n", indentStr)
-	code += fmt.Sprintf("%vif out_error != None and out_error[0] != None:\n", indentStr)
+	code += fmt.Sprintf("%vif out_error is not None and out_error[0] is not None:\n", indentStr)
 	code += fmt.Sprintf("%v\terr_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')\n", indentStr)
 	code += fmt.Sprintf("%v\traise RuntimeError('\\n'+err_msg.replace(\"\\\\n\", \"\\n\"))\n", indentStr)
 	
@@ -186,24 +221,24 @@ func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDef
 		paramsTypes := make([]string, 0)
 		
 		for i, p := range params {
-
-			if isObjectMember && i == 0{
+			
+			if isObjectMember && i == 0 {
 				paramsNames = append(paramsNames, "self.obj_handle")
 			} else {
 				paramsNames = append(paramsNames, fmt.Sprintf("%v", p.Name))
 			}
-
+			
 			paramsTypes = append(paramsTypes, strconv.FormatUint(getMetaFFIType(p), 10))
 		}
-
+		
 		return fmt.Sprintf(code, strings.Join(paramsNames, ","), strings.Join(paramsTypes, ","), len(retvals))
-	} else if len(retvals) > 0{
+	} else if len(retvals) > 0 {
 		code := `xcall_params = xllr_handle.alloc_cdts_buffer(0, %v)`
 		return fmt.Sprintf(code, len(retvals))
 	} else {
 		return ""
 	}
-
+	
 }
 
 //--------------------------------------------------------------------
@@ -241,8 +276,20 @@ func getEnvVar(env string) string {
 
 //--------------------------------------------------------------------
 func convertToPythonTypeFromField(definition *IDL.ArgDefinition) string {
-	return convertToPythonType(definition.Type, definition.IsArray())
+	
+	if strings.Contains(string(definition.Type), "_array") {
+		
+		if !definition.IsArray() {
+			panic(fmt.Sprintf("Argument %v of type %v states an array, but dimensions is %v", definition.Name, definition.Type, definition.Dimensions))
+		}
+		
+		typeName := strings.ReplaceAll(string(definition.Type), "_array", "")
+		return convertToPythonType(IDL.MetaFFIType(typeName), definition.IsArray())
+	} else {
+		return convertToPythonType(definition.Type, definition.IsArray())
+	}
 }
+
 //--------------------------------------------------------------------
 func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string {
 	
