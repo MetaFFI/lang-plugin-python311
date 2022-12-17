@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-# include the SDK
-set(METAFFI_SDK ${CMAKE_CURRENT_LIST_DIR}/../plugin-sdk)
-include(${METAFFI_SDK}/CMakeLists.txt)
-
 project(lang-plugin-python3 VERSION 0.0.1)
 
 include(CTest)
@@ -21,5 +17,5 @@ else()
 	set(BOOST_ROOT          /usr/include/boost)
 endif()
 
-include(${CMAKE_CURRENT_LIST_DIR}/compiler/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/runtime/CMakeLists.txt)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/compiler/)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/runtime/)
