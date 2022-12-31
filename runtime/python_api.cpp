@@ -112,19 +112,19 @@ void free_runtime(char** err, uint32_t* err_len)
 	}
 }
 //--------------------------------------------------------------------
-void* load_function(const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)
+void* load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)
 {
 	if(!Py_IsInitialized())
 	{
 		load_runtime(err, err_len);
 	}
-	
+
 	pyscope();
+
+	metaffi::utils::function_path_parser fp(std::string(function_path, function_path_len));
 	
-	metaffi::utils::function_path_parser fp(function_path);
-	
-	PyObject* pymod = PyImport_ImportModuleEx(fp[function_path_entry_metaffi_guest_lib].c_str(), Py_None, Py_None, Py_None);
-	
+	PyObject* pymod = PyImport_ImportModuleEx(std::string(module_path, module_path_len).c_str(), Py_None, Py_None, Py_None);
+
 	if(!pymod)
 	{
 		// error has occurred

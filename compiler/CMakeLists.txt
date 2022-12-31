@@ -15,6 +15,11 @@ add_custom_command(TARGET ${target_name}
 		COMMAND ${GOEXEC} build -buildmode=c-shared -gcflags=-shared -o ${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
 		COMMENT "Building ${target_name} compiler plugin")
 
+add_custom_command(TARGET ${target_name} POST_BUILD
+		COMMAND "${CMAKE_COMMAND}" -E copy
+		"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.so"
+		"$ENV{METAFFI_HOME}/${target_name}.so"
+		COMMENT "Copy ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.so -> $ENV{METAFFI_HOME}/${target_name}.so")
 
 # Unitest
 add_test(NAME compiler_python3_gotest_host
@@ -27,4 +32,4 @@ add_test(NAME compiler_python3_gotest_guest
 
 # install
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
-		DESTINATION "lib")
+		DESTINATION .)
