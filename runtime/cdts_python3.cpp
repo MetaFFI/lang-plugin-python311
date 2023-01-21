@@ -11,73 +11,73 @@ std::once_flag load_capi_flag;
 cdts_build_callbacks cdts_python3::build_callback
 {
 	[](void* values_to_set, int index, metaffi_float32& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_float32>((PyObject*)values_to_set, index+starting_index, val, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
+		set_numeric_to_cdts<metaffi_float32>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_float32{ return (metaffi_float32)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_float32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_float32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
+		set_numeric_array_to_cdts<metaffi_float32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_float32{ return (metaffi_float32)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_float64& val, int starting_index){
-		set_numeric_to_cdts<metaffi_float64>((PyObject*)values_to_set, index+starting_index, val, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
+		set_numeric_to_cdts<metaffi_float64>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_float64{ return (metaffi_float64)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_float64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_float64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyFloat_AsDouble, [](PyObject* o)->int{ return PyFloat_Check(o); });
+		set_numeric_array_to_cdts<metaffi_float64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_float64{ return (metaffi_float64)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_int8& val, int starting_index){
-		set_numeric_to_cdts<metaffi_int8>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_int8>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int8{ return (metaffi_int8)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_int8*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_int8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int8{ return (metaffi_int8)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_int16& val, int starting_index){
-		set_numeric_to_cdts<metaffi_int16>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_int16>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int16{ return (metaffi_int16)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_int16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_int16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int16{ return (metaffi_int16)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_int32& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_int32>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_int32>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int32{ return (metaffi_int32)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_int32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_int32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int32{ return (metaffi_int32)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_int64& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_int64>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_int64>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int64{ return (metaffi_int64)PyLong_AsLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_int64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_int64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int64{ return (metaffi_int64)PyLong_AsLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_uint8& val, int starting_index){
-		set_numeric_to_cdts<metaffi_uint8>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_uint8>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint8{ return (metaffi_uint8)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_uint8*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_uint8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint8{ return (metaffi_uint8)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_uint16& val, int starting_index){
-		set_numeric_to_cdts<metaffi_uint16>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_uint16>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint16{ return (metaffi_uint16)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_uint16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_uint16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint16{ return (metaffi_uint16)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_uint32& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_uint32>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_uint32>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint32{ return (metaffi_uint32)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_uint32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_uint32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint32{ return (metaffi_uint32)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	
 	[](void* values_to_set, int index, metaffi_uint64& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_uint64>((PyObject*)values_to_set, index+starting_index, val, PyLong_AsUnsignedLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_to_cdts<metaffi_uint64>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint64{ return (metaffi_uint64)PyLong_AsUnsignedLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_uint64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, PyLong_AsUnsignedLongLong, [](PyObject* o)->int{ return PyLong_Check(o); });
+		set_numeric_array_to_cdts<metaffi_uint64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint64{ return (metaffi_uint64)PyLong_AsUnsignedLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
 	},
 	[](void* values_to_set, int index, metaffi_bool& val, int starting_index){
 		set_numeric_to_cdts<metaffi_bool>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
