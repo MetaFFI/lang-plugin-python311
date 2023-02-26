@@ -81,8 +81,13 @@ void initialize_environment()
 }
 //--------------------------------------------------------------------
 PyThreadState* _save = NULL;
+bool g_loaded = false;
 void load_runtime(char** err, uint32_t* err_len)
 {
+	if(g_loaded){
+		return;
+	}
+	
 	// load python runtime
 	if(!Py_IsInitialized())
 	{
@@ -92,7 +97,7 @@ void load_runtime(char** err, uint32_t* err_len)
 	metaffi::utils::scope_guard save_thread([&](){ PyGILState_Ensure(); _save = PyEval_SaveThread();});
 	pyscope();
 	initialize_environment();
-	
+	g_loaded = true;
 }
 //--------------------------------------------------------------------
 void free_runtime(char** err, uint32_t* err_len)

@@ -293,7 +293,7 @@ class {{$c.Name}}:
 		{{$fullName := (print $c.Name "_" $f.Getter.Name)}}
 		{{GenerateCodeGlobals $fullName 2}}
 	
-		{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues true}}
+		{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues $f.Getter.InstanceRequired}}
 	
 		# xcall function
 		{{GenerateCodeXCall $c.Name $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 2}}
@@ -308,7 +308,7 @@ class {{$c.Name}}:
 		{{$fullName := (print $c.Name "_" $f.Setter.Name)}}
 		{{GenerateCodeGlobals $fullName 2}}
 
-		{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues true}}
+		{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues $f.Setter.InstanceRequired}}
 
 		# xcall function
 		{{GenerateCodeXCall $c.Name $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 2}}
@@ -338,7 +338,7 @@ class {{$c.Name}}:
 		{{$fullName := (print $c.Name "_" $f.Name)}}
 		{{GenerateCodeGlobals $fullName 2}}
 	
-		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues true}}
+		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues $f.InstanceRequired}}
 
 		# xcall function
 		{{GenerateCodeXCall "" $fullName $f.Parameters $f.ReturnValues 2}}

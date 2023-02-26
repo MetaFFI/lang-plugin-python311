@@ -1,34 +1,16 @@
+
+#------------------------------- Python3 Language Support - Compiler Plugin ------------------------------------------
+project(lang-plugin-python3-compiler VERSION 0.0.1)
 set(target_name "metaffi.compiler.lang.python3")
 
-find_program(GOEXEC go)
-if(NOT GOEXEC)
-	message(FATAL "Go not found")
-endif()
-
-message("${target_name}")
-
 # build
-add_custom_target(${target_name} ALL)
+add_go_target(${target_name})
 
-add_custom_command(TARGET ${target_name}
-		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-		COMMAND ${GOEXEC} build -buildmode=c-shared -gcflags=-shared -o ${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
-		COMMENT "Building ${target_name} compiler plugin")
+go_get(${target_name})
+go_build(${target_name})
+add_go_test("Python3 compiler test")
 
-add_custom_command(TARGET ${target_name} POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy
-		"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.so"
-		"$ENV{METAFFI_HOME}/${target_name}.so"
-		COMMENT "Copy ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.so -> $ENV{METAFFI_HOME}/${target_name}.so")
-
-# Unitest
-add_test(NAME compiler_python3_gotest_host
-		COMMAND ${GOEXEC} test --run Host
-		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-
-add_test(NAME compiler_python3_gotest_guest
-		COMMAND ${GOEXEC} test --run Guest
-		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+copy_file_from_project_binary_to_metaffi_home(${target_name} ${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 # install
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
