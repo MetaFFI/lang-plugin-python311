@@ -9,6 +9,7 @@
 #include <map>
 #include "cdts_python3.h"
 #include <regex>
+#include <filesystem>
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -91,7 +92,7 @@ void load_runtime(char** err, uint32_t* err_len)
 	// load python runtime
 	if(!Py_IsInitialized())
 	{
-		Py_InitializeEx(1); // 1 means register signal handlers
+		Py_InitializeEx(0); // Do not install signal handlers
 	}
 	
 	metaffi::utils::scope_guard save_thread([&](){ PyGILState_Ensure(); _save = PyEval_SaveThread();});
@@ -102,19 +103,23 @@ void load_runtime(char** err, uint32_t* err_len)
 //--------------------------------------------------------------------
 void free_runtime(char** err, uint32_t* err_len)
 {
+	printf("++++ going to free python runtime\n");
 	if(!Py_IsInitialized())
 	{
 		return;
 	}
-	
+	printf("++++ before restore thread\n");
 	PyEval_RestoreThread(_save);
-	
+	printf("++++ before FinalizeEx\n");
 	int res = Py_FinalizeEx();
+	printf("++++ after FinalizeEx\n");
 	if(res == -1)
 	{
+		printf("++++ error %s !\n", *err);
 		handle_err(err, err_len, "Python finalization has failed!");
-		return;
 	}
+	
+	printf("+++ DONE freeing!\n");
 }
 //--------------------------------------------------------------------
 void* load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)

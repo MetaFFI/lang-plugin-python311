@@ -19,8 +19,6 @@ import {{$i}}{{end}}
 `
 
 const GuestHelperFunctions = `
-
-
 python_plugin_handle = None
 def load_python_plugin():
 	global python_plugin_handle
