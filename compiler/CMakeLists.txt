@@ -2,6 +2,8 @@
 #------------------------------- Python3 Language Support - Compiler Plugin ------------------------------------------
 set(target_name "metaffi.compiler.python3")
 
+#TODO: Make sure go plugin is installed
+
 # build
 add_go_target(${target_name})
 

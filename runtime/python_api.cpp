@@ -108,8 +108,8 @@ void free_runtime(char** err, uint32_t* err_len)
 	{
 		return;
 	}
-	printf("++++ before restore thread\n");
-	PyEval_RestoreThread(_save);
+	printf("++++ before gil ensure\n");
+	PyGILState_Ensure();
 	printf("++++ before FinalizeEx\n");
 	int res = Py_FinalizeEx();
 	printf("++++ after FinalizeEx\n");
