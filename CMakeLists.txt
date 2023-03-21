@@ -48,7 +48,7 @@ set(CMAKE_SKIP_INSTALL_RPATH ON)
 
 # package notes
 set(NOTES "Standard Python3 (e.g. CPython) must be installed to use plugin.
-In case of 'Could not find platform independent libraries', set PYTHONHOME environment variable to install path")
+In case of 'Could not find platform independent libraries', set PYTHONHOME environment variable to install path.")
 
 #-----------------------------------------------------------------------------------------------
 
