@@ -9,7 +9,7 @@ import . "github.com/MetaFFI/lang-plugin-go/go-runtime"
 
 /*
 #cgo !windows LDFLAGS: -L. -ldl
-#cgo CFLAGS: -I/mnt/c/src/github.com/MetaFFI/metaffi-core/out/ubuntu/x64/debug/
+#cgo CFLAGS: -IC:/src/github.com/MetaFFI/metaffi-core/out/windows/x64/debug
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -24,6 +24,7 @@ metaffi_type get_cdt_type(struct cdt* p);
 metaffi_size len_to_metaffi_size(long long i);
 */
 import "C"
+
 
 
 // function IDs
@@ -149,13 +150,13 @@ func Load(modulePath string){
 		defer C.free(unsafe.Pointer(ppath))
 
 		pmodulePath := C.CString(modulePath)
-        defer C.free(unsafe.Pointer(pmodulePath))
+		defer C.free(unsafe.Pointer(pmodulePath))
 
 		var out_err *C.char
 		var out_err_len C.uint32_t
 		out_err_len = C.uint32_t(0)
-		id := C.xllr_load_function(pruntime_plugin, runtime_plugin_length, pmodulePath, C.uint(len(modulePath)), ppath, C.uint(len(fpath)), nil, C.schar(params_count), C.schar(params_count), &out_err, &out_err_len)
-		
+		id := C.xllr_load_function(pruntime_plugin, runtime_plugin_length, pmodulePath, C.uint(len(modulePath)), ppath, C.uint(len(fpath)), nil,  C.schar(params_count), C.schar(params_count), &out_err, &out_err_len)
+
 		if id == nil{ // failed
 			panic(fmt.Errorf("Failed to load foreign entity entrypoint \"%v\": %v", fpath, string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len)))))
 		}
@@ -165,100 +166,99 @@ func Load(modulePath string){
 
 	
 	
-	
-	
+
 	
 
 	
 	
-	variable_info_get_name_id = loadFF(modulePath, "entrypoint_function=EntryPoint_variable_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	variable_info_get_name_id = loadFF(modulePath, `entrypoint_function=EntryPoint_variable_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	variable_info_get_type_id = loadFF(modulePath, "entrypoint_function=EntryPoint_variable_info_get_type,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	variable_info_get_type_id = loadFF(modulePath, `entrypoint_function=EntryPoint_variable_info_get_type,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
 	
 	
-	variable_info_Releasevariable_info_id = loadFF(modulePath, "entrypoint_function=EntryPoint_variable_info_Releasevariable_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 0)
+	variable_info_Releasevariable_info_id = loadFF(modulePath, `entrypoint_function=EntryPoint_variable_info_Releasevariable_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 0)
 	
 	
 	
-	parameter_info_get_name_id = loadFF(modulePath, "entrypoint_function=EntryPoint_parameter_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	parameter_info_get_name_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	parameter_info_get_type_id = loadFF(modulePath, "entrypoint_function=EntryPoint_parameter_info_get_type,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	parameter_info_get_type_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_type,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
 	
 	
-	parameter_info_Releaseparameter_info_id = loadFF(modulePath, "entrypoint_function=EntryPoint_parameter_info_Releaseparameter_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 0)
+	parameter_info_Releaseparameter_info_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_Releaseparameter_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 0)
 	
 	
 	
-	function_info_get_name_id = loadFF(modulePath, "entrypoint_function=EntryPoint_function_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	function_info_get_name_id = loadFF(modulePath, `entrypoint_function=EntryPoint_function_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	function_info_get_comment_id = loadFF(modulePath, "entrypoint_function=EntryPoint_function_info_get_comment,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	function_info_get_comment_id = loadFF(modulePath, `entrypoint_function=EntryPoint_function_info_get_comment,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	function_info_get_parameters_id = loadFF(modulePath, "entrypoint_function=EntryPoint_function_info_get_parameters,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	function_info_get_parameters_id = loadFF(modulePath, `entrypoint_function=EntryPoint_function_info_get_parameters,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	function_info_get_return_values_id = loadFF(modulePath, "entrypoint_function=EntryPoint_function_info_get_return_values,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	function_info_get_return_values_id = loadFF(modulePath, `entrypoint_function=EntryPoint_function_info_get_return_values,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
 	
 	
-	function_info_Releasefunction_info_id = loadFF(modulePath, "entrypoint_function=EntryPoint_function_info_Releasefunction_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 0)
+	function_info_Releasefunction_info_id = loadFF(modulePath, `entrypoint_function=EntryPoint_function_info_Releasefunction_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 0)
 	
 	
 	
-	class_info_get_name_id = loadFF(modulePath, "entrypoint_function=EntryPoint_class_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	class_info_get_name_id = loadFF(modulePath, `entrypoint_function=EntryPoint_class_info_get_name,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	class_info_get_comment_id = loadFF(modulePath, "entrypoint_function=EntryPoint_class_info_get_comment,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	class_info_get_comment_id = loadFF(modulePath, `entrypoint_function=EntryPoint_class_info_get_comment,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	class_info_get_fields_id = loadFF(modulePath, "entrypoint_function=EntryPoint_class_info_get_fields,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	class_info_get_fields_id = loadFF(modulePath, `entrypoint_function=EntryPoint_class_info_get_fields,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	class_info_get_methods_id = loadFF(modulePath, "entrypoint_function=EntryPoint_class_info_get_methods,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	class_info_get_methods_id = loadFF(modulePath, `entrypoint_function=EntryPoint_class_info_get_methods,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
 	
 	
-	class_info_Releaseclass_info_id = loadFF(modulePath, "entrypoint_function=EntryPoint_class_info_Releaseclass_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 0)
+	class_info_Releaseclass_info_id = loadFF(modulePath, `entrypoint_function=EntryPoint_class_info_Releaseclass_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 0)
 	
 	
 	
-	py_info_get_globals_id = loadFF(modulePath, "entrypoint_function=EntryPoint_py_info_get_globals,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	py_info_get_globals_id = loadFF(modulePath, `entrypoint_function=EntryPoint_py_info_get_globals,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	py_info_get_functions_id = loadFF(modulePath, "entrypoint_function=EntryPoint_py_info_get_functions,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	py_info_get_functions_id = loadFF(modulePath, `entrypoint_function=EntryPoint_py_info_get_functions,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	py_info_get_classes_id = loadFF(modulePath, "entrypoint_function=EntryPoint_py_info_get_classes,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	py_info_get_classes_id = loadFF(modulePath, `entrypoint_function=EntryPoint_py_info_get_classes,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
 	
 	
-	py_info_Releasepy_info_id = loadFF(modulePath, "entrypoint_function=EntryPoint_py_info_Releasepy_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 0)
+	py_info_Releasepy_info_id = loadFF(modulePath, `entrypoint_function=EntryPoint_py_info_Releasepy_info,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 0)
 	
 	
 	
 	
-	py_extractor_extract_id = loadFF(modulePath, "entrypoint_class=py_extractor,entrypoint_function=EntryPoint_py_extractor_extract,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	py_extractor_extract_id = loadFF(modulePath, `entrypoint_class=py_extractor,entrypoint_function=EntryPoint_py_extractor_extract,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	py_extractor_py_extractor_id = loadFF(modulePath, "entrypoint_function=EntryPoint_py_extractor_py_extractor,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 1)
+	py_extractor_py_extractor_id = loadFF(modulePath, `entrypoint_function=EntryPoint_py_extractor_py_extractor,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
-	py_extractor_Releasepy_extractor_id = loadFF(modulePath, "entrypoint_function=EntryPoint_py_extractor_Releasepy_extractor,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor", 1, 0)
+	py_extractor_Releasepy_extractor_id = loadFF(modulePath, `entrypoint_function=EntryPoint_py_extractor_Releasepy_extractor,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 0)
 	
 	
 	
