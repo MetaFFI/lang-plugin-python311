@@ -50,19 +50,18 @@ set(CMAKE_SKIP_INSTALL_RPATH ON)
 set(NOTES "Standard Python3 (e.g. CPython) must be installed to use plugin.
 In case of 'Could not find platform independent libraries', set PYTHONHOME environment variable to install path.")
 
+file(WRITE ${PROJECT_BINARY_DIR}/notes.txt ${package_notes})
+
 #-----------------------------------------------------------------------------------------------
 
 install(CODE "set(CMAKE_SCRIPTS_DIR ${CMAKE_CURRENT_LIST_DIR}/plugin-sdk/cmake)")
 install(CODE "set(PACKAGE_ROOT ${PROJECT_BINARY_DIR})")
 install(CODE "set(dylib_ext ${CMAKE_SHARED_LIBRARY_SUFFIX})")
-install(CODE "set(package_notes ${NOTES})")
 install(CODE
 		[[
-		file(WRITE ${PACKAGE_ROOT}/notes.txt ${package_notes})
-
 		include(${CMAKE_SCRIPTS_DIR}/MetaFFI.cmake)
 
-		list(APPEND package_files ${PACKAGE_ROOT}/notes.txt)
+#		list(APPEND package_files ${PACKAGE_ROOT}/notes.txt)
 		list(APPEND package_files metaffi.idl.py${dylib_ext})
 		list(APPEND package_files py_extractor.py)
 		list(APPEND package_files py_extractor_MetaFFIGuest.py)
