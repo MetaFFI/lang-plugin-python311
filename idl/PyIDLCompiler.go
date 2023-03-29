@@ -104,10 +104,10 @@ func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string, isEmbedd
 		fullPathToModule := strings.Join(pathToModule, ".")
 
 		module.AddExternalResource(fullPathToModule)
-		module.SetFunctionPath("module", fullPathToModule)
+		module.SetFunctionPath("module", strings.Replace(fullPathToModule, "\\", "/", -1))
 	} else {
 		module.AddExternalResource(guestCodeModule)
-        module.SetFunctionPath("module", guestCodeModule)
+        module.SetFunctionPath("module", strings.Replace(guestCodeModule, "\\", "/", -1))
 	}
 
 	this.idl.FinalizeConstruction()

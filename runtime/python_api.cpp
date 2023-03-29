@@ -9,7 +9,6 @@
 #include <map>
 #include "cdts_python3.h"
 #include <regex>
-#include <filesystem>
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -81,7 +80,7 @@ void initialize_environment()
 	
 }
 //--------------------------------------------------------------------
-PyThreadState* _save = NULL;
+PyThreadState* _save = nullptr;
 bool g_loaded = false;
 void load_runtime(char** err, uint32_t* err_len)
 {
@@ -93,33 +92,62 @@ void load_runtime(char** err, uint32_t* err_len)
 	if(!Py_IsInitialized())
 	{
 		Py_InitializeEx(0); // Do not install signal handlers
+		
+		// https://stackoverflow.com/questions/75846775/embedded-python-3-10-py-finalizeex-hangs-deadlock-on-threading-shutdown/
+		PyEval_SaveThread();
 	}
 	
-	metaffi::utils::scope_guard save_thread([&](){ PyGILState_Ensure(); _save = PyEval_SaveThread();});
-	pyscope();
+	
+	auto gil = PyGILState_Ensure();
+	
 	initialize_environment();
 	g_loaded = true;
+	
+	//_save = PyEval_SaveThread();
+	PyGILState_Release(gil);
+	
 }
 //--------------------------------------------------------------------
 void free_runtime(char** err, uint32_t* err_len)
 {
-	printf("++++ going to free python runtime\n");
-	if(!Py_IsInitialized())
-	{
-		return;
-	}
-	printf("++++ before gil ensure\n");
-	PyGILState_Ensure();
-	printf("++++ before FinalizeEx\n");
-	int res = Py_FinalizeEx();
-	printf("++++ after FinalizeEx\n");
-	if(res == -1)
-	{
-		printf("++++ error %s !\n", *err);
-		handle_err(err, err_len, "Python finalization has failed!");
-	}
+	//printf("+++ SKIP FREE PYTHON!\n");
+	return; // skip freeing python due to deadlock in PyFinalizeEx
 	
-	printf("+++ DONE freeing!\n");
+//	printf("++++ going to free python runtime\n");
+//	if(!Py_IsInitialized())
+//	{
+//		return;
+//	}
+	
+//	printf("++++ before gil ensure\n");
+//	PyGILState_STATE gstate = PyGILState_Ensure();
+//	std::string kill_all_objects = "import threading\n";
+//	kill_all_objects += "print('active threads: {}'.format(threading.active_count()))\n";
+//	kill_all_objects += "print('current thread indent: {}'.format(threading.current_thread().ident))\n";
+//	kill_all_objects += "for t in threading.enumerate():\n";
+//	kill_all_objects += "\tprint('get_ident: {} ; native: {}'.format(t.ident, t.native_id))\n";
+//	kill_all_objects += "\tif not threading.current_thread().ident == t.ident:\n";
+//	kill_all_objects += "\t\tt.join()\n"; // to make shutdown ignore these threads
+//	kill_all_objects += "print('going to call _shutdown()')\n";
+//	kill_all_objects += "threading._shutdown()\n";
+//	kill_all_objects += "print('after _shutdown()')\n";
+
+
+//  PyRun_SimpleString(kill_all_objects.c_str());
+	
+//	printf("++++ before gil ensure\n");
+//	PyGILState_STATE gstate = PyGILState_Ensure();
+//
+//	printf("++++ before FinalizeEx\n");
+//	int res = Py_FinalizeEx();
+//	printf("++++ after FinalizeEx\n");
+//	if(res == -1)
+//	{
+//		printf("++++ error %s !\n", *err);
+//		handle_err(err, err_len, "Python finalization has failed!");
+//	}
+//
+//	printf("+++ DONE freeing!\n");
 }
 //--------------------------------------------------------------------
 void* load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, int8_t params_count, int8_t retval_count, char** err, uint32_t* err_len)

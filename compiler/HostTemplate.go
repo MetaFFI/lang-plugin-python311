@@ -157,13 +157,15 @@ def load(module_path: str)->None:
 
 	{{range $findex, $f := $m.Globals}}
 	{{if $f.Getter}}
-	{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
+	function_path_str = r"""{{$f.Getter.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
 	if not bool({{$f.Getter.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 	{{if $f.Setter}}
-	{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
+	function_path_str = r"""{{$f.Setter.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
 	if not bool({{$f.Setter.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -171,7 +173,8 @@ def load(module_path: str)->None:
 	{{end}} {{/* end globals */}}
 
 	{{range $findex, $f := $m.Functions}}
-	{{$f.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$f.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.FunctionPathAsString $idl}}'.encode("utf-8")), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
+	function_path_str = r"""{{$f.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$f.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
 	if not bool({{$f.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -187,13 +190,15 @@ def load(module_path: str)->None:
 
 	{{range $findex, $f := $c.Fields}}
 	{{if $f.Getter}}
-	{{$c.Name}}_{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Getter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
+	function_path_str = r"""{{$f.Getter.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
 	if not bool({{$c.Name}}_{{$f.Getter.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 	{{if $f.Setter}}
-	{{$c.Name}}_{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$f.Setter.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
+	function_path_str = r"""{{$f.Setter.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
 	if not bool({{$c.Name}}_{{$f.Setter.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -201,14 +206,16 @@ def load(module_path: str)->None:
 	{{end}} {{/* End fields */}}
 
 	{{range $methindex, $meth := $c.Methods}}
-	{{$c.Name}}_{{$meth.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$meth.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$meth.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
+	function_path_str = r"""{{$meth.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$meth.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
 	if not bool({{$c.Name}}_{{$meth.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 
 	{{if $c.Releaser}}
-	{{$c.Name}}_{{$c.Releaser.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$c.Releaser.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$c.Releaser.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
+	function_path_str = r"""{{$c.Releaser.FunctionPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$c.Releaser.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
 	if not bool({{$c.Name}}_{{$c.Releaser.Name}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))

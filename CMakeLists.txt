@@ -36,6 +36,7 @@ add_ctest_and_catch2_packages()
 # set RPATH
 set(CMAKE_MACOSX_RPATH 1) # tell MacOS RPATH is in use
 list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/lib")
+list(APPEND CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/lib")
 
 # add targets
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/compiler/)
@@ -47,10 +48,10 @@ set(CMAKE_INSTALL_PREFIX [[$ENV{METAFFI_HOME}]])
 set(CMAKE_SKIP_INSTALL_RPATH ON)
 
 # package notes
-set(NOTES "Standard Python3 (e.g. CPython) must be installed to use plugin.
+set(INSTALL_NOTES "Standard Python3 (e.g. CPython) must be installed to use plugin.
 In case of 'Could not find platform independent libraries', set PYTHONHOME environment variable to install path.")
 
-file(WRITE ${PROJECT_BINARY_DIR}/notes.txt ${package_notes})
+file(WRITE ${PROJECT_BINARY_DIR}/notes.txt ${INSTALL_NOTES})
 
 #-----------------------------------------------------------------------------------------------
 
@@ -61,11 +62,11 @@ install(CODE
 		[[
 		include(${CMAKE_SCRIPTS_DIR}/MetaFFI.cmake)
 
-#		list(APPEND package_files ${PACKAGE_ROOT}/notes.txt)
+		list(APPEND package_files notes.txt)
 		list(APPEND package_files metaffi.idl.py${dylib_ext})
 		list(APPEND package_files py_extractor.py)
 		list(APPEND package_files py_extractor_MetaFFIGuest.py)
 		list(APPEND package_files metaffi.compiler.python3${dylib_ext})
 		list(APPEND package_files xllr.python3${dylib_ext})
-		metaffi_pack(${PACKAGE_ROOT} "${package_files}")
+		metaffi_pack("${PACKAGE_ROOT}" "${package_files}")
 ]])
