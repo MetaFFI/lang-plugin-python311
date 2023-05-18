@@ -4,8 +4,8 @@ import os
 import sys
 from typing import List
 import types
-import site
 import re
+import none_python_impl_definitions
 
 class variable_info:
 	name: str
@@ -133,6 +133,19 @@ class py_extractor:
 
 						clsdata.fields.append(self._extract_field([k, v]))
 
+				elif ismethoddescriptor(member[1]):
+					if member[0].startswith('_'):
+						continue
+
+					# check if method is in "non_python_method_definitions"
+					method_data = none_python_impl_definitions.get_method_definition(self.mod.__name__, clsdata.name, member[0])
+					if method_data is None:
+						print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
+						continue
+
+					# if not - skip
+					clsdata.methods.append(self._extract_function((member[0], method_data), clsdata.name))
+
 				elif isfunction(member[1]):
 					if member[0].startswith('_') and member[0] != '__init__':
 						continue
@@ -145,7 +158,7 @@ class py_extractor:
 					if member[0].startswith('_'):
 						continue
 					else:
-						print('Skipping {} of type {}'.format(member[0], type(member[1]).__name__))
+						print('Skipping {} of type {}'.format('{}.{}'.format(clsdata.name, member[0]), type(member[1]).__name__))
 						continue
 
 			# make sure class has a constructor, if not, add the default one
@@ -213,6 +226,9 @@ class py_extractor:
 				type_and_val = pdata.type.split('=')
 				pdata.type = type_and_val[0].strip()
 				pdata.default_val = type_and_val[1]
+
+			# cleanup the name
+			pdata.name = pdata.name.replace('*', '')
 
 			func_info.parameters.append(pdata)
 

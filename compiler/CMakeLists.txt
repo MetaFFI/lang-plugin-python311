@@ -2,7 +2,10 @@
 #------------------------------- Python3 Language Support - Compiler Plugin ------------------------------------------
 set(target_name "metaffi.compiler.python3")
 
-#TODO: Make sure go plugin is installed
+include(${CMAKE_SCRIPTS_DIR}/MetaFFI.cmake)
+
+metaffi_confirm_plugin("go runtime")
+metaffi_confirm_plugin("go compiler")
 
 # build
 add_go_target(${target_name})

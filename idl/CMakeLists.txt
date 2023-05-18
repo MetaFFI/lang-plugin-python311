@@ -1,9 +1,6 @@
 
 #------------------------------- "py" IDL Plugin ------------------------------------------
 
-# TODO: This uses MetaFFI and "Go" metaffi plugin.
-# TODO: Add metaffi ability to check if metaffi plugin is installed
-
 set(target_name "metaffi.idl.py")
 add_go_target(${target_name})
 add_dependencies(${target_name} metaffi.compiler.python3)
@@ -29,4 +26,5 @@ copy_file_post_build(${target_name} ${CMAKE_CURRENT_LIST_DIR}/py_extractor_MetaF
 install(FILES   ${PROJECT_BINARY_DIR}/${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}
 				${CMAKE_CURRENT_LIST_DIR}/py_extractor.py
 				${CMAKE_CURRENT_LIST_DIR}/py_extractor_MetaFFIGuest.py
+				${CMAKE_CURRENT_LIST_DIR}/none_python_impl_definitions.py
 		DESTINATION .)

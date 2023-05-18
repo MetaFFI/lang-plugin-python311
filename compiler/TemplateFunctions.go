@@ -225,7 +225,8 @@ func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDef
 			if isObjectMember && i == 0 {
 				paramsNames = append(paramsNames, "self.obj_handle")
 			} else {
-				paramsNames = append(paramsNames, fmt.Sprintf("%v", p.Name))
+				name := strings.Replace(p.Name, "*", "", -1) // remove "*" or "**" from the params
+				paramsNames = append(paramsNames, fmt.Sprintf("%v", name))
 			}
 			
 			paramsTypes = append(paramsTypes, strconv.FormatUint(getMetaFFIType(p), 10))
