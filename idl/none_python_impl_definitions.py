@@ -1,8 +1,10 @@
+import collections
 from typing import Any, Callable, DefaultDict, Deque, Dict, Iterable, List, Optional, Tuple
 import inspect
 import sys
 
-class __collection__deque:
+
+class __collections__deque:
 	def __init__(self, iterable: Optional[Iterable] = None, maxlen: Optional[int] = None):
 		pass
 
@@ -13,6 +15,9 @@ class __collection__deque:
 		pass
 
 	def clear(self) -> None:
+		pass
+
+	def copy(self) -> collections.deque:
 		pass
 
 	def count(self, x: Any) -> int:
@@ -40,7 +45,7 @@ class __collection__deque:
 		pass
 
 
-class __collection__defaultdict:
+class __collections__defaultdict:
 	def __init__(self, default_factory: Optional[Callable] = None):
 		pass
 
@@ -48,7 +53,7 @@ class __collection__defaultdict:
 		pass
 
 
-class __collection__Counter:
+class __collections__Counter:
 	def __init__(self, iterable: Optional[Iterable] = None):
 		pass
 
@@ -62,7 +67,7 @@ class __collection__Counter:
 		pass
 
 
-class __collection__OrderedDict:
+class __collections__OrderedDict:
 	def __init__(self):
 		pass
 
@@ -80,3 +85,6 @@ def get_method_definition(module_name: str, class_name: str, method_name:str):
 
 	#print('did not find class {}.{} in "none python implementations definitions"'.format(module_name, class_name))
 	return None
+
+if __name__ == '__main__':
+	get_method_definition('collections', 'deque', 'pop')
