@@ -7,7 +7,7 @@ import types
 import re
 import none_python_impl_definitions
 
-ignored_builtins = { 'False', 'Ellipsis', 'None', 'True', 'NotImplemented'}
+ignored_builtins = { 'False', 'Ellipsis', 'None', 'True', 'NotImplemented', 'super'}
 
 class variable_info:
 	name: str
