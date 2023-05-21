@@ -7,6 +7,8 @@ import types
 import re
 import none_python_impl_definitions
 
+ignored_builtins = { 'False', 'Ellipsis', 'None', 'True', 'NotImplemented'}
+
 class variable_info:
 	name: str
 	type: str
@@ -92,6 +94,9 @@ class py_extractor:
 		all_members = getmembers(self.mod)
 		global_vars = []
 		for m in all_members:
+			if self.mod.__name__ == 'builtins' and m[0] in ignored_builtins:  # if builtin module, skip special cases
+				continue
+
 			if not self._is_variable(m[1]):
 				continue
 
@@ -115,6 +120,8 @@ class py_extractor:
 		return res
 
 	def _extract_classes(self) -> List[class_info]:
+		global ignored_builtins
+
 		res = []
 
 		for c in getmembers(self.mod, isclass):
@@ -126,7 +133,8 @@ class py_extractor:
 
 			constructor_found = False
 			for member in getmembers(c[1]):
-				if member[0] == '__annotations__':
+				if member[0] == '__annotations__' and not isgetsetdescriptor(member[1]):  # fields
+
 					for k, v in member[1].items():
 						if k.startswith('_'):
 							continue
@@ -134,9 +142,6 @@ class py_extractor:
 						clsdata.fields.append(self._extract_field([k, v]))
 
 				elif ismethoddescriptor(member[1]):
-					if member[0].startswith('_'):
-						continue
-
 					# check if method is in "non_python_method_definitions"
 					method_data = none_python_impl_definitions.get_method_definition(self.mod.__name__, clsdata.name, member[0])
 					if method_data is None:
@@ -147,8 +152,8 @@ class py_extractor:
 					clsdata.methods.append(self._extract_function((member[0], method_data), clsdata.name))
 
 				elif isfunction(member[1]):
-					if member[0].startswith('_') and member[0] != '__init__':
-						continue
+					# if member[0].startswith('_') and member[0] != '__init__':
+					# 	continue
 
 					if member[0] == '__init__':
 						constructor_found = True

@@ -255,7 +255,7 @@ def set_{{$f.Setter.Name}}():
 	{{GenerateCodeXCall "" $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 1}}
 
 	{{GenerateCodeReturnValues $f.Setter.Parameters $f.Setter.ReturnValues}}
-	{{GenerateCodeReturn $f.ReturnValues}}
+	{{GenerateCodeReturn $f.Setter.ReturnValues}}
 
 {{end}}{{/* end setter */}}
 {{end}}{{/* end fields */}}

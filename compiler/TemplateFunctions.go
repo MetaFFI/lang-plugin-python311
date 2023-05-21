@@ -252,14 +252,14 @@ func getMetaFFIType(elem *IDL.ArgDefinition) uint64 {
 		panic(fmt.Sprintf("Argument %v type is %v, although its dimensions are larger than 0", elem.Name, elem.Type))
 	}
 	
-	if elem.Dimensions > 0 && !strings.HasSuffix(string(elem.Type), "_array") {
+	if elem.Dimensions > 0 && !strings.HasSuffix(string(elem.Type), "_array"){
 		elem.Type = IDL.MetaFFIType(string(elem.Type) + "_array")
 	}
 	
 	val, found = IDL.TypeStringToTypeEnum[elem.Type]
 	
 	if !found {
-		panic("Requested type is not supported: " + elem.Type)
+		panic(fmt.Sprintf("Requested type is not supported: %v. Name: %v", elem.Type, elem.Name))
 	}
 	
 	return val
