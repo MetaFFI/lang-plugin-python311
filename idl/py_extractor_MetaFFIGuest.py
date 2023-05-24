@@ -155,6 +155,48 @@ def EntryPoint_parameter_info_get_type(obj):
 
 
 
+@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
+def CEntryPoint_parameter_info_get_is_default_value(cdts, out_err, out_err_len):
+	global python_plugin_handle
+	python_plugin_handle.xcall_params_ret(py_object(EntryPoint_parameter_info_get_is_default_value), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_is_default_value'.encode(), CEntryPoint_parameter_info_get_is_default_value)
+
+def EntryPoint_parameter_info_get_is_default_value(obj):
+	try:
+
+		
+		ret_val_types = (1024,)
+
+		return (None, ret_val_types, obj.is_default_value)
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+
+
+
+
+
+@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
+def CEntryPoint_parameter_info_get_is_optional(cdts, out_err, out_err_len):
+	global python_plugin_handle
+	python_plugin_handle.xcall_params_ret(py_object(EntryPoint_parameter_info_get_is_optional), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_is_optional'.encode(), CEntryPoint_parameter_info_get_is_optional)
+
+def EntryPoint_parameter_info_get_is_optional(obj):
+	try:
+
+		
+		ret_val_types = (1024,)
+
+		return (None, ret_val_types, obj.is_optional)
+	except Exception as e:
+		errdata = traceback.format_exception(*sys.exc_info())
+		return ('\n'.join(errdata),)
+
+
+
+
+
 
 
 

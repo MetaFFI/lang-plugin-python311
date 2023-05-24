@@ -55,6 +55,12 @@ var parameter_info_get_name_id unsafe.Pointer
 var parameter_info_get_type_id unsafe.Pointer
 
 
+var parameter_info_get_is_default_value_id unsafe.Pointer
+
+
+var parameter_info_get_is_optional_id unsafe.Pointer
+
+
 
 
 
@@ -188,6 +194,12 @@ func Load(modulePath string){
 	
 	
 	parameter_info_get_type_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_type,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
+	
+	
+	parameter_info_get_is_default_value_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_is_default_value,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
+	
+	
+	parameter_info_get_is_optional_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_is_optional,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
@@ -526,6 +538,102 @@ func (this *Parameter_info) GetType() (type__ string, err error){
 
 
 
+func (this *Parameter_info) GetIsDefaultValue() (is_default_value bool, err error){
+	
+	
+
+	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
+	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
+	parametersCDTS := xcall_params_slice[0].pcdt
+	return_valuesCDTS := xcall_params_slice[1].pcdt
+
+	
+	// get parameters
+	
+	fromGoToCDT(this.h, parametersCDTS, 0)
+	
+	 
+
+
+		var out_err *C.char
+	var out_err_len C.uint64_t
+	out_err_len = C.uint64_t(0)
+	
+	C.xllr_xcall_params_ret(parameter_info_get_is_default_value_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_is_default_value_id via XLLR
+	
+	// check errors
+	if out_err_len != 0{
+		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		return
+	}
+
+	
+	
+	is_default_valueAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	if is_default_valueAsInterface != nil{
+		
+		// not handle
+		is_default_value = bool(is_default_valueAsInterface.(bool))
+		
+		
+	}
+
+	
+
+	return is_default_value, nil	
+}
+
+
+
+
+func (this *Parameter_info) GetIsOptional() (is_optional bool, err error){
+	
+	
+
+	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
+	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
+	parametersCDTS := xcall_params_slice[0].pcdt
+	return_valuesCDTS := xcall_params_slice[1].pcdt
+
+	
+	// get parameters
+	
+	fromGoToCDT(this.h, parametersCDTS, 0)
+	
+	 
+
+
+		var out_err *C.char
+	var out_err_len C.uint64_t
+	out_err_len = C.uint64_t(0)
+	
+	C.xllr_xcall_params_ret(parameter_info_get_is_optional_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_is_optional_id via XLLR
+	
+	// check errors
+	if out_err_len != 0{
+		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		return
+	}
+
+	
+	
+	is_optionalAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	if is_optionalAsInterface != nil{
+		
+		// not handle
+		is_optional = bool(is_optionalAsInterface.(bool))
+		
+		
+	}
+
+	
+
+	return is_optional, nil	
+}
+
+
+
+
 
 func (this *Parameter_info) ReleaseparameterInfo( this_instance interface{}) ( err error){
 	
@@ -662,7 +770,7 @@ func (this *Function_info) GetComment() (comment string, err error){
 
 
 
-func (this *Function_info) GetParameters() (parameters []Variable_info, err error){
+func (this *Function_info) GetParameters() (parameters []Parameter_info, err error){
 	
 	
 
@@ -700,14 +808,14 @@ func (this *Function_info) GetParameters() (parameters []Variable_info, err erro
 		
 		 
 		if len(parametersAsInterface.([]interface{})) > 0{
-			parameters = make([]Variable_info, len(parametersAsInterface.([]interface{})))
+			parameters = make([]Parameter_info, len(parametersAsInterface.([]interface{})))
 			if _, ok := parametersAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range parametersAsInterface.([]interface{}){
-					parameters[i] = Variable_info{ h: h.(Handle) }
+					parameters[i] = Parameter_info{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range parametersAsInterface.([]interface{}){
-					parameters[i] = obj.(Variable_info)
+					parameters[i] = obj.(Parameter_info)
 				}
 			}
 		}

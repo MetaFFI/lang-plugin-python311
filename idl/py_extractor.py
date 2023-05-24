@@ -17,13 +17,18 @@ class variable_info:
 class parameter_info:
 	name: str
 	type: str
-	default_val: str
+	is_default_value: bool
+	is_optional: bool
+
+	def __init__(self):
+		self.is_default_value = False
+		self.is_optional = False
 
 
 class function_info:
 	name: str
 	comment: str
-	parameters: List[variable_info]
+	parameters: List[parameter_info]
 	return_values: List[str]
 
 	def __init__(self):
@@ -148,6 +153,9 @@ class py_extractor:
 						print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
 						continue
 
+					if member[0] == '__init__':
+						constructor_found = True
+
 					# if not - skip
 					clsdata.methods.append(self._extract_function((member[0], method_data), clsdata.name))
 
@@ -225,12 +233,15 @@ class py_extractor:
 			if '=' in pdata.name:  # default value
 				name_and_val = pdata.name.split('=')
 				pdata.name = name_and_val[0]
-				pdata.default_val = name_and_val[1]
+				pdata.is_default_value = True
 
 			if '=' in pdata.type:  # default value
 				type_and_val = pdata.type.split('=')
 				pdata.type = type_and_val[0].strip()
-				pdata.default_val = type_and_val[1]
+				pdata.is_default_value = True
+
+			if 'Optional[' in pdata.type:
+				pdata.is_optional = True
 
 			# cleanup the name
 			pdata.name = pdata.name.replace('*', '')
