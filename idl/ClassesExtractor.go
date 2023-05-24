@@ -52,67 +52,83 @@ func ExtractClasses(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.ClassDefini
 		if err != nil{ return nil, err }
 
 		for _, f := range pymethods{
-			name, err := f.GetName()
-			if err != nil{ return nil, err }
 
-			pymeth := IDL.NewFunctionDefinition(name)
+			originalParameters, err := f.GetParameters()
+            if err != nil {
+                return nil, err
+            }
 
-			comment, err := f.GetComment()
-			if err != nil{ return nil, err }
-			pymeth.Comment = comment
+            // optional parameters generates multiple functions (overloads)
+            overloadedParameters, err := ExtractOverloadedParameters(originalParameters)
+            if err != nil {
+                return nil, err
+            }
 
-			params, err := f.GetParameters()
-			if err != nil{ return nil, err }
-			for i, p := range params{
+			for overloadIndex, params := range overloadedParameters {
+				name, err := f.GetName()
+				if err != nil{ return nil, err }
 
-				if i == 0{ // skip "self"
-					continue
+				pymeth := IDL.NewFunctionDefinition(name)
+
+				comment, err := f.GetComment()
+				if err != nil{ return nil, err }
+				pymeth.Comment = comment
+
+				for i, p := range params{
+
+					if i == 0{ // skip "self"
+						continue
+					}
+
+					name, err := p.GetName()
+					if err != nil{ return nil, err }
+
+					pyty, err := p.GetType()
+					if err != nil{ return nil, err }
+
+					mffiType := pyTypeToMFFI(pyty)
+					var talias string
+					if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY { talias = pyty }
+
+					dims := 0
+					if pyty == "list"{ dims = 1 }
+
+					pymeth.AddParameter(IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias))
 				}
 
-				name, err := p.GetName()
+				if overloadIndex > 0{ // if function is overloaded
+                    pymeth.OverloadIndex = int32(overloadIndex)
+                }
+
+				retvals, err := f.GetReturnValues()
 				if err != nil{ return nil, err }
+				for i, pyty := range retvals{
+					name := fmt.Sprintf("ret_%d", i)
 
-				pyty, err := p.GetType()
-				if err != nil{ return nil, err }
+					mffiType := pyTypeToMFFI(pyty)
+					var talias string
+					if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY { talias = pyty }
 
-				mffiType := pyTypeToMFFI(pyty)
-				var talias string
-				if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY { talias = pyty }
+					dims := 0
+					if pyty == "list"{ dims = 1 }
 
-				dims := 0
-				if pyty == "list"{ dims = 1 }
+					pymeth.AddReturnValues(IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias))
+				}
 
-				pymeth.AddParameter(IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias))
-			}
-
-			retvals, err := f.GetReturnValues()
-			if err != nil{ return nil, err }
-			for i, pyty := range retvals{
-				name := fmt.Sprintf("ret_%d", i)
-
-				mffiType := pyTypeToMFFI(pyty)
-				var talias string
-				if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY { talias = pyty }
-
-				dims := 0
-				if pyty == "list"{ dims = 1 }
-
-				pymeth.AddReturnValues(IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias))
-			}
-			
-			if name == "__init__"{
-				pymeth.Name = clsName
-				cstr := IDL.NewConstructorDefinitionFromFunctionDefinition(pymeth)
-				cstr.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+cstr.Name)
-				cstr.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				pycls.AddConstructor(cstr)
-			} else if name == "__del__"{
-				pycls.Releaser = IDL.NewReleaserDefinitionFromFunctionDefinition(pycls, pymeth)
-			} else {
-				meth := IDL.NewMethodDefinitionWithFunction(pycls, pymeth, true)
-				meth.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				meth.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+meth.Name)
-				pycls.AddMethod(meth)
+				if name == "__init__"{
+					pymeth.Name = clsName
+					cstr := IDL.NewConstructorDefinitionFromFunctionDefinition(pymeth)
+					cstr.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+cstr.Name)
+					cstr.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+					pycls.AddConstructor(cstr)
+				} else if name == "__del__"{
+					pycls.Releaser = IDL.NewReleaserDefinitionFromFunctionDefinition(pycls, pymeth)
+				} else {
+					meth := IDL.NewMethodDefinitionWithFunction(pycls, pymeth, true)
+					meth.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+					meth.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+meth.Name)
+					pycls.AddMethod(meth)
+				}
 			}
 		}
 

@@ -162,7 +162,7 @@ func generateCodeReturnValues(parameters []*IDL.ArgDefinition, retvals []*IDL.Ar
 }
 
 //--------------------------------------------------------------------
-func generateCodeXCall(className string, funcName string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string {
+func generateCodeXCall(className string, funcName string, overloadIndexString string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string {
 	/*
 		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
 		out_error_len = ({{ConvertToCPythonType "size"}})(0)
@@ -187,9 +187,9 @@ func generateCodeXCall(className string, funcName string, params []*IDL.ArgDefin
 	code := fmt.Sprintf("out_error = (%v * 1)(0)\n", convertToCPythonType("string8"))
 	code += fmt.Sprintf("%vout_error_len = (%v)(0)\n", indentStr, convertToCPythonType("size"))
 	if len(params) > 0 || len(retvals) > 0 {
-		code += fmt.Sprintf("%v%v_id(c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, name)
+		code += fmt.Sprintf("%v%v_id(c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, name+overloadIndexString)
 	} else {
-		code += fmt.Sprintf("%v%v_id(out_error, byref(out_error_len))", indentStr, name)
+		code += fmt.Sprintf("%v%v_id(out_error, byref(out_error_len))", indentStr, name+overloadIndexString)
 	}
 	code += fmt.Sprintf("%v\n", indentStr)
 	code += fmt.Sprintf("%vif out_error is not None and out_error[0] is not None:\n", indentStr)

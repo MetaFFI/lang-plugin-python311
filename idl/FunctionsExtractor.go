@@ -112,7 +112,12 @@ func ExtractOverloadedParameters(params []Parameter_info) ([][]Parameter_info, e
 			return nil, err
 		}
 
-		if isDefault {
+		isOptional, err := p.GetIsOptional()
+		if err != nil {
+            return nil, err
+        }
+
+		if isDefault || isOptional{
 			startingIndexOfOptionals = i
 			break
 		}
@@ -146,7 +151,7 @@ func ExtractFunctions(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.FunctionD
 			return nil, err
 		}
 
-		for _, params := range overloadedParameters {
+		for i, params := range overloadedParameters {
 			name, err := f.GetName()
 			if err != nil {
 				return nil, err
@@ -165,6 +170,10 @@ func ExtractFunctions(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.FunctionD
 			fdef, err := GenerateFunctionDefinition(name, comment, params, retvals, metaffiGuestLib)
 			if err != nil {
 				return nil, err
+			}
+
+			if i > 0{ // if function is overloaded
+				fdef.OverloadIndex = int32(i)
 			}
 
 			functions = append(functions, fdef)

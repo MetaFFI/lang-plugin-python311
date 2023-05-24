@@ -147,6 +147,7 @@ class py_extractor:
 						clsdata.fields.append(self._extract_field([k, v]))
 
 				elif ismethoddescriptor(member[1]):
+
 					# check if method is in "non_python_method_definitions"
 					method_data = none_python_impl_definitions.get_method_definition(self.mod.__name__, clsdata.name, member[0])
 					if method_data is None:
@@ -263,3 +264,4 @@ class py_extractor:
 					func_info.return_values.append(rettype)
 
 		return func_info
+

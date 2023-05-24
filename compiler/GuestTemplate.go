@@ -48,15 +48,15 @@ const GuestFunctionXLLRTemplate = `
 
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}{{$retvalLength := len $f.Getter.ReturnValues}}
-{{GenerateCEntryPoint $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 0}}
-def EntryPoint_{{$f.Getter.Name}}():
+{{GenerateCEntryPoint $f.Getter.GetNameWithOverloadIndex $f.Getter.Parameters $f.Getter.ReturnValues 0}}
+def EntryPoint_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}():
 	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	return (None, ret_val_types, {{$f.Getter.FunctionPath.module}}.{{$f.Name}})
 
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
-{{GenerateCEntryPoint $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 0}}
-def EntryPoint_{{$f.Setter.Name}}(val):
+{{GenerateCEntryPoint $f.Setter.GetNameWithOverloadIndex $f.Setter.Parameters $f.Setter.ReturnValues 0}}
+def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(val):
 	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val
 	return (None, ret_val_types)
@@ -67,8 +67,8 @@ def EntryPoint_{{$f.Setter.Name}}(val):
 
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.Name}}
-{{GenerateCEntryPoint $f.Name $f.Parameters $f.ReturnValues 0}}
-def EntryPoint_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+{{GenerateCEntryPoint $f.GetNameWithOverloadIndex $f.Parameters $f.ReturnValues 0}}
+def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# call function
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
@@ -85,8 +85,8 @@ def EntryPoint_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}}
 
 {{range $classindex, $c := $m.Classes}}
 {{range $cstrindex, $f := $c.Constructors}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.Name) $f.Parameters $f.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+{{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues 0}}
+def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# call constructor
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
@@ -103,8 +103,8 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{
 
 {{range $findex, $f := $c.Fields}}
 {{if $f.Getter}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.Getter.Name) $f.Getter.Parameters $f.Getter.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}(obj):
+{{GenerateCEntryPoint (print $c.Name "_" $f.Getter.GetNameWithOverloadIndex) $f.Getter.Parameters $f.Getter.ReturnValues 0}}
+def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}(obj):
 	try:
 
 		{{$retvalLength := len $f.Getter.ReturnValues}}
@@ -117,8 +117,8 @@ def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}(obj):
 
 {{end}}{{/* End Getter */}}
 {{if $f.Setter}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.Setter.Name) $f.Setter.Parameters $f.Setter.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}(obj, val):
+{{GenerateCEntryPoint (print $c.Name "_" $f.Setter.GetNameWithOverloadIndex) $f.Setter.Parameters $f.Setter.ReturnValues 0}}
+def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(obj, val):
 	try:
 
 		obj.{{$f.Name}} = val
@@ -135,8 +135,8 @@ def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}(obj, val):
 {{end}}{{/* End Fields */}}
 
 {{range $methindex, $f := $c.Methods}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.Name) $f.Parameters $f.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+{{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues 0}}
+def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# call method
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{(index $f.Parameters 0).Name }}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}}{{if gt $index 1}},{{end}}{{$elem.Name}}{{end}}{{end}})
@@ -153,8 +153,8 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}({{range $index, $elem := $f.Parameters}}{
 {{end}}{{/* End methods */}}
 
 {{if $c.Releaser}}
-{{GenerateCEntryPoint (print $c.Name "_" $c.Releaser.Name) $c.Releaser.Parameters $c.Releaser.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$c.Releaser.Name}}({{range $index, $elem := $c.Releaser.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+{{GenerateCEntryPoint (print $c.Name "_" $c.Releaser.GetNameWithOverloadIndex) $c.Releaser.Parameters $c.Releaser.ReturnValues 0}}
+def EntryPoint_{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}{{$c.Releaser.GetOverloadIndexIfExists}}({{range $index, $elem := $c.Releaser.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
 	try:
 		# xcall release object
 		{{ $h := index $c.Releaser.Parameters 0 }}

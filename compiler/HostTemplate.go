@@ -85,30 +85,30 @@ runtime_plugin = """xllr.{{$.TargetLanguage}}""".encode("utf-8")
 {{range $mindex, $m := .Modules}}
 
 {{range $gindex, $g := $m.Globals}}
-{{if $g.Getter}}{{$g.Getter.Name}}_id = c_void_p(0){{end}}
-{{if $g.Setter}}{{$g.Setter.Name}}_id = c_void_p(0){{end}}
+{{if $g.Getter}}{{$g.Getter.Name}}{{$g.Getter.GetOverloadIndexIfExists}}_id = c_void_p(0){{end}}
+{{if $g.Setter}}{{$g.Setter.Name}}{{$g.Setter.GetOverloadIndexIfExists}}_id = c_void_p(0){{end}}
 {{end}}
 
 {{range $findex, $f := $m.Functions}}
-{{$f.Name}}_id = c_void_p(0)
+{{$f.Name}}{{$f.GetOverloadIndexIfExists}}_id = c_void_p(0)
 {{end}}
 
 {{range $cindex, $c := $m.Classes}}
 
 {{range $findex, $f := $c.Fields}}
-{{if $f.Getter}}{{$c.Name}}_{{$f.Getter.Name}}_id = c_void_p(0){{end}}
-{{if $f.Setter}}{{$c.Name}}_{{$f.Setter.Name}}_id = c_void_p(0){{end}}
+{{if $f.Getter}}{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}_id = c_void_p(0){{end}}
+{{if $f.Setter}}{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}_id = c_void_p(0){{end}}
 {{end}}
 
 {{range $cstrindex, $cstr := $c.Constructors}}
-{{$c.Name}}_{{$cstr.Name}}_id = c_void_p(0)
+{{$c.Name}}_{{$cstr.Name}}{{$cstr.GetOverloadIndexIfExists}}_id = c_void_p(0)
 {{end}}
 
 {{range $methindex, $meth := $c.Methods}}
-{{$c.Name}}_{{$meth.Name}}_id = c_void_p(0)
+{{$c.Name}}_{{$meth.Name}}{{$meth.GetOverloadIndexIfExists}}_id = c_void_p(0)
 {{end}}
 
-{{if $c.Releaser}}{{$c.Name}}_{{$c.Releaser.Name}}_id = c_void_p(0){{end}}
+{{if $c.Releaser}}{{$c.Name}}_{{$c.Releaser.Name}}{{$c.Releaser.GetOverloadIndexIfExists}}_id = c_void_p(0){{end}}
 
 {{end}}
 {{end}}
@@ -118,31 +118,31 @@ def load(module_path: str)->None:
 
 	{{range $mindex, $m := .Modules}}
 	{{range $gindex, $g := $m.Globals}}
-	{{if $g.Getter}}global {{$g.Getter.Name}}_id{{end}}
-	{{if $g.Setter}}global {{$g.Setter.Name}}_id{{end}}
+	{{if $g.Getter}}global {{$g.Getter.Name}}{{$g.Getter.GetOverloadIndexIfExists}}_id{{end}}
+	{{if $g.Setter}}global {{$g.Setter.Name}}{{$g.Setter.GetOverloadIndexIfExists}}_id{{end}}
 	{{end}}
 
 	{{range $findex, $f := $m.Functions}}
-	global {{$f.Name}}_id
+	global {{$f.Name}}{{$f.GetOverloadIndexIfExists}}_id
 	{{end}}
 
 	{{range $cindex, $c := $m.Classes}}
 
 	{{range $findex, $f := $c.Fields}}
-	{{if $f.Getter}}global {{$c.Name}}_{{$f.Getter.Name}}_id{{end}}
-	{{if $f.Setter}}global {{$c.Name}}_{{$f.Setter.Name}}_id{{end}}
+	{{if $f.Getter}}global {{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}_id{{end}}
+	{{if $f.Setter}}global {{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}_id{{end}}
 	{{end}}
 
 	{{range $cstrindex, $cstr := $c.Constructors}}
-	global {{$c.Name}}_{{$cstr.Name}}_id
+	global {{$c.Name}}_{{$cstr.Name}}{{$cstr.GetOverloadIndexIfExists}}_id
 	{{end}}
 
 	{{range $methindex, $meth := $c.Methods}}
-	global {{$c.Name}}_{{$meth.Name}}_id
+	global {{$c.Name}}_{{$meth.Name}}{{$meth.GetOverloadIndexIfExists}}_id
 	{{end}}
 
 
-	{{if $c.Releaser}}global {{$c.Name}}_{{$c.Releaser.Name}}_id{{end}}
+	{{if $c.Releaser}}global {{$c.Name}}_{{$c.Releaser.Name}}{{$c.Releaser.GetOverloadIndexIfExists}}_id{{end}}
 
 	{{end}}
 	{{end}}
@@ -158,15 +158,15 @@ def load(module_path: str)->None:
 	{{range $findex, $f := $m.Globals}}
 	{{if $f.Getter}}
 	function_path_str = r"""{{$f.Getter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
-	if not bool({{$f.Getter.Name}}_id): # failed to load function
+	{{$f.Getter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
+	if not bool({{$f.Getter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 	{{if $f.Setter}}
 	function_path_str = r"""{{$f.Setter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
-	if not bool({{$f.Setter.Name}}_id): # failed to load function
+	{{$f.Setter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
+	if not bool({{$f.Setter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
@@ -174,16 +174,16 @@ def load(module_path: str)->None:
 
 	{{range $findex, $f := $m.Functions}}
 	function_path_str = r"""{{$f.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$f.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
-	if not bool({{$f.Name}}_id): # failed to load function
+	{{$f.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
+	if not bool({{$f.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 
 	{{range $cindex, $c := $m.Classes}}
 	{{range $cstrindex, $cstr := $c.Constructors}}
-	{{$c.Name}}_{{$cstr.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}})
-	if not bool({{$c.Name}}_{{$cstr.Name}}_id): # failed to load function
+	{{$c.Name}}_{{$cstr.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}})
+	if not bool({{$c.Name}}_{{$cstr.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
@@ -191,15 +191,15 @@ def load(module_path: str)->None:
 	{{range $findex, $f := $c.Fields}}
 	{{if $f.Getter}}
 	function_path_str = r"""{{$f.Getter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$f.Getter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
-	if not bool({{$c.Name}}_{{$f.Getter.Name}}_id): # failed to load function
+	{{$c.Name}}_{{$f.Getter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
+	if not bool({{$c.Name}}_{{$f.Getter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 	{{if $f.Setter}}
 	function_path_str = r"""{{$f.Setter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$f.Setter.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
-	if not bool({{$c.Name}}_{{$f.Setter.Name}}_id): # failed to load function
+	{{$c.Name}}_{{$f.Setter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
+	if not bool({{$c.Name}}_{{$f.Setter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
@@ -207,16 +207,16 @@ def load(module_path: str)->None:
 
 	{{range $methindex, $meth := $c.Methods}}
 	function_path_str = r"""{{$meth.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$meth.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
-	if not bool({{$c.Name}}_{{$meth.Name}}_id): # failed to load function
+	{{$c.Name}}_{{$meth.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
+	if not bool({{$c.Name}}_{{$meth.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 
 	{{if $c.Releaser}}
 	function_path_str = r"""{{$c.Releaser.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$c.Releaser.Name}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
-	if not bool({{$c.Name}}_{{$c.Releaser.Name}}_id): # failed to load function
+	{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
+	if not bool({{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
@@ -233,7 +233,7 @@ def load(module_path: str)->None:
 {{if $f.Getter}}
 def {{$f.Getter.Name}}():
 
-	{{GenerateCodeGlobals $f.Getter.Name 1}}
+	{{GenerateCodeGlobals $f.Getter.GetNameWithOverloadIndex 1}}
 
 	{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues false}}
 
@@ -247,7 +247,7 @@ def {{$f.Getter.Name}}():
 {{end}} {{/* end getter */}}
 {{if $f.Setter}}
 def set_{{$f.Setter.Name}}():
-	{{GenerateCodeGlobals $f.Setter.Name 1}}
+	{{GenerateCodeGlobals $f.Setter.GetNameWithOverloadIndex 1}}
 
 	{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues false}}
 
@@ -264,7 +264,7 @@ def set_{{$f.Setter.Name}}():
 # Call to foreign {{$f.Name}}
 def {{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}) -> ({{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{ConvertToPythonTypeFromField $elem}}{{end}}):
 
-	{{GenerateCodeGlobals $f.Name 1}}
+	{{GenerateCodeGlobals $f.GetNameWithOverloadIndex 1}}
 
 	{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues false}}
 
@@ -282,7 +282,7 @@ class {{$c.Name}}:
 	{{range $cstrindex, $f := $c.Constructors}}
 	def __init__(self {{range $index, $elem := $f.Parameters}}, {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}):
 		self.obj_handle = None
-		{{$fullName := (print $c.Name "_" $f.Name)}}
+		{{$fullName := (print $c.Name "_" $f.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 
 		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues true}}
@@ -300,7 +300,7 @@ class {{$c.Name}}:
 	{{range $findex, $f := $c.Fields}}
 	{{if $f.Getter}}
 	def {{$f.Getter.Name}}(self):
-		{{$fullName := (print $c.Name "_" $f.Getter.Name)}}
+		{{$fullName := (print $c.Name "_" $f.Getter.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 	
 		{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues $f.Getter.InstanceRequired}}
@@ -315,7 +315,7 @@ class {{$c.Name}}:
 	{{end}} {{/* end getter */}}
 	{{if $f.Setter}}{{ $p := index $f.Setter.Parameters 1 }}
 	def {{$f.Setter.Name}}(self, {{$p.Name}} ):
-		{{$fullName := (print $c.Name "_" $f.Setter.Name)}}
+		{{$fullName := (print $c.Name "_" $f.Setter.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 
 		{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues $f.Setter.InstanceRequired}}
@@ -331,7 +331,7 @@ class {{$c.Name}}:
 	{{if $c.Releaser}}{{$f := $c.Releaser}}
 	# released foreign object handle
 	def __del__(self):
-		{{$fullName := (print $c.Name "_" $f.Name)}}
+		{{$fullName := (print $c.Name "_" $f.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 
 		{{$paramsLength := len $f.Parameters}}{{$h := index $f.Parameters 0}}
@@ -345,7 +345,7 @@ class {{$c.Name}}:
 
 	{{range $methindex, $f := $c.Methods}}
 	def {{$f.Name}}{{GenerateMethodSignature $f}}:
-		{{$fullName := (print $c.Name "_" $f.Name)}}
+		{{$fullName := (print $c.Name "_" $f.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 	
 		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues $f.InstanceRequired}}
