@@ -57,7 +57,7 @@ func TestGoIDLCompiler_Compile(t *testing.T) {
 
 	comp := NewPyIDLCompiler()
 
-	idl, _, err := comp.ParseIDL(src, "myfile.py", false)
+	idl, _, err := comp.ParseIDL(src, "myfile.py")
 	if err != nil{
 		t.Fatal(err)
 	}

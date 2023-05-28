@@ -54,7 +54,7 @@ func (this *PyIDLCompiler) getModulesPathInSitePackages(pathToPyFile string) []s
 
 }
 //--------------------------------------------------------------------
-func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string, isEmbeddedCode bool) (*IDL.IDLDefinition, bool, error){
+func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.IDLDefinition, bool, error){
 
 	Load("py_extractor")
     pyfile, err := NewPyExtractor(filePath)
