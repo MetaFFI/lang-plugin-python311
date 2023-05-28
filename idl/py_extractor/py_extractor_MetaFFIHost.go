@@ -336,7 +336,7 @@ func (this *Variable_info) GetName() (name string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed variable_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -384,7 +384,7 @@ func (this *Variable_info) GetType() (type__ string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed variable_info.get_type. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -429,7 +429,7 @@ func (this *Variable_info) ReleasevariableInfo( this_instance interface{}) ( err
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed variable_info.Releasevariable_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -477,7 +477,7 @@ func (this *Parameter_info) GetName() (name string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed parameter_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -525,7 +525,7 @@ func (this *Parameter_info) GetType() (type__ string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed parameter_info.get_type. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -573,7 +573,7 @@ func (this *Parameter_info) GetIsDefaultValue() (is_default_value bool, err erro
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed parameter_info.get_is_default_value. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -621,7 +621,7 @@ func (this *Parameter_info) GetIsOptional() (is_optional bool, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed parameter_info.get_is_optional. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -666,7 +666,7 @@ func (this *Parameter_info) ReleaseparameterInfo( this_instance interface{}) ( e
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed parameter_info.Releaseparameter_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -714,7 +714,7 @@ func (this *Function_info) GetName() (name string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed function_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -762,7 +762,7 @@ func (this *Function_info) GetComment() (comment string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed function_info.get_comment. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -810,7 +810,7 @@ func (this *Function_info) GetParameters() (parameters []Parameter_info, err err
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed function_info.get_parameters. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -873,7 +873,7 @@ func (this *Function_info) GetReturnValues() (return_values []string, err error)
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed function_info.get_return_values. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -918,7 +918,7 @@ func (this *Function_info) ReleasefunctionInfo( this_instance interface{}) ( err
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed function_info.Releasefunction_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -966,7 +966,7 @@ func (this *Class_info) GetName() (name string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed class_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1014,7 +1014,7 @@ func (this *Class_info) GetComment() (comment string, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed class_info.get_comment. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1062,7 +1062,7 @@ func (this *Class_info) GetFields() (fields []Variable_info, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed class_info.get_fields. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1125,7 +1125,7 @@ func (this *Class_info) GetMethods() (methods []Function_info, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed class_info.get_methods. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1185,7 +1185,7 @@ func (this *Class_info) ReleaseclassInfo( this_instance interface{}) ( err error
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed class_info.Releaseclass_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1233,7 +1233,7 @@ func (this *Py_info) GetGlobals() (globals []Variable_info, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_info.get_globals. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1296,7 +1296,7 @@ func (this *Py_info) GetFunctions() (functions []Function_info, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_info.get_functions. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1359,7 +1359,7 @@ func (this *Py_info) GetClasses() (classes []Class_info, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_info.get_classes. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1419,7 +1419,7 @@ func (this *Py_info) ReleasepyInfo( this_instance interface{}) ( err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_info.Releasepy_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1457,7 +1457,7 @@ func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_extractor.py_extractor. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1508,7 +1508,7 @@ func (this *Py_extractor) Extract() (info Py_info, err error){
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_extractor.extract. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
@@ -1557,7 +1557,7 @@ func (this *Py_extractor) ReleasepyExtractor( this_instance interface{}) ( err e
 	
 	// check errors
 	if out_err_len != 0{
-		err = fmt.Errorf("Function failed. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		err = fmt.Errorf("Function failed py_extractor.Releasepy_extractor. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
 		return
 	}
 
