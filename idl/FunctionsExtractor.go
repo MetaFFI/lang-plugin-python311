@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
-
 	. "github.com/MetaFFI/lang-plugin-python3/idl/py_extractor"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 )
@@ -25,6 +23,11 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			return nil, err
 		}
 
+		isDefaultVal, err := p.GetIsDefaultValue()
+		if err != nil {
+			return nil, err
+		}
+
 		mffiType := pyTypeToMFFI(pyty)
 		var talias string
 		if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY {
@@ -36,7 +39,10 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			dims = 1
 		}
 
-		pyfunc.AddParameter(IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias))
+		mffiparam := IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias)
+		mffiparam.IsOptional = isDefaultVal
+
+		pyfunc.AddParameter(mffiparam)
 	}
 
 	for i, pyty := range retvals {
@@ -63,72 +69,6 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 }
 
 // --------------------------------------------------------------------
-func GeneratePermutations[T any](input []T, permuteStartIndex int) [][]T {
-
-	if permuteStartIndex >= len(input) {
-		return [][]T{input}
-	}
-
-	res := make([][]T, 0)
-
-	sizeOfPermutations := int(math.Pow(2, float64(len(input)-permuteStartIndex)))
-
-	for i := 0; i < sizeOfPermutations; i++ {
-
-		permutation := make([]T, 0)
-
-		// add celles that appear in all permutations
-		for k, item := range input {
-			if k >= permuteStartIndex {
-				break
-			}
-
-			permutation = append(permutation, item)
-		}
-
-		// for each i bit that is set, choose the i element
-		for j := 0; j < i; j++ {
-			if i&(1<<j) > 0 { // // if j-th bit is set
-				permutation = append(permutation, input[permuteStartIndex+j])
-			}
-		}
-
-		if len(permutation) > 0 {
-			res = append(res, permutation)
-		}
-	}
-
-	return res
-}
-
-// --------------------------------------------------------------------
-func ExtractOverloadedParameters(params []Parameter_info) ([][]Parameter_info, error) {
-
-	// detect how many options are there
-	startingIndexOfOptionals := len(params)
-	for i, p := range params {
-		isDefault, err := p.GetIsDefaultValue()
-		if err != nil {
-			return nil, err
-		}
-
-		isOptional, err := p.GetIsOptional()
-		if err != nil {
-            return nil, err
-        }
-
-		if isDefault || isOptional{
-			startingIndexOfOptionals = i
-			break
-		}
-	}
-
-	res := GeneratePermutations(params, startingIndexOfOptionals)
-
-	return res, nil
-}
-
-// --------------------------------------------------------------------
 func ExtractFunctions(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.FunctionDefinition, error) {
 
 	functions := make([]*IDL.FunctionDefinition, 0)
@@ -140,44 +80,32 @@ func ExtractFunctions(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.FunctionD
 
 	for _, f := range funcs {
 
-		originalParameters, err := f.GetParameters()
+		params, err := f.GetParameters()
 		if err != nil {
 			return nil, err
 		}
 
-		// optional parameters generates multiple functions (overloads)
-		overloadedParameters, err := ExtractOverloadedParameters(originalParameters)
+		name, err := f.GetName()
 		if err != nil {
 			return nil, err
 		}
 
-		for i, params := range overloadedParameters {
-			name, err := f.GetName()
-			if err != nil {
-				return nil, err
-			}
-
-			comment, err := f.GetComment()
-			if err != nil {
-				return nil, err
-			}
-
-			retvals, err := f.GetReturnValues()
-			if err != nil {
-				return nil, err
-			}
-
-			fdef, err := GenerateFunctionDefinition(name, comment, params, retvals, metaffiGuestLib)
-			if err != nil {
-				return nil, err
-			}
-
-			if i > 0{ // if function is overloaded
-				fdef.OverloadIndex = int32(i)
-			}
-
-			functions = append(functions, fdef)
+		comment, err := f.GetComment()
+		if err != nil {
+			return nil, err
 		}
+
+		retvals, err := f.GetReturnValues()
+		if err != nil {
+			return nil, err
+		}
+
+		fdef, err := GenerateFunctionDefinition(name, comment, params, retvals, metaffiGuestLib)
+		if err != nil {
+			return nil, err
+		}
+
+		functions = append(functions, fdef)
 	}
 
 	return functions, nil

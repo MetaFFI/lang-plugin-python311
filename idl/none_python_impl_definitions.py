@@ -344,7 +344,8 @@ class __builtins__dict:
 
 
 class __collections__deque:
-	def __init__(self, iterable: Optional[Iterable] = None, maxlen: Optional[int] = None):
+
+	def __init__(self, iterable: Optional[Iterable] = [], maxlen: Optional[int] = None):
 		pass
 
 	def append(self, x: Any) -> None:
@@ -424,6 +425,3 @@ def get_method_definition(module_name: str, class_name: str, method_name:str):
 
 	#print('did not find class {}.{} in "none python implementations definitions"'.format(module_name, class_name))
 	return None
-
-if __name__ == '__main__':
-	get_method_definition('collections', 'deque', 'pop')

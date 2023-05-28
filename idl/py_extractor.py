@@ -157,7 +157,6 @@ class py_extractor:
 					if member[0] == '__init__':
 						constructor_found = True
 
-					# if not - skip
 					clsdata.methods.append(self._extract_function((member[0], method_data), clsdata.name))
 
 				elif isfunction(member[1]):
@@ -219,30 +218,25 @@ class py_extractor:
 
 		# parse parameters
 		for name, param in sig.parameters.items():
-			typedata = str(param).split(':', -1)
 
 			pdata = parameter_info()
-			if len(typedata) != 2:
-				# no type hint
-				pdata.name = typedata[0].strip()
-				pdata.type = 'any'
+			pdata.name = name
+
+			if param.annotation != param.empty:
+				if isinstance(param.annotation, str):
+					pdata.type = param.annotation
+				elif '__name__' in dir(param.annotation):
+					pdata.type = param.annotation.__name__
+				else:
+					pdata.type = str(param.annotation)
 			else:
-				# type hint
-				pdata.name = typedata[0].strip()
-				pdata.type = typedata[1].strip()
+				pdata.type = 'any'
 
-			if '=' in pdata.name:  # default value
-				name_and_val = pdata.name.split('=')
-				pdata.name = name_and_val[0]
-				pdata.is_default_value = True
+			if pdata.type == 'typing.Any' or pdata.type == 'Any':
+				pdata.type = 'any'
 
-			if '=' in pdata.type:  # default value
-				type_and_val = pdata.type.split('=')
-				pdata.type = type_and_val[0].strip()
-				pdata.is_default_value = True
-
-			if 'Optional[' in pdata.type:
-				pdata.is_optional = True
+			pdata.is_default_value = param.default != param.empty
+			pdata.is_optional = False
 
 			# cleanup the name
 			pdata.name = pdata.name.replace('*', '')
@@ -257,11 +251,24 @@ class py_extractor:
 			func_info.return_values.append(clsname)
 		else:
 			if sig.return_annotation is not None:
-				rettype = sig.return_annotation.__name__.strip()
-				if rettype == '_empty':
-					func_info.return_values.append('any')
+				if isinstance(sig.return_annotation, str):
+					rettype = sig.return_annotation
+				elif sig.empty == sig.return_annotation:
+					rettype = 'any'
+				elif '__name__' in dir(sig.return_annotation):
+					rettype = sig.return_annotation.__name__.strip()
+					if rettype == '_empty':
+						raise RuntimeError('Shouldnt reach here! what sig.return_annotation type: {}'.format(type(sig.return_annotation)))
 				else:
-					func_info.return_values.append(rettype)
+					rettype = str(sig.return_annotation)
+
+				if rettype == 'typing.Any' or rettype == 'Any':
+					rettype = 'any'
+
+				func_info.return_values.append(rettype)
 
 		return func_info
 
+if '__main__' == __name__:
+	ext = py_extractor('collections')
+	ext.extract()

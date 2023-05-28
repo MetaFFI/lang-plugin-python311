@@ -89,6 +89,7 @@ cdts_build_callbacks cdts_python3::build_callback
 	{
 		auto set_object = [](PyObject* pybj)->metaffi_handle
 		{
+			
 			if(pybj == Py_None){
 				return nullptr;
 			}
@@ -108,11 +109,11 @@ cdts_build_callbacks cdts_python3::build_callback
 					
 					return res;
 				}
-			
+				
 				// a python object
 				python3_objects_table::instance().set(pybj);
 			};
-		
+			
 			return (metaffi_handle)pybj;
 		};
 		
@@ -256,12 +257,14 @@ cdts_parse_callbacks cdts_python3::parse_callback
 		auto get_object = [](metaffi_handle h)->PyObject*
 		{
 			if(h == nullptr){ return Py_None; }
+		
 			if(!python3_objects_table::instance().contains((PyObject*)h))
 			{
 				return new_py_metaffi_handle(h);
 			}
 			
 			Py_IncRef((PyObject*)h);
+			
 			return (PyObject*)h;
 		};
 		set_numeric_to_tuple<metaffi_handle>((PyObject*) values_to_set, index, val, get_object);

@@ -305,6 +305,11 @@ type Variable_info struct{
 
 
 
+func (this *Variable_info) GetHandle() Handle{
+	return this.h
+}
+
+
 
 func (this *Variable_info) GetName() (name string, err error){
 	
@@ -439,6 +444,11 @@ type Parameter_info struct{
 	h Handle
 }
 
+
+
+func (this *Parameter_info) GetHandle() Handle{
+	return this.h
+}
 
 
 
@@ -671,6 +681,11 @@ type Function_info struct{
 	h Handle
 }
 
+
+
+func (this *Function_info) GetHandle() Handle{
+	return this.h
+}
 
 
 
@@ -918,6 +933,11 @@ type Class_info struct{
 	h Handle
 }
 
+
+
+func (this *Class_info) GetHandle() Handle{
+	return this.h
+}
 
 
 
@@ -1182,6 +1202,11 @@ type Py_info struct{
 
 
 
+func (this *Py_info) GetHandle() Handle{
+	return this.h
+}
+
+
 
 func (this *Py_info) GetGlobals() (globals []Variable_info, err error){
 	
@@ -1409,6 +1434,7 @@ type Py_extractor struct{
 	h Handle
 }
 
+
 func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 	
 
@@ -1451,6 +1477,10 @@ func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 	return inst, nil	
 }
 
+
+func (this *Py_extractor) GetHandle() Handle{
+	return this.h
+}
 
 
 
