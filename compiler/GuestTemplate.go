@@ -56,9 +56,11 @@ def EntryPoint_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}():
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
 {{GenerateCEntryPoint $f.Setter.GetNameWithOverloadIndex $f.Setter.Parameters $f.Setter.ReturnValues 0}}
-def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(val):
+def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*val):
 	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
-	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val
+	if len(val) != 1:
+		raise ValueError('received parameter in {{$f.Setter.Name}} expects exactly one parameter')
+	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val[0]
 	return (None, ret_val_types)
 
 {{end}}{{/* end setter */}}
@@ -68,10 +70,10 @@ def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(val):
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.Name}}
 {{GenerateCEntryPoint $f.GetNameWithOverloadIndex $f.Parameters $f.ReturnValues 0}}
-def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals):
 	try:
 		# call function
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}(*vals)
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
@@ -86,10 +88,10 @@ def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem 
 {{range $classindex, $c := $m.Classes}}
 {{range $cstrindex, $f := $c.Constructors}}
 {{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals):
 	try:
 		# call constructor
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}})
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}(*vals)
 		
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
@@ -104,13 +106,16 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $i
 {{range $findex, $f := $c.Fields}}
 {{if $f.Getter}}
 {{GenerateCEntryPoint (print $c.Name "_" $f.Getter.GetNameWithOverloadIndex) $f.Getter.Parameters $f.Getter.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}(obj):
+def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}(*obj):
 	try:
 
 		{{$retvalLength := len $f.Getter.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
-		return (None, ret_val_types, obj.{{$f.Name}})
+		if len(obj) != 1:
+			raise ValueError('received parameter in {{$c.Name}}_{{$f.Getter.Name}} expects exactly one parameter')
+
+		return (None, ret_val_types, obj[0].{{$f.Name}})
 	except Exception as e:
 		errdata = traceback.format_exception(*sys.exc_info())
 		return ('\n'.join(errdata),)
@@ -118,10 +123,13 @@ def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExist
 {{end}}{{/* End Getter */}}
 {{if $f.Setter}}
 {{GenerateCEntryPoint (print $c.Name "_" $f.Setter.GetNameWithOverloadIndex) $f.Setter.Parameters $f.Setter.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(obj, val):
+def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*vals):
 	try:
 
-		obj.{{$f.Name}} = val
+		if len(vals) != 2:
+			raise ValueError('received parameters in {{$c.Name}}_{{$f.Setter.Name}} expects exactly two parameters')
+
+		vals[0].{{$f.Name}} = vals[1]
 
 		{{$retvalLength := len $f.Setter.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
@@ -136,10 +144,15 @@ def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExist
 
 {{range $methindex, $f := $c.Methods}}
 {{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals):
 	try:
 		# call method
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{(index $f.Parameters 0).Name }}.{{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}}{{if gt $index 1}},{{end}}{{$elem.Name}}{{end}}{{end}})
+		{{$ParamsLength := len $f.Parameters}}
+		{{if gt $ParamsLength 1}}
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}vals[0].{{$f.Name}}(vals[1:])
+		{{else}}
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}vals[0].{{$f.Name}}()
+		{{end}}
 		
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
@@ -154,11 +167,14 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}({{range $i
 
 {{if $c.Releaser}}
 {{GenerateCEntryPoint (print $c.Name "_" $c.Releaser.GetNameWithOverloadIndex) $c.Releaser.Parameters $c.Releaser.ReturnValues 0}}
-def EntryPoint_{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}{{$c.Releaser.GetOverloadIndexIfExists}}({{range $index, $elem := $c.Releaser.Parameters}}{{if $index}},{{end}}{{$elem.Name}}{{end}}):
+def EntryPoint_{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}{{$c.Releaser.GetOverloadIndexIfExists}}(*vals):
 	try:
+
+		if len(vals) != 1:
+			raise ValueError('received parameter in {{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}} expects exactly one parameter')
+
 		# xcall release object
-		{{ $h := index $c.Releaser.Parameters 0 }}
-		python_plugin_handle.release_object({{$h.Name}})
+		python_plugin_handle.release_object(vals[0])
 	except Exception as e:
 		errdata = traceback.format_exception(*sys.exc_info())
 		return ('\n'.join(errdata),)

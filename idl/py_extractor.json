@@ -119,6 +119,86 @@
 								"instance_required": true
 							},
 							"setter": null
+						},
+						{
+							"name": "is_getter",
+							"type": "bool",
+							"type_alias": "",
+							"comment": "",
+							"tags": {},
+							"dimensions": 0,
+							"getter": {
+								"name": "get_is_getter",
+								"comment": "",
+								"tags": {},
+								"function_path": {
+									"entrypoint_function": "EntryPoint_variable_info_get_is_getter",
+									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
+									"module": "py_extractor"
+								},
+								"parameters": [
+									{
+										"name": "this_instance",
+										"type": "handle",
+										"type_alias": "",
+										"comment": "",
+										"tags": {},
+										"dimensions": 0
+									}
+								],
+								"return_values": [
+									{
+										"name": "is_getter",
+										"type": "bool",
+										"type_alias": "",
+										"comment": "",
+										"tags": {},
+										"dimensions": 0
+									}
+								],
+								"instance_required": true
+							},
+							"setter": null
+						},
+						{
+							"name": "is_setter",
+							"type": "bool",
+							"type_alias": "",
+							"comment": "",
+							"tags": {},
+							"dimensions": 0,
+							"getter": {
+								"name": "get_is_setter",
+								"comment": "",
+								"tags": {},
+								"function_path": {
+									"entrypoint_function": "EntryPoint_variable_info_get_is_setter",
+									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
+									"module": "py_extractor"
+								},
+								"parameters": [
+									{
+										"name": "this_instance",
+										"type": "handle",
+										"type_alias": "",
+										"comment": "",
+										"tags": {},
+										"dimensions": 0
+									}
+								],
+								"return_values": [
+									{
+										"name": "is_setter",
+										"type": "bool",
+										"type_alias": "",
+										"comment": "",
+										"tags": {},
+										"dimensions": 0
+									}
+								],
+								"instance_required": true
+							},
+							"setter": null
 						}
 					]
 				},
@@ -232,7 +312,7 @@
 						},
 						{
 							"name": "is_default_value",
-							"type": "string8",
+							"type": "bool",
 							"type_alias": "",
 							"comment": "",
 							"tags": {},
@@ -272,7 +352,7 @@
 						},
 						{
 							"name": "is_optional",
-							"type": "string8",
+							"type": "bool",
 							"type_alias": "",
 							"comment": "",
 							"tags": {},
@@ -300,6 +380,46 @@
 									{
 										"name": "is_optional",
 										"type": "bool",
+										"type_alias": "",
+										"comment": "",
+										"tags": {},
+										"dimensions": 0
+									}
+								],
+								"instance_required": true
+							},
+							"setter": null
+						},
+						{
+							"name": "kind",
+							"type": "string8",
+							"type_alias": "",
+							"comment": "",
+							"tags": {},
+							"dimensions": 0,
+							"getter": {
+								"name": "get_kind",
+								"comment": "",
+								"tags": {},
+								"function_path": {
+									"entrypoint_function": "EntryPoint_parameter_info_get_kind",
+									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
+									"module": "py_extractor"
+								},
+								"parameters": [
+									{
+										"name": "this_instance",
+										"type": "handle",
+										"type_alias": "",
+										"comment": "",
+										"tags": {},
+										"dimensions": 0
+									}
+								],
+								"return_values": [
+									{
+										"name": "kind",
+										"type": "string8",
 										"type_alias": "",
 										"comment": "",
 										"tags": {},

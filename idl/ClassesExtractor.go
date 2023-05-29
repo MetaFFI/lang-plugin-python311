@@ -48,16 +48,49 @@ func ExtractClasses(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.ClassDefini
 				return nil, err
 			}
 
-			fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "Get"+name, "Set"+name, true)
-			fdecl.Getter.SetTag("receiver_pointer", "true")
-			fdecl.Getter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-			fdecl.Getter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
+			isGetter, err := f.GetIsGetter()
+			if err != nil {
+                return nil, err
+            }
 
-			fdecl.Setter.SetTag("receiver_pointer", "true")
-			fdecl.Setter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-			fdecl.Setter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
+			isSetter, err := f.GetIsSetter()
+			if err != nil {
+                return nil, err
+            }
 
-			pycls.AddField(fdecl)
+			if isGetter && isSetter {
+				fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "Get"+name, "Set"+name, true)
+
+                fdecl.Getter.SetTag("receiver_pointer", "true")
+                fdecl.Getter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+                fdecl.Getter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
+
+                fdecl.Setter.SetTag("receiver_pointer", "true")
+                fdecl.Setter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+                fdecl.Setter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
+
+                pycls.AddField(fdecl)
+
+			} else if isGetter {
+				fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "Get"+name, "", true)
+
+                fdecl.Getter.SetTag("receiver_pointer", "true")
+                fdecl.Getter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+                fdecl.Getter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
+
+                pycls.AddField(fdecl)
+
+			} else if isSetter {
+				fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "", "Set"+name, true)
+
+                fdecl.Setter.SetTag("receiver_pointer", "true")
+                fdecl.Setter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+                fdecl.Setter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
+
+                pycls.AddField(fdecl)
+			} else {
+				return nil, fmt.Errorf("Field/property %v.%v has neither getter or setter", clsName, name)
+			}
 		}
 
 		pymethods, err := c.GetMethods()
@@ -106,6 +139,11 @@ func ExtractClasses(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.ClassDefini
 					return nil, err
 				}
 
+				kind, err := p.GetKind()
+                if err != nil {
+                    return nil, err
+                }
+
 				mffiType := pyTypeToMFFI(pyty)
 				var talias string
 				if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY {
@@ -119,6 +157,7 @@ func ExtractClasses(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.ClassDefini
 
 				mffiparam := IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias)
 				mffiparam.IsOptional = isDefaultVal
+				mffiparam.SetTag("kind", kind)
 
 				pymeth.AddParameter(mffiparam)
 			}

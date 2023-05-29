@@ -28,6 +28,11 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			return nil, err
 		}
 
+		kind, err := p.GetKind()
+		if err != nil {
+            return nil, err
+        }
+
 		mffiType := pyTypeToMFFI(pyty)
 		var talias string
 		if mffiType == IDL.HANDLE || mffiType == IDL.HANDLE_ARRAY {
@@ -41,6 +46,7 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 
 		mffiparam := IDL.NewArgArrayDefinitionWithAlias(name, mffiType, dims, talias)
 		mffiparam.IsOptional = isDefaultVal
+		mffiparam.SetTag("kind", kind)
 
 		pyfunc.AddParameter(mffiparam)
 	}

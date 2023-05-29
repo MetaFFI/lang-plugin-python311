@@ -3,6 +3,7 @@ from typing import Any, Callable, DefaultDict, Deque, Dict, Iterable, List, Opti
 import inspect
 import sys
 
+
 class __builtins__tuple:
 	def __repr__(self) -> str:
 		pass
@@ -183,64 +184,64 @@ class __builtins__str:
 	def join(self, iterable: Any) -> str:
 		pass
 
-	def ljust(self,width:int ,fillchar:str=' ')->str :
+	def ljust(self, width: int, fillchar: str = ' ') -> str:
 		pass
 
-	def lower(self)->str :
+	def lower(self) -> str:
 		pass
 
-	def lstrip(self ,chars:str=None )->str :
+	def lstrip(self, chars: str = None) -> str:
 		pass
 
-	def partition(self ,sep:str)->tuple :
+	def partition(self, sep: str) -> tuple:
 		pass
 
-	def replace(self ,old:str ,new:str ,count:int=-1 )->str :
+	def replace(self, old: str, new: str, count: int = -1) -> str:
 		pass
 
-	def rfind(self ,sub:str ,start:int=0 ,end:int=None )->int :
+	def rfind(self, sub: str, start: int = 0, end: int = None) -> int:
 		pass
 
-	def rindex(self ,sub:str ,start:int=0 ,end:int=None )->int :
+	def rindex(self, sub: str, start: int = 0, end: int = None) -> int:
 		pass
 
-	def rjust(self ,width:int ,fillchar:str=' ')->str :
+	def rjust(self, width: int, fillchar: str = ' ') -> str:
 		pass
 
-	def rpartition(self ,sep:str)->tuple :
+	def rpartition(self, sep: str) -> tuple:
 		pass
 
-	def rsplit(self ,sep:str=None ,maxsplit:int=-1 )->list :
+	def rsplit(self, sep: str = None, maxsplit: int = -1) -> list:
 		pass
 
-	def rstrip(self ,chars:str=None )->str :
+	def rstrip(self, chars: str = None) -> str:
 		pass
 
-	def split(self ,sep:str=None ,maxsplit:int=-1 )->list :
+	def split(self, sep: str = None, maxsplit: int = -1) -> list:
 		pass
 
-	def splitlines(self ,keepends:bool=False )->list :
+	def splitlines(self, keepends: bool = False) -> list:
 		pass
 
-	def startswith(self ,prefix:str ,start:int=0 ,end:int=None )->bool :
+	def startswith(self, prefix: str, start: int = 0, end: int = None) -> bool:
 		pass
 
-	def strip(self ,chars:str=None )->str :
+	def strip(self, chars: str = None) -> str:
 		pass
 
-	def swapcase(self)->str :
+	def swapcase(self) -> str:
 		pass
 
-	def title(self)->str :
+	def title(self) -> str:
 		pass
 
-	def translate(self ,table:Any)->str :
+	def translate(self, table: Any) -> str:
 		pass
 
-	def upper(self)->str :
+	def upper(self) -> str:
 		pass
 
-	def zfill(self,width:int)->str :
+	def zfill(self, width: int) -> str:
 		pass
 
 
@@ -341,8 +342,6 @@ class __builtins__dict:
 		pass
 
 
-
-
 class __collections__deque:
 
 	def __init__(self, iterable: Optional[Iterable] = [], maxlen: Optional[int] = None):
@@ -412,7 +411,30 @@ class __collections__OrderedDict:
 		pass
 
 
-def get_method_definition(module_name: str, class_name: str, method_name:str):
+class __io__StringIO:
+	def __init__(self, data: Any):
+		pass
+
+
+# DefaultClass returns signature for methods for any class, if the class is not found
+class DefaultClass:
+	def __getitem__(self, item: Any) -> Any:
+		pass
+
+	def __lt__(self, other: Any) -> bool:
+		pass
+
+	def __eq__(self, other: Any) -> bool:
+		pass
+
+	def __gt__(self, other: Any) -> bool:
+		pass
+
+	def __hash__(self) -> int:
+		pass
+
+
+def get_method_definition(module_name: str, class_name: str, method_name: str):
 	modified_class_name = '__{}__{}'.format(module_name, class_name)
 	for c in inspect.getmembers(sys.modules[__name__], inspect.isclass):
 		if c[0] == modified_class_name:
@@ -420,8 +442,8 @@ def get_method_definition(module_name: str, class_name: str, method_name:str):
 				if m[0] == method_name:
 					return m[1]
 
-			#print('found {}.{} in "none python implementations definitions", but not the method {}'.format(module_name, class_name, method_name))
-			return None
+	for m in inspect.getmembers(DefaultClass):
+		if m[0] == method_name:
+			return m[1]
 
-	#print('did not find class {}.{} in "none python implementations definitions"'.format(module_name, class_name))
 	return None

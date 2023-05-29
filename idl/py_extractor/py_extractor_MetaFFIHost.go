@@ -42,6 +42,12 @@ var variable_info_get_name_id unsafe.Pointer
 var variable_info_get_type_id unsafe.Pointer
 
 
+var variable_info_get_is_getter_id unsafe.Pointer
+
+
+var variable_info_get_is_setter_id unsafe.Pointer
+
+
 
 
 
@@ -59,6 +65,9 @@ var parameter_info_get_is_default_value_id unsafe.Pointer
 
 
 var parameter_info_get_is_optional_id unsafe.Pointer
+
+
+var parameter_info_get_kind_id unsafe.Pointer
 
 
 
@@ -183,6 +192,12 @@ func Load(modulePath string){
 	variable_info_get_type_id = loadFF(modulePath, `entrypoint_function=EntryPoint_variable_info_get_type,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
+	variable_info_get_is_getter_id = loadFF(modulePath, `entrypoint_function=EntryPoint_variable_info_get_is_getter,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
+	
+	
+	variable_info_get_is_setter_id = loadFF(modulePath, `entrypoint_function=EntryPoint_variable_info_get_is_setter,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
+	
+	
 	
 	
 	
@@ -200,6 +215,9 @@ func Load(modulePath string){
 	
 	
 	parameter_info_get_is_optional_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_is_optional,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
+	
+	
+	parameter_info_get_kind_id = loadFF(modulePath, `entrypoint_function=EntryPoint_parameter_info_get_kind,metaffi_guest_lib=py_extractor_MetaFFIGuest,module=py_extractor`, 1, 1)
 	
 	
 	
@@ -402,6 +420,102 @@ func (this *Variable_info) GetType() (type__ string, err error){
 	
 
 	return type__, nil	
+}
+
+
+
+
+func (this *Variable_info) GetIsGetter() (is_getter bool, err error){
+	
+	
+
+	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
+	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
+	parametersCDTS := xcall_params_slice[0].pcdt
+	return_valuesCDTS := xcall_params_slice[1].pcdt
+
+	
+	// get parameters
+	
+	fromGoToCDT(this.h, parametersCDTS, 0)
+	
+	 
+
+
+		var out_err *C.char
+	var out_err_len C.uint64_t
+	out_err_len = C.uint64_t(0)
+	
+	C.xllr_xcall_params_ret(variable_info_get_is_getter_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_get_is_getter_id via XLLR
+	
+	// check errors
+	if out_err_len != 0{
+		err = fmt.Errorf("Function failed variable_info.get_is_getter. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		return
+	}
+
+	
+	
+	is_getterAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	if is_getterAsInterface != nil{
+		
+		// not handle
+		is_getter = bool(is_getterAsInterface.(bool))
+		
+		
+	}
+
+	
+
+	return is_getter, nil	
+}
+
+
+
+
+func (this *Variable_info) GetIsSetter() (is_setter bool, err error){
+	
+	
+
+	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
+	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
+	parametersCDTS := xcall_params_slice[0].pcdt
+	return_valuesCDTS := xcall_params_slice[1].pcdt
+
+	
+	// get parameters
+	
+	fromGoToCDT(this.h, parametersCDTS, 0)
+	
+	 
+
+
+		var out_err *C.char
+	var out_err_len C.uint64_t
+	out_err_len = C.uint64_t(0)
+	
+	C.xllr_xcall_params_ret(variable_info_get_is_setter_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_get_is_setter_id via XLLR
+	
+	// check errors
+	if out_err_len != 0{
+		err = fmt.Errorf("Function failed variable_info.get_is_setter. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		return
+	}
+
+	
+	
+	is_setterAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	if is_setterAsInterface != nil{
+		
+		// not handle
+		is_setter = bool(is_setterAsInterface.(bool))
+		
+		
+	}
+
+	
+
+	return is_setter, nil	
 }
 
 
@@ -639,6 +753,54 @@ func (this *Parameter_info) GetIsOptional() (is_optional bool, err error){
 	
 
 	return is_optional, nil	
+}
+
+
+
+
+func (this *Parameter_info) GetKind() (kind string, err error){
+	
+	
+
+	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
+	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
+	parametersCDTS := xcall_params_slice[0].pcdt
+	return_valuesCDTS := xcall_params_slice[1].pcdt
+
+	
+	// get parameters
+	
+	fromGoToCDT(this.h, parametersCDTS, 0)
+	
+	 
+
+
+		var out_err *C.char
+	var out_err_len C.uint64_t
+	out_err_len = C.uint64_t(0)
+	
+	C.xllr_xcall_params_ret(parameter_info_get_kind_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_kind_id via XLLR
+	
+	// check errors
+	if out_err_len != 0{
+		err = fmt.Errorf("Function failed parameter_info.get_kind. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+		return
+	}
+
+	
+	
+	kindAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	if kindAsInterface != nil{
+		
+		// not handle
+		kind = string(kindAsInterface.(string))
+		
+		
+	}
+
+	
+
+	return kind, nil	
 }
 
 

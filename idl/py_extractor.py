@@ -1,3 +1,4 @@
+import builtins
 from inspect import *
 import importlib
 import os
@@ -12,6 +13,12 @@ ignored_builtins = { 'False', 'Ellipsis', 'None', 'True', 'NotImplemented', 'sup
 class variable_info:
 	name: str
 	type: str
+	is_getter: bool
+	is_setter: bool
+
+	def __init__(self):
+		self.is_getter = True
+		self.is_setter = True
 
 
 class parameter_info:
@@ -19,10 +26,12 @@ class parameter_info:
 	type: str
 	is_default_value: bool
 	is_optional: bool
+	kind: str
 
 	def __init__(self):
 		self.is_default_value = False
 		self.is_optional = False
+		self.kind = ''
 
 
 class function_info:
@@ -108,7 +117,7 @@ class py_extractor:
 			if m[0].startswith('_'):
 				continue
 
-			global_vars.append(self._extract_field(m))
+			global_vars.append(self._extract_field(m, True, True))
 
 		return global_vars
 
@@ -144,7 +153,7 @@ class py_extractor:
 						if k.startswith('_'):
 							continue
 
-						clsdata.fields.append(self._extract_field([k, v]))
+						clsdata.fields.append(self._extract_field([k, v], True, True))
 
 				elif ismethoddescriptor(member[1]):
 
@@ -167,6 +176,9 @@ class py_extractor:
 						constructor_found = True
 
 					clsdata.methods.append(self._extract_function(member, clsdata.name))
+				elif isinstance(member[1], builtins.property):
+					if member[1].fget is not None or member[1].fset is not None:
+						clsdata.fields.append(self._extract_field(member, member[1].fget is not None, member[1].fset is not None))
 				else:
 					if member[0].startswith('_'):
 						continue
@@ -182,17 +194,34 @@ class py_extractor:
 
 		return res
 
-	def _extract_field(self, m) -> variable_info:
+	def _extract_field(self, m, is_getter, is_setter) -> variable_info:
 		v = variable_info()
 		v.name = m[0]
 
-		if hasattr(m[1], '__name__'):
-			v.type = m[1].__name__.strip()
+		if isinstance(m[1], builtins.property):
+			if m[1].fget is not None:
+				sig = signature(m[1].fget)
+				if sig.return_annotation is None:
+					v.type = 'any'
+				else:
+					v.type = sig.return_annotation.__name__
+			elif m[1].fset is not None:
+				sig = signature(m[1].fset)
+				if sig.return_annotation is None:
+					v.type = 'any'
+				else:
+					v.type = sig.return_annotation.__name__
+			else:
+				raise ValueError('property {} does not have a getter nor a setter'.format(m[0]))
 		else:
 			v.type = type(m[1]).__name__.strip()
 
 		if v.type == '_empty':
 			v.type = 'any'
+
+		v.is_getter = is_getter
+		v.is_setter = is_setter
+
 		return v
 
 	def _default_constructor(self, clsname: str) -> function_info:
@@ -217,6 +246,7 @@ class py_extractor:
 		sig = signature(f[1])
 
 		# parse parameters
+		print('{}('.format(f[0]), end=' ')
 		for name, param in sig.parameters.items():
 
 			pdata = parameter_info()
@@ -225,10 +255,10 @@ class py_extractor:
 			if param.annotation != param.empty:
 				if isinstance(param.annotation, str):
 					pdata.type = param.annotation
-				elif '__name__' in dir(param.annotation):
-					pdata.type = param.annotation.__name__
+				elif isinstance(param.annotation, types.UnionType):
+					pdata.type = 'any'
 				else:
-					pdata.type = str(param.annotation)
+					pdata.type = param.annotation.__name__
 			else:
 				pdata.type = 'any'
 
@@ -237,11 +267,14 @@ class py_extractor:
 
 			pdata.is_default_value = param.default != param.empty
 			pdata.is_optional = False
+			pdata.kind = param.kind.name
 
 			# cleanup the name
 			pdata.name = pdata.name.replace('*', '')
 
+			print('{} {},'.format(pdata.type, pdata.name), end=' ')
 			func_info.parameters.append(pdata)
+		print(')')
 
 		# parse return value
 		if func_info.name == '__init__':
@@ -255,16 +288,15 @@ class py_extractor:
 					rettype = sig.return_annotation
 				elif sig.empty == sig.return_annotation:
 					rettype = 'any'
-				elif '__name__' in dir(sig.return_annotation):
+				else:
 					rettype = sig.return_annotation.__name__.strip()
 					if rettype == '_empty':
 						raise RuntimeError('Shouldnt reach here! what sig.return_annotation type: {}'.format(type(sig.return_annotation)))
-				else:
-					rettype = str(sig.return_annotation)
 
 				if rettype == 'typing.Any' or rettype == 'Any':
 					rettype = 'any'
 
+				# print('{} return type is {}'.format(f[0], rettype))
 				func_info.return_values.append(rettype)
 
 		return func_info
