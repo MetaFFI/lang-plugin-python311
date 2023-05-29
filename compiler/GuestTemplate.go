@@ -149,7 +149,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals):
 		# call method
 		{{$ParamsLength := len $f.Parameters}}
 		{{if gt $ParamsLength 1}}
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}vals[0].{{$f.Name}}(vals[1:])
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}vals[0].{{$f.Name}}(*vals[1:])
 		{{else}}
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}vals[0].{{$f.Name}}()
 		{{end}}
