@@ -50,10 +50,10 @@ std::vector<foreign_function_entrypoint_signature_no_params_no_ret_t> no_params_
 extern "C"
 {
 	void set_entrypoint(const char* entrypoint_name, void* pfunction);
-	void xcall_params_ret(PyObject* pyfunc, cdts params_ret[2], char** out_err, uint64_t* out_err_len);
-	void xcall_params_no_ret(PyObject* pyfunc, cdts parameters[1], char** out_err, uint64_t* out_err_len);
-	void xcall_no_params_ret(PyObject* pyfunc, cdts return_values[1], char** out_err, uint64_t* out_err_len);
-	void xcall_no_params_no_ret(PyObject* pyfunc, char** out_err, uint64_t* out_err_len);
+	void xcall_params_ret(int is_method, PyObject* pyfunc, cdts params_ret[2], char** out_err, uint64_t* out_err_len);
+	void xcall_params_no_ret(int is_method, PyObject* pyfunc, cdts parameters[1], char** out_err, uint64_t* out_err_len);
+	void xcall_no_params_ret(int is_method, PyObject* pyfunc, cdts return_values[1], char** out_err, uint64_t* out_err_len);
+	void xcall_no_params_no_ret(int is_method, PyObject* pyfunc, char** out_err, uint64_t* out_err_len);
 }
 
 //--------------------------------------------------------------------
@@ -186,7 +186,85 @@ void free_function(void* pff, char** err, uint32_t* err_len)
 	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
+void extract_args(int is_method, PyObject* params, PyObject*& out_params, PyObject*& out_kwargs)
+{
+	// calculate size of new "out_params"
+	Py_ssize_t params_count = PyTuple_Size(params);
+	
+	if(params_count == 0)
+	{
+		out_params = params;
+		return;
+	}
+	
+	Py_ssize_t new_size = params_count;
+	PyObject* positionalArgsTuple = nullptr;
+	PyObject* keywordArgsDict = nullptr;
+	for(int i=0 ; i < params_count ; i++)
+	{
+		
+		PyObject* curParam = PyTuple_GetItem(params, i);
+		
+		if(((is_method && i != 0) || !is_method) && strcmp(curParam->ob_type->tp_name, "metaffi_positional_args") == 0) // found positional args
+		{
+			positionalArgsTuple = PyObject_GetAttrString(curParam, "t");
+		}
+		else if(((is_method && i != 0) || !is_method) && strcmp(curParam->ob_type->tp_name, "metaffi_keyword_args") == 0)
+		{
+			keywordArgsDict = curParam;
+		}
+	}
+	
+	if(!positionalArgsTuple && !keywordArgsDict) // no variadics
+	{
+		out_params = params;
+		return;
+	}
+	
+	if(keywordArgsDict)
+	{
+		out_kwargs = keywordArgsDict;
+		new_size--; // remove keywordArgs from parameters tuple
+	}
+	
+	Py_ssize_t positionalArgsTupleSize = 0;
+	if(positionalArgsTuple)
+	{
+		positionalArgsTupleSize = PyTuple_Size(positionalArgsTuple);
+		new_size += positionalArgsTupleSize;
+		new_size--; // remove the parameter holding "positionalArgsTuple"
+	}
+	
+	out_params = PyTuple_New(new_size);
+	int j=0;
+	for(int i=0 ; i < params_count ; i++)
+	{
+		PyObject* curParam = PyTuple_GetItem(params, i);
+		
+		if(((is_method && i != 0) || !is_method) && (strcmp(curParam->ob_type->tp_name, "metaffi_positional_args") == 0 ||
+													 strcmp(curParam->ob_type->tp_name, "metaffi_keyword_args") == 0)) // found positional args
+		{
+			continue;
+		}
+		else
+		{
+			Py_INCREF(curParam);
+			PyTuple_SetItem(out_params, j, curParam);
+			j++;
+		}
+	}
+	
+	for(int i=0 ; i < positionalArgsTupleSize ; i++)
+	{
+		PyObject* curParam = PyTuple_GetItem(positionalArgsTuple, i);
+		Py_INCREF(curParam);
+		PyTuple_SetItem(out_params, j, curParam);
+		j++;
+	}
+}
+//--------------------------------------------------------------------
 void xcall_params_ret(
+		int is_method,
 		PyObject* pyfunc,
 		cdts params_ret[2],
 		char** out_err, uint64_t* out_err_len
@@ -199,14 +277,47 @@ void xcall_params_ret(
 		// convert CDT to Python3
 		cdts_python3 params_cdts(params_ret[0].pcdt, params_ret[0].len);
 		PyObject* params = params_cdts.parse();
+		
+		// if parameter is of type "metaffi_positional_args" - pass internal tuple as "positional args"
+		// if parameter is of type "metaffi_keyword_args" - pass dict as "keyword args"
+		PyObject* out_params = nullptr;
+		PyObject* out_kwargs = nullptr;
+		
+		extract_args(is_method, params, out_params, out_kwargs);
+		
 		scope_guard sgParams([&]()
-		{
-			Py_DecRef(params);
-		});
-	
+	    {
+			if(params != out_params)
+			{
+				Py_DecRef(params);
+				
+				if(out_params){
+					Py_DecRef(out_params);
+				}
+			}
+			else
+			{
+				Py_DecRef(params);
+			}
+			
+			if(out_kwargs){
+				Py_DecRef(out_kwargs);
+			}
+	    });
+
 		// call function
-		PyObject* res = PyObject_CallObject(pyfunc, params);
-	
+		PyObject* res = nullptr;
+		if(out_params || out_kwargs)
+		{
+			res = PyObject_Call(pyfunc, out_params, out_kwargs);
+			
+		}
+		else
+		{
+			// in case of function with default values and there are no actual from caller
+			res = PyObject_CallObject(pyfunc, nullptr);
+		}
+		
 		// convert results back to CDT
 		// assume types are as expected
 		
@@ -260,6 +371,7 @@ void xcall_params_ret(
 }
 //--------------------------------------------------------------------
 void xcall_no_params_ret(
+		int is_method,
 		PyObject* pyfunc,
 		cdts return_values[1],
 		char** out_err, uint64_t* out_err_len
@@ -325,6 +437,7 @@ void xcall_no_params_ret(
 }
 //--------------------------------------------------------------------
 void xcall_params_no_ret(
+		int is_method,
 		PyObject* pyfunc,
 		cdts parameters[1],
 		char** out_err, uint64_t* out_err_len
@@ -341,9 +454,24 @@ void xcall_params_no_ret(
 		                     {
 			                     Py_DecRef(params);
 		                     });
+
+		// if parameter is of type "metaffi_positional_args" - pass internal tuple as "positional args"
+		// if parameter is of type "metaffi_keyword_args" - pass dict as "keyword args"
+		PyObject* out_params = nullptr;
+		PyObject* out_kwargs = nullptr;
+		extract_args(is_method, params, out_params, out_kwargs);
 		
 		// call function
-		PyObject* res = PyObject_CallObject(pyfunc, params);
+		PyObject* res = nullptr;
+		if(out_params || out_kwargs)
+		{
+				res = PyObject_Call(pyfunc, out_params, out_kwargs);
+		}
+		else
+		{
+			// in case of function with default values and there are no actuals from caller
+			res = PyObject_CallObject(pyfunc, NULL);
+		}
 		
 		// convert results back to CDT
 		// assume types are as expected
@@ -385,6 +513,7 @@ void xcall_params_no_ret(
 }
 //--------------------------------------------------------------------
 void xcall_no_params_no_ret(
+		int is_method,
 		PyObject* pyfunc,
 		char** out_err, uint64_t* out_err_len
 )

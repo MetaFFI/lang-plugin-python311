@@ -48,10 +48,14 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 				isAllKeywordOnlyOptional = false
 			}
 
-			pyty, err = p.GetType()
-			if err != nil {
-				return nil, err
+			commentArgIsOptionalText := ""
+			if isDefaultVal{
+				commentArgIsOptionalText = "(Optional)"
 			}
+
+			pyfunc.Comment += fmt.Sprintf("\nKeyword argument %v - %v", commentArgIsOptionalText, paramName)
+
+			continue
 
 		} else if kind == "VAR_KEYWORD" {
 			// replace with "dict_var_args" parameter instead
@@ -73,12 +77,7 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			talias = pyty
 		}
 
-		dims := 0
-		if pyty == "list" {
-			dims = 1
-		}
-
-		mffiparam := IDL.NewArgArrayDefinitionWithAlias(paramName, mffiType, dims, talias)
+		mffiparam := IDL.NewArgArrayDefinitionWithAlias(paramName, mffiType, 0, talias)
 		mffiparam.IsOptional = isDefaultVal
 
 		pyfunc.AddParameter(mffiparam)
@@ -96,8 +95,12 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			i := pyfunc.GetFirstIndexOfOptionalParameter()
 
 			// insert after last optional parameter
-			pyfunc.Parameters = append(pyfunc.Parameters[:i+1], pyfunc.Parameters[i:]...)
-			pyfunc.Parameters[i] = p
+			if i > -1{
+				pyfunc.Parameters = append(pyfunc.Parameters[:i+1], pyfunc.Parameters[i:]...)
+                pyfunc.Parameters[i] = p
+			} else {
+				pyfunc.Parameters = append(pyfunc.Parameters, p)
+			}
 		}
 	}
 
@@ -110,12 +113,7 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			talias = pyty
 		}
 
-		dims := 0
-		if pyty == "list" {
-			dims = 1
-		}
-
-		pyfunc.AddReturnValues(IDL.NewArgArrayDefinitionWithAlias(retvalname, mffiType, dims, talias))
+		pyfunc.AddReturnValues(IDL.NewArgArrayDefinitionWithAlias(retvalname, mffiType, 0, talias))
 	}
 
 	pyfunc.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)

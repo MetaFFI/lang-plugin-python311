@@ -85,8 +85,7 @@ class py_extractor:
 			module_name = module_name.replace('.py', '')
 			module_name = module_name.replace('/', '.')
 
-		print('Py IDL Extractor: Going to parse ' + self.filename)
-		print('Py IDL Extractor: Importing '+module_name)
+		print('Py IDL Extractor: Going to parse ' + self.filename + '. Importing '+module_name)
 		self.mod = importlib.import_module(module_name)
 
 	def in_site_package(self, path: str) -> bool:
@@ -246,7 +245,6 @@ class py_extractor:
 		sig = signature(f[1])
 
 		# parse parameters
-		print('{}('.format(f[0]), end=' ')
 		for name, param in sig.parameters.items():
 
 			pdata = parameter_info()
@@ -272,9 +270,7 @@ class py_extractor:
 			# cleanup the name
 			pdata.name = pdata.name.replace('*', '')
 
-			print('{} {},'.format(pdata.type, pdata.name), end=' ')
 			func_info.parameters.append(pdata)
-		print(')')
 
 		# parse return value
 		if func_info.name == '__init__':
@@ -296,7 +292,7 @@ class py_extractor:
 				if rettype == 'typing.Any' or rettype == 'Any':
 					rettype = 'any'
 
-				# print('{} return type is {}'.format(f[0], rettype))
+
 				func_info.return_values.append(rettype)
 
 		return func_info

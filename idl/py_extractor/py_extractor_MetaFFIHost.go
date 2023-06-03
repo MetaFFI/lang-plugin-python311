@@ -327,6 +327,10 @@ func (this *Variable_info) GetHandle() Handle{
 	return this.h
 }
 
+func (this *Variable_info) SetHandle(h Handle){
+	this.h = h
+}
+
 
 
 func (this *Variable_info) GetName() (name string, err error){
@@ -562,6 +566,10 @@ type Parameter_info struct{
 
 func (this *Parameter_info) GetHandle() Handle{
 	return this.h
+}
+
+func (this *Parameter_info) SetHandle(h Handle){
+	this.h = h
 }
 
 
@@ -849,6 +857,10 @@ func (this *Function_info) GetHandle() Handle{
 	return this.h
 }
 
+func (this *Function_info) SetHandle(h Handle){
+	this.h = h
+}
+
 
 
 func (this *Function_info) GetName() (name string, err error){
@@ -1099,6 +1111,10 @@ type Class_info struct{
 
 func (this *Class_info) GetHandle() Handle{
 	return this.h
+}
+
+func (this *Class_info) SetHandle(h Handle){
+	this.h = h
 }
 
 
@@ -1366,6 +1382,10 @@ type Py_info struct{
 
 func (this *Py_info) GetHandle() Handle{
 	return this.h
+}
+
+func (this *Py_info) SetHandle(h Handle){
+	this.h = h
 }
 
 
@@ -1642,6 +1662,10 @@ func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 
 func (this *Py_extractor) GetHandle() Handle{
 	return this.h
+}
+
+func (this *Py_extractor) SetHandle(h Handle){
+	this.h = h
 }
 
 

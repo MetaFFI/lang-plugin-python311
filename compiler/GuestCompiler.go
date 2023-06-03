@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"io/ioutil"
@@ -8,6 +9,17 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+)
+
+var (
+	//go:embed metaffi_objects.json
+	metaffi_objects_json []byte
+
+	//go:embed metaffi_objects.py
+	metaffi_objects_py []byte
+
+	//go:embed metaffi_objects_MetaFFIGuest.py
+	metaffi_objects_MetaFFIGuest_py []byte
 )
 
 // --------------------------------------------------------------------
@@ -48,8 +60,22 @@ func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir stri
 		return fmt.Errorf("Failed to write dynamic library to %v. Error: %v", this.outputDir+this.outputFilename, err)
 	}
 
-	return nil
+	// 	write metaffi_objects
+	metaffiObjectsGuestPy := fmt.Sprintf("%v%vmetaffi_objects_MetaFFIGuest.py", this.outputDir, string(os.PathSeparator))
+	err = ioutil.WriteFile(metaffiObjectsGuestPy, metaffi_objects_MetaFFIGuest_py, 0600)
+	if err != nil {
+		return fmt.Errorf("Failed to write MetaFFI objects guest to %v. Error: %v", metaffiObjectsGuestPy, err)
+	}
 
+	metaffiObjectsPy := fmt.Sprintf("%v%vmetaffi_objects.py", this.outputDir, string(os.PathSeparator))
+	err = ioutil.WriteFile(metaffiObjectsPy, metaffi_objects_py, 0600)
+	if err != nil {
+		return fmt.Errorf("Failed to write MetaFFI objects to %v. Error: %v", metaffiObjectsPy, err)
+	}
+
+	fmt.Printf("Important: for variadic and named parameters expose \"metaffi_objects.py\" to your host language: \"metaffi -c --idl metaffi_objects.py -h [Host Language]\"")
+
+	return nil
 }
 
 // --------------------------------------------------------------------
@@ -122,6 +148,19 @@ func (this *GuestCompiler) parseImports() (string, error) {
 }
 
 // --------------------------------------------------------------------
+func (this *GuestCompiler) parseGuestHelperFunctions() (string, error) {
+	tmpEntryPoint, err := template.New("GuestHelperFunctions").Funcs(templatesFuncMap).Parse(GuestHelperFunctions)
+	if err != nil {
+		return "", fmt.Errorf("Failed to parse GuestHelperFunctions: %v", err)
+	}
+
+	bufEntryPoint := strings.Builder{}
+	err = tmpEntryPoint.Execute(&bufEntryPoint, this.def)
+
+	return bufEntryPoint.String(), err
+}
+
+// --------------------------------------------------------------------
 func (this *GuestCompiler) generateCode() (string, error) {
 
 	header, err := this.parseHeader()
@@ -134,12 +173,17 @@ func (this *GuestCompiler) generateCode() (string, error) {
 		return "", err
 	}
 
+	guestHelperFunctions, err := this.parseGuestHelperFunctions()
+	if err != nil {
+		return "", err
+	}
+
 	functionStubs, err := this.parseForeignFunctions()
 	if err != nil {
 		return "", err
 	}
 
-	res := header + imports + GuestHelperFunctions + functionStubs
+	res := header + imports + guestHelperFunctions + functionStubs
 
 	return res, nil
 }

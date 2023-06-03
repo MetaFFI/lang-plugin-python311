@@ -320,8 +320,8 @@ std::unordered_map<std::string, metaffi_types> cdts_python3::pytypes_to_metaffi_
 	{"int", metaffi_int64_type},
 	{"float", metaffi_float64_type},
 	{"bool", metaffi_bool_type},
-	{"list", metaffi_array_type},
-	{"tuple", metaffi_array_type},
+	{"list", metaffi_any_type},
+	{"tuple", metaffi_any_type},
 };
 
 //--------------------------------------------------------------------

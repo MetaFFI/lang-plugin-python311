@@ -25,10 +25,10 @@ def load_python_plugin():
 	if python_plugin_handle == None:
 		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 		python_plugin_handle.set_entrypoint.argstype = [c_char_p, c_void_p]
-		python_plugin_handle.xcall_params_ret.argstype = [py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
-		python_plugin_handle.xcall_params_no_ret.argstype = [py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
-		python_plugin_handle.xcall_no_params_ret.argstype = [py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
-		python_plugin_handle.xcall_no_params_no_ret.argstype = [py_object, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_params_ret.argstype = [c_int, py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_params_no_ret.argstype = [c_int, py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_no_params_ret.argstype = [c_int, py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
+		python_plugin_handle.xcall_no_params_no_ret.argstype = [c_int, py_object, POINTER(c_char_p), POINTER(c_ulonglong)]
 
 def get_filename_to_load(fname):
 	osname = platform.system()
@@ -39,6 +39,19 @@ def get_filename_to_load(fname):
 	else:
 		return os.getenv('METAFFI_HOME')+'/' + fname + '.so' # for everything that is not windows or mac, return .so
 
+def dynamicTypeToMetaFFIType(obj):
+	if isinstance(obj, float):
+		return {{GetMetaFFITypeFromPyType "float"}}
+	elif isinstance(obj, str):
+		return {{GetMetaFFITypeFromPyType "str"}}
+	elif isinstance(obj, int):
+		return {{GetMetaFFITypeFromPyType "int"}}
+	elif isinstance(obj, bool):
+		return {{GetMetaFFITypeFromPyType "bool"}}
+	else:
+		return {{GetMetaFFITypeFromPyType "handle"}}
+
+
 load_python_plugin()
 `
 
@@ -47,14 +60,14 @@ const GuestFunctionXLLRTemplate = `
 
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}{{$retvalLength := len $f.Getter.ReturnValues}}
-{{GenerateCEntryPoint $f.Getter.GetNameWithOverloadIndex $f.Getter.Parameters $f.Getter.ReturnValues 0}}
+{{GenerateCEntryPoint $f.Getter.GetNameWithOverloadIndex $f.Getter.Parameters $f.Getter.ReturnValues false 0}}
 def EntryPoint_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}():
 	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	return (None, ret_val_types, {{$f.Getter.FunctionPath.module}}.{{$f.Name}})
 
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
-{{GenerateCEntryPoint $f.Setter.GetNameWithOverloadIndex $f.Setter.Parameters $f.Setter.ReturnValues 0}}
+{{GenerateCEntryPoint $f.Setter.GetNameWithOverloadIndex $f.Setter.Parameters $f.Setter.ReturnValues false 0}}
 def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*val):
 	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	if len(val) != 1:
@@ -68,7 +81,7 @@ def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*val):
 
 {{range $findex, $f := $m.Functions}}
 # Call to foreign {{$f.Name}}
-{{GenerateCEntryPoint $f.GetNameWithOverloadIndex $f.Parameters $f.ReturnValues 0}}
+{{GenerateCEntryPoint $f.GetNameWithOverloadIndex $f.Parameters $f.ReturnValues false 0}}
 def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 	try:
 		# call function
@@ -86,7 +99,7 @@ def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 
 {{range $classindex, $c := $m.Classes}}
 {{range $cstrindex, $f := $c.Constructors}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues 0}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues true 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 	try:
 		# call constructor
@@ -104,7 +117,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **n
 
 {{range $findex, $f := $c.Fields}}
 {{if $f.Getter}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.Getter.GetNameWithOverloadIndex) $f.Getter.Parameters $f.Getter.ReturnValues 0}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.Getter.GetNameWithOverloadIndex) $f.Getter.Parameters $f.Getter.ReturnValues true 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}(*obj):
 	try:
 
@@ -121,7 +134,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExist
 
 {{end}}{{/* End Getter */}}
 {{if $f.Setter}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.Setter.GetNameWithOverloadIndex) $f.Setter.Parameters $f.Setter.ReturnValues 0}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.Setter.GetNameWithOverloadIndex) $f.Setter.Parameters $f.Setter.ReturnValues true 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*vals):
 	try:
 
@@ -142,7 +155,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExist
 {{end}}{{/* End Fields */}}
 
 {{range $methindex, $f := $c.Methods}}
-{{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues 0}}
+{{GenerateCEntryPoint (print $c.Name "_" $f.GetNameWithOverloadIndex) $f.Parameters $f.ReturnValues true 0}}
 def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 	try:
 		# call method
@@ -165,7 +178,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **n
 {{end}}{{/* End methods */}}
 
 {{if $c.Releaser}}
-{{GenerateCEntryPoint (print $c.Name "_" $c.Releaser.GetNameWithOverloadIndex) $c.Releaser.Parameters $c.Releaser.ReturnValues 0}}
+{{GenerateCEntryPoint (print $c.Name "_" $c.Releaser.GetNameWithOverloadIndex) $c.Releaser.Parameters $c.Releaser.ReturnValues true 0}}
 def EntryPoint_{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}{{$c.Releaser.GetOverloadIndexIfExists}}(*vals):
 	try:
 
