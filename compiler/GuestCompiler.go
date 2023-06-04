@@ -73,7 +73,7 @@ func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir stri
 		return fmt.Errorf("Failed to write MetaFFI objects to %v. Error: %v", metaffiObjectsPy, err)
 	}
 
-	fmt.Printf("Important: for variadic and named parameters expose \"metaffi_objects.py\" to your host language: \"metaffi -c --idl metaffi_objects.py -h [Host Language]\"")
+	fmt.Printf("Important: for variadic and named parameters expose \"metaffi_objects.py\" to your host language: \"metaffi -c --idl metaffi_objects.py -h [Host Language]\"\n")
 
 	return nil
 }
