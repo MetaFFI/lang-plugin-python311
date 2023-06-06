@@ -146,20 +146,20 @@ class py_extractor:
 
 			constructor_found = False
 			for member in getmembers(c[1]):
-				if member[0] == '__annotations__' and not isgetsetdescriptor(member[1]):  # fields
+				# if member[0] == '__annotations__' and not isgetsetdescriptor(member[1]):  # fields
+				#
+				# 	for k, v in member[1].items():
+				# 		if k.startswith('_'):
+				# 			continue
+				#
+				# 		clsdata.fields.append(self._extract_field([k, v], True, True))
 
-					for k, v in member[1].items():
-						if k.startswith('_'):
-							continue
-
-						clsdata.fields.append(self._extract_field([k, v], True, True))
-
-				elif ismethoddescriptor(member[1]):
+				if ismethoddescriptor(member[1]):
 
 					# check if method is in "non_python_method_definitions"
 					method_data = none_python_impl_definitions.get_method_definition(self.mod.__name__, clsdata.name, member[0])
 					if method_data is None:
-						print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
+						#print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
 						continue
 
 					if member[0] == '__init__':
@@ -182,7 +182,7 @@ class py_extractor:
 					if member[0].startswith('_'):
 						continue
 					else:
-						print('Skipping {} of type {}'.format('{}.{}'.format(clsdata.name, member[0]), type(member[1]).__name__))
+						#print('Skipping {} of type {}'.format('{}.{}'.format(clsdata.name, member[0]), type(member[1]).__name__))
 						continue
 
 			# make sure class has a constructor, if not, add the default one
@@ -202,18 +202,37 @@ class py_extractor:
 				sig = signature(m[1].fget)
 				if sig.return_annotation is None:
 					v.type = 'any'
+				elif isinstance(sig.return_annotation, str):
+					if '|' in sig.return_annotation:
+						v.type = 'any'
+					else:
+						v.type = sig.return_annotation
+				elif sig.return_annotation == sig.empty:
+					v.type = 'any'
 				else:
-					v.type = sig.return_annotation.__name__
+					v.type = sig.return_annotation.__name__.strip()
 			elif m[1].fset is not None:
 				sig = signature(m[1].fset)
 				if sig.return_annotation is None:
 					v.type = 'any'
+				elif isinstance(sig.return_annotation, str):
+					if '|' in sig.return_annotation:
+						v.type = 'any'
+					else:
+						v.type = sig.return_annotation
+				elif sig.return_annotation == sig.empty:
+					v.type = 'any'
 				else:
-					v.type = sig.return_annotation.__name__
+					v.type = sig.return_annotation.__name__.strip()
 			else:
 				raise ValueError('property {} does not have a getter nor a setter'.format(m[0]))
 		else:
-			v.type = type(m[1]).__name__.strip()
+			if hasattr(m[1], '__name__'):
+				v.type = m[1].__name__.strip()
+			elif hasattr(m[1], '__class__'):
+				v.type = m[1].__class__.__name__.strip()
+			else:
+				raise ValueError('Failed to find the type of the field "{}". {}'.format(m[0], m[1]))
 
 		if v.type == '_empty':
 			v.type = 'any'
@@ -252,11 +271,18 @@ class py_extractor:
 
 			if param.annotation != param.empty:
 				if isinstance(param.annotation, str):
-					pdata.type = param.annotation
+					if '|' in param.annotation:
+						pdata.type = 'any'
+					else:
+						pdata.type = param.annotation
 				elif isinstance(param.annotation, types.UnionType):
 					pdata.type = 'any'
-				else:
+				elif hasattr(param.annotation, '__name__'):
 					pdata.type = param.annotation.__name__
+				elif hasattr(param.annotation, '__class__'):
+					pdata.type = param.annotation.__class__.__name__
+				else:
+					raise ValueError('Failed to find the type of the parameter "{}".'.format(param.annotation))
 			else:
 				pdata.type = 'any'
 
@@ -281,7 +307,10 @@ class py_extractor:
 		else:
 			if sig.return_annotation is not None:
 				if isinstance(sig.return_annotation, str):
-					rettype = sig.return_annotation
+					if '|' in sig.return_annotation:
+						rettype = 'any'
+					else:
+						rettype = sig.return_annotation
 				elif sig.empty == sig.return_annotation:
 					rettype = 'any'
 				else:
@@ -298,5 +327,5 @@ class py_extractor:
 		return func_info
 
 if '__main__' == __name__:
-	ext = py_extractor('collections')
-	ext.extract()
+	ext = py_extractor('pandas')
+	pandas_ext = ext.extract()

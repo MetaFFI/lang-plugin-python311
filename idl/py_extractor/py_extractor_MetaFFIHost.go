@@ -7,24 +7,6 @@ import "fmt"
 import "unsafe"
 import . "github.com/MetaFFI/lang-plugin-go/go-runtime"
 
-/*
-#cgo !windows LDFLAGS: -L. -ldl
-#cgo CFLAGS: -I"C:/src/github.com/MetaFFI/metaffi-core/out/windows/x64/debug"
-
-#include <stdlib.h>
-#include <stdint.h>
-#include <include/cdt_structs.h>
-#include <include/cdt_capi_loader.h>
-
-metaffi_handle get_null_handle();
-metaffi_size get_int_item(metaffi_size* array, int index);
-void* convert_union_to_ptr(void* p);
-void set_cdt_type(struct cdt* p, metaffi_type t);
-metaffi_type get_cdt_type(struct cdt* p);
-metaffi_size len_to_metaffi_size(long long i);
-*/
-import "C"
-
 
 
 // function IDs
@@ -144,36 +126,19 @@ var py_extractor_Releasepy_extractor_id unsafe.Pointer
 
 
 func Load(modulePath string){
-	loadCDTCAPI()
+	LoadCDTCAPI()
 
-	runtime_plugin := "xllr.python3"
-	pruntime_plugin := C.CString(runtime_plugin)
-	runtime_plugin_length := C.uint32_t(len(runtime_plugin))
-
-	// load foreign runtime
-	var out_err *C.char
-    var out_err_len C.uint32_t
-    out_err_len = C.uint32_t(0)
-	C.xllr_load_runtime_plugin(pruntime_plugin, runtime_plugin_length, &out_err, &out_err_len)
-	if out_err_len != C.uint32_t(0){
-		panic(fmt.Errorf("Failed to load runtime %v: %v", runtime_plugin, string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len)))))
+	runtimePlugin := "xllr.python3"
+	err := XLLRLoadRuntimePlugin(runtimePlugin)
+	if err != nil{
+		panic(err)
 	}
 
 	// load functions
-	loadFF := func(modulePath string, fpath string, params_count int, retval_count int) unsafe.Pointer{
-		ppath := C.CString(fpath)
-		defer C.free(unsafe.Pointer(ppath))
-
-		pmodulePath := C.CString(modulePath)
-		defer C.free(unsafe.Pointer(pmodulePath))
-
-		var out_err *C.char
-		var out_err_len C.uint32_t
-		out_err_len = C.uint32_t(0)
-		id := C.xllr_load_function(pruntime_plugin, runtime_plugin_length, pmodulePath, C.uint(len(modulePath)), ppath, C.uint(len(fpath)), nil,  C.schar(params_count), C.schar(params_count), &out_err, &out_err_len)
-
-		if id == nil{ // failed
-			panic(fmt.Errorf("Failed to load foreign entity entrypoint \"%v\": %v", fpath, string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len)))))
+	loadFF := func(modulePath string, fpath string, paramsCount int8, retvalCount int8) unsafe.Pointer{
+		id, err := XLLRLoadFunction(runtimePlugin, modulePath, fpath, nil, paramsCount, retvalCount)
+		if err != nil{ // failed
+			panic(err)
 		}
 
 		return id
@@ -295,14 +260,8 @@ func Load(modulePath string){
 }
 
 func Free(){
-	runtime_plugin := "xllr.python3"
-    pruntime_plugin := C.CString(runtime_plugin)
-    runtime_plugin_length := C.uint32_t(len(runtime_plugin))
-
-    var out_err *C.char
-    var out_err_len C.uint32_t
-    out_err_len = C.uint32_t(0)
-    C.xllr_free_runtime_plugin(pruntime_plugin, runtime_plugin_length, &out_err, &out_err_len)
+	err := XLLRFreeRuntimePlugin("xllr.python3")
+	if err != nil{ panic(err) }
 }
 
 
@@ -337,34 +296,27 @@ func (this *Variable_info) GetName() (name string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(variable_info_get_name_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_get_name_id via XLLR
+		err = XLLRXCallParamsRet(variable_info_get_name_id, xcall_params)  // call function pointer variable_info_get_name_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed variable_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionvariable_info.get_name. Error: %v", err)
 		return
 	}
 
 	
 	
-	nameAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	nameAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if nameAsInterface != nil{
 		
 		// not handle
@@ -385,34 +337,27 @@ func (this *Variable_info) GetType() (type__ string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(variable_info_get_type_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_get_type_id via XLLR
+		err = XLLRXCallParamsRet(variable_info_get_type_id, xcall_params)  // call function pointer variable_info_get_type_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed variable_info.get_type. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionvariable_info.get_type. Error: %v", err)
 		return
 	}
 
 	
 	
-	type__AsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	type__AsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if type__AsInterface != nil{
 		
 		// not handle
@@ -433,34 +378,27 @@ func (this *Variable_info) GetIsGetter() (is_getter bool, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(variable_info_get_is_getter_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_get_is_getter_id via XLLR
+		err = XLLRXCallParamsRet(variable_info_get_is_getter_id, xcall_params)  // call function pointer variable_info_get_is_getter_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed variable_info.get_is_getter. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionvariable_info.get_is_getter. Error: %v", err)
 		return
 	}
 
 	
 	
-	is_getterAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	is_getterAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if is_getterAsInterface != nil{
 		
 		// not handle
@@ -481,34 +419,27 @@ func (this *Variable_info) GetIsSetter() (is_setter bool, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(variable_info_get_is_setter_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_get_is_setter_id via XLLR
+		err = XLLRXCallParamsRet(variable_info_get_is_setter_id, xcall_params)  // call function pointer variable_info_get_is_setter_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed variable_info.get_is_setter. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionvariable_info.get_is_setter. Error: %v", err)
 		return
 	}
 
 	
 	
-	is_setterAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	is_setterAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if is_setterAsInterface != nil{
 		
 		// not handle
@@ -528,26 +459,18 @@ func (this *Variable_info) GetIsSetter() (is_setter bool, err error){
 
 func (this *Variable_info) ReleasevariableInfo( this_instance interface{}) ( err error){
 	
-	
-
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 0)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
+	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
 	
 	// parameters
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_no_ret(variable_info_Releasevariable_info_id, xcall_params, &out_err, &out_err_len)  // call function pointer variable_info_Releasevariable_info_id via XLLR
+		err = XLLRXCallParamsNoRet(variable_info_Releasevariable_info_id, xcall_params)  // call function pointer variable_info_Releasevariable_info_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed variable_info.Releasevariable_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionvariable_info.Releasevariable_info. Error: %v", err)
 		return
 	}
 
@@ -578,34 +501,27 @@ func (this *Parameter_info) GetName() (name string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(parameter_info_get_name_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_name_id via XLLR
+		err = XLLRXCallParamsRet(parameter_info_get_name_id, xcall_params)  // call function pointer parameter_info_get_name_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed parameter_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionparameter_info.get_name. Error: %v", err)
 		return
 	}
 
 	
 	
-	nameAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	nameAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if nameAsInterface != nil{
 		
 		// not handle
@@ -626,34 +542,27 @@ func (this *Parameter_info) GetType() (type__ string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(parameter_info_get_type_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_type_id via XLLR
+		err = XLLRXCallParamsRet(parameter_info_get_type_id, xcall_params)  // call function pointer parameter_info_get_type_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed parameter_info.get_type. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionparameter_info.get_type. Error: %v", err)
 		return
 	}
 
 	
 	
-	type__AsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	type__AsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if type__AsInterface != nil{
 		
 		// not handle
@@ -674,34 +583,27 @@ func (this *Parameter_info) GetIsDefaultValue() (is_default_value bool, err erro
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(parameter_info_get_is_default_value_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_is_default_value_id via XLLR
+		err = XLLRXCallParamsRet(parameter_info_get_is_default_value_id, xcall_params)  // call function pointer parameter_info_get_is_default_value_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed parameter_info.get_is_default_value. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionparameter_info.get_is_default_value. Error: %v", err)
 		return
 	}
 
 	
 	
-	is_default_valueAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	is_default_valueAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if is_default_valueAsInterface != nil{
 		
 		// not handle
@@ -722,34 +624,27 @@ func (this *Parameter_info) GetIsOptional() (is_optional bool, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(parameter_info_get_is_optional_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_is_optional_id via XLLR
+		err = XLLRXCallParamsRet(parameter_info_get_is_optional_id, xcall_params)  // call function pointer parameter_info_get_is_optional_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed parameter_info.get_is_optional. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionparameter_info.get_is_optional. Error: %v", err)
 		return
 	}
 
 	
 	
-	is_optionalAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	is_optionalAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if is_optionalAsInterface != nil{
 		
 		// not handle
@@ -770,34 +665,27 @@ func (this *Parameter_info) GetKind() (kind string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(parameter_info_get_kind_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_get_kind_id via XLLR
+		err = XLLRXCallParamsRet(parameter_info_get_kind_id, xcall_params)  // call function pointer parameter_info_get_kind_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed parameter_info.get_kind. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionparameter_info.get_kind. Error: %v", err)
 		return
 	}
 
 	
 	
-	kindAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	kindAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if kindAsInterface != nil{
 		
 		// not handle
@@ -817,26 +705,18 @@ func (this *Parameter_info) GetKind() (kind string, err error){
 
 func (this *Parameter_info) ReleaseparameterInfo( this_instance interface{}) ( err error){
 	
-	
-
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 0)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
+	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
 	
 	// parameters
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_no_ret(parameter_info_Releaseparameter_info_id, xcall_params, &out_err, &out_err_len)  // call function pointer parameter_info_Releaseparameter_info_id via XLLR
+		err = XLLRXCallParamsNoRet(parameter_info_Releaseparameter_info_id, xcall_params)  // call function pointer parameter_info_Releaseparameter_info_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed parameter_info.Releaseparameter_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionparameter_info.Releaseparameter_info. Error: %v", err)
 		return
 	}
 
@@ -867,34 +747,27 @@ func (this *Function_info) GetName() (name string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(function_info_get_name_id, xcall_params, &out_err, &out_err_len)  // call function pointer function_info_get_name_id via XLLR
+		err = XLLRXCallParamsRet(function_info_get_name_id, xcall_params)  // call function pointer function_info_get_name_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed function_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionfunction_info.get_name. Error: %v", err)
 		return
 	}
 
 	
 	
-	nameAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	nameAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if nameAsInterface != nil{
 		
 		// not handle
@@ -915,34 +788,27 @@ func (this *Function_info) GetComment() (comment string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(function_info_get_comment_id, xcall_params, &out_err, &out_err_len)  // call function pointer function_info_get_comment_id via XLLR
+		err = XLLRXCallParamsRet(function_info_get_comment_id, xcall_params)  // call function pointer function_info_get_comment_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed function_info.get_comment. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionfunction_info.get_comment. Error: %v", err)
 		return
 	}
 
 	
 	
-	commentAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	commentAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if commentAsInterface != nil{
 		
 		// not handle
@@ -963,34 +829,27 @@ func (this *Function_info) GetParameters() (parameters []Parameter_info, err err
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(function_info_get_parameters_id, xcall_params, &out_err, &out_err_len)  // call function pointer function_info_get_parameters_id via XLLR
+		err = XLLRXCallParamsRet(function_info_get_parameters_id, xcall_params)  // call function pointer function_info_get_parameters_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed function_info.get_parameters. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionfunction_info.get_parameters. Error: %v", err)
 		return
 	}
 
 	
 	
-	parametersAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	parametersAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if parametersAsInterface != nil{
 		 
 		// handle
@@ -1026,34 +885,27 @@ func (this *Function_info) GetReturnValues() (return_values []string, err error)
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(function_info_get_return_values_id, xcall_params, &out_err, &out_err_len)  // call function pointer function_info_get_return_values_id via XLLR
+		err = XLLRXCallParamsRet(function_info_get_return_values_id, xcall_params)  // call function pointer function_info_get_return_values_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed function_info.get_return_values. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionfunction_info.get_return_values. Error: %v", err)
 		return
 	}
 
 	
 	
-	return_valuesAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	return_valuesAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if return_valuesAsInterface != nil{
 		
 		// not handle
@@ -1073,26 +925,18 @@ func (this *Function_info) GetReturnValues() (return_values []string, err error)
 
 func (this *Function_info) ReleasefunctionInfo( this_instance interface{}) ( err error){
 	
-	
-
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 0)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
+	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
 	
 	// parameters
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_no_ret(function_info_Releasefunction_info_id, xcall_params, &out_err, &out_err_len)  // call function pointer function_info_Releasefunction_info_id via XLLR
+		err = XLLRXCallParamsNoRet(function_info_Releasefunction_info_id, xcall_params)  // call function pointer function_info_Releasefunction_info_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed function_info.Releasefunction_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionfunction_info.Releasefunction_info. Error: %v", err)
 		return
 	}
 
@@ -1123,34 +967,27 @@ func (this *Class_info) GetName() (name string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(class_info_get_name_id, xcall_params, &out_err, &out_err_len)  // call function pointer class_info_get_name_id via XLLR
+		err = XLLRXCallParamsRet(class_info_get_name_id, xcall_params)  // call function pointer class_info_get_name_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed class_info.get_name. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionclass_info.get_name. Error: %v", err)
 		return
 	}
 
 	
 	
-	nameAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	nameAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if nameAsInterface != nil{
 		
 		// not handle
@@ -1171,34 +1008,27 @@ func (this *Class_info) GetComment() (comment string, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(class_info_get_comment_id, xcall_params, &out_err, &out_err_len)  // call function pointer class_info_get_comment_id via XLLR
+		err = XLLRXCallParamsRet(class_info_get_comment_id, xcall_params)  // call function pointer class_info_get_comment_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed class_info.get_comment. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionclass_info.get_comment. Error: %v", err)
 		return
 	}
 
 	
 	
-	commentAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	commentAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if commentAsInterface != nil{
 		
 		// not handle
@@ -1219,34 +1049,27 @@ func (this *Class_info) GetFields() (fields []Variable_info, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(class_info_get_fields_id, xcall_params, &out_err, &out_err_len)  // call function pointer class_info_get_fields_id via XLLR
+		err = XLLRXCallParamsRet(class_info_get_fields_id, xcall_params)  // call function pointer class_info_get_fields_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed class_info.get_fields. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionclass_info.get_fields. Error: %v", err)
 		return
 	}
 
 	
 	
-	fieldsAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	fieldsAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if fieldsAsInterface != nil{
 		 
 		// handle
@@ -1282,34 +1105,27 @@ func (this *Class_info) GetMethods() (methods []Function_info, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(class_info_get_methods_id, xcall_params, &out_err, &out_err_len)  // call function pointer class_info_get_methods_id via XLLR
+		err = XLLRXCallParamsRet(class_info_get_methods_id, xcall_params)  // call function pointer class_info_get_methods_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed class_info.get_methods. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionclass_info.get_methods. Error: %v", err)
 		return
 	}
 
 	
 	
-	methodsAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	methodsAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if methodsAsInterface != nil{
 		 
 		// handle
@@ -1344,26 +1160,18 @@ func (this *Class_info) GetMethods() (methods []Function_info, err error){
 
 func (this *Class_info) ReleaseclassInfo( this_instance interface{}) ( err error){
 	
-	
-
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 0)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
+	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
 	
 	// parameters
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_no_ret(class_info_Releaseclass_info_id, xcall_params, &out_err, &out_err_len)  // call function pointer class_info_Releaseclass_info_id via XLLR
+		err = XLLRXCallParamsNoRet(class_info_Releaseclass_info_id, xcall_params)  // call function pointer class_info_Releaseclass_info_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed class_info.Releaseclass_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionclass_info.Releaseclass_info. Error: %v", err)
 		return
 	}
 
@@ -1394,34 +1202,27 @@ func (this *Py_info) GetGlobals() (globals []Variable_info, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(py_info_get_globals_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_info_get_globals_id via XLLR
+		err = XLLRXCallParamsRet(py_info_get_globals_id, xcall_params)  // call function pointer py_info_get_globals_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_info.get_globals. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_info.get_globals. Error: %v", err)
 		return
 	}
 
 	
 	
-	globalsAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	globalsAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if globalsAsInterface != nil{
 		 
 		// handle
@@ -1457,34 +1258,27 @@ func (this *Py_info) GetFunctions() (functions []Function_info, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(py_info_get_functions_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_info_get_functions_id via XLLR
+		err = XLLRXCallParamsRet(py_info_get_functions_id, xcall_params)  // call function pointer py_info_get_functions_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_info.get_functions. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_info.get_functions. Error: %v", err)
 		return
 	}
 
 	
 	
-	functionsAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	functionsAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if functionsAsInterface != nil{
 		 
 		// handle
@@ -1520,34 +1314,27 @@ func (this *Py_info) GetClasses() (classes []Class_info, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// get parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0)
+	FromGoToCDT(this.h, parametersCDTS, 0)
 	
 	 
 
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(py_info_get_classes_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_info_get_classes_id via XLLR
+		err = XLLRXCallParamsRet(py_info_get_classes_id, xcall_params)  // call function pointer py_info_get_classes_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_info.get_classes. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_info.get_classes. Error: %v", err)
 		return
 	}
 
 	
 	
-	classesAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	classesAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if classesAsInterface != nil{
 		 
 		// handle
@@ -1582,26 +1369,18 @@ func (this *Py_info) GetClasses() (classes []Class_info, err error){
 
 func (this *Py_info) ReleasepyInfo( this_instance interface{}) ( err error){
 	
-	
-
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 0)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
+	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
 	
 	// parameters
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_no_ret(py_info_Releasepy_info_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_info_Releasepy_info_id via XLLR
+		err = XLLRXCallParamsNoRet(py_info_Releasepy_info_id, xcall_params)  // call function pointer py_info_Releasepy_info_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_info.Releasepy_info. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_info.Releasepy_info. Error: %v", err)
 		return
 	}
 
@@ -1620,26 +1399,19 @@ type Py_extractor struct{
 func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// parameters
 	
-	fromGoToCDT(filename, parametersCDTS, 0)
+	FromGoToCDT(filename, parametersCDTS, 0)
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(py_extractor_py_extractor_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_extractor_py_extractor_id via XLLR
+		err = XLLRXCallParamsRet(py_extractor_py_extractor_id, xcall_params)  // call function pointer py_extractor_py_extractor_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_extractor.py_extractor. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_extractor.py_extractor. Error: %v", err)
 		return
 	}
 
@@ -1647,7 +1419,7 @@ func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 	inst := &Py_extractor{}
 
 	
-	new_instanceAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	new_instanceAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if new_instanceAsInterface != nil{
 		inst.h = new_instanceAsInterface.(Handle)
 	} else {
@@ -1674,33 +1446,26 @@ func (this *Py_extractor) Extract() (info Py_info, err error){
 	
 	
 
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 1)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
-	return_valuesCDTS := xcall_params_slice[1].pcdt
+	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
 
 	
 	// parameters
 	
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_ret(py_extractor_extract_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_extractor_extract_id via XLLR
+		err = XLLRXCallParamsRet(py_extractor_extract_id, xcall_params)  // call function pointer py_extractor_extract_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_extractor.extract. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_extractor.extract. Error: %v", err)
 		return
 	}
 
 	
 	
-	infoAsInterface := fromCDTToGo(return_valuesCDTS, 0)
+	infoAsInterface := FromCDTToGo(return_valuesCDTS, 0)
 	if infoAsInterface != nil{
 		 		
 		
@@ -1724,26 +1489,18 @@ func (this *Py_extractor) Extract() (info Py_info, err error){
 
 func (this *Py_extractor) ReleasepyExtractor( this_instance interface{}) ( err error){
 	
-	
-
-	xcall_params := C.xllr_alloc_cdts_buffer(1, 0)
-	xcall_params_slice := (*[1 << 30]C.cdts)(unsafe.Pointer(xcall_params))[:2:2]
-	parametersCDTS := xcall_params_slice[0].pcdt
+	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
 	
 	// parameters
-	fromGoToCDT(this.h, parametersCDTS, 0) // object
+	FromGoToCDT(this.h, parametersCDTS, 0) // object
 	
 
-		var out_err *C.char
-	var out_err_len C.uint64_t
-	out_err_len = C.uint64_t(0)
-	
-	C.xllr_xcall_params_no_ret(py_extractor_Releasepy_extractor_id, xcall_params, &out_err, &out_err_len)  // call function pointer py_extractor_Releasepy_extractor_id via XLLR
+		err = XLLRXCallParamsNoRet(py_extractor_Releasepy_extractor_id, xcall_params)  // call function pointer py_extractor_Releasepy_extractor_id via XLLR
 	
 	// check errors
-	if out_err_len != 0{
-		err = fmt.Errorf("Function failed py_extractor.Releasepy_extractor. Error: %v", string(C.GoBytes(unsafe.Pointer(out_err), C.int(out_err_len))))
+	if err != nil{
+		err = fmt.Errorf("Failed calling functionpy_extractor.Releasepy_extractor. Error: %v", err)
 		return
 	}
 
