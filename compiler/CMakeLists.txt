@@ -4,9 +4,6 @@ set(target_name "metaffi.compiler.python3")
 
 include(${CMAKE_SCRIPTS_DIR}/MetaFFI.cmake)
 
-metaffi_confirm_plugin("go runtime")
-metaffi_confirm_plugin("go compiler")
-
 # build
 add_go_target(${target_name})
 

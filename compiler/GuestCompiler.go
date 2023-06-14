@@ -41,7 +41,11 @@ func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir stri
 		outputFilename = definition.IDLFilename
 	}
 
-	outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")
+	if strings.ToLower(filepath.Ext(outputFilename)) == ".py"{
+		outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")
+	}
+
+	outputFilename = strings.ReplaceAll(outputFilename, ".", "_") // filename must not contains "."
 
 	this.def = definition
 	this.outputDir = outputDir
@@ -57,7 +61,7 @@ func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir stri
 	outputFullFileName := fmt.Sprintf("%v%v%v_MetaFFIGuest.py", this.outputDir, string(os.PathSeparator), this.outputFilename)
 	err = ioutil.WriteFile(outputFullFileName, []byte(code), 0600)
 	if err != nil {
-		return fmt.Errorf("Failed to write dynamic library to %v. Error: %v", this.outputDir+this.outputFilename, err)
+		return fmt.Errorf("Failed to write dynamic library to %v. Error: %v", outputFullFileName, err)
 	}
 
 	// 	write metaffi_objects

@@ -85,7 +85,7 @@ class py_extractor:
 			module_name = module_name.replace('.py', '')
 			module_name = module_name.replace('/', '.')
 
-		print('Py IDL Extractor: Going to parse ' + self.filename + '. Importing '+module_name)
+		print('Py IDL Extractor: Going to parse '+module_name)
 		self.mod = importlib.import_module(module_name)
 
 	def in_site_package(self, path: str) -> bool:

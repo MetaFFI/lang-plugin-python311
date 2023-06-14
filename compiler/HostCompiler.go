@@ -72,6 +72,7 @@ func (this *HostCompiler) Compile(definition *IDL.IDLDefinition, outputDir strin
 	}
 
 	outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")
+	outputFilename = strings.ReplaceAll(outputFilename, ".", "_") // filename must not contains "."
 
 	this.def = definition
 	this.outputDir = outputDir

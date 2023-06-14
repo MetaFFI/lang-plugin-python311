@@ -13,7 +13,7 @@ import (
 type PyIDLCompiler struct{
 	sourceCode         string
 	sourceCodeFilePath string
-	pyfile             *Py_extractor
+	pyfile             *PyExtractor
 
 	idl *IDL.IDLDefinition
 }

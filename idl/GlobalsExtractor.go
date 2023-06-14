@@ -6,7 +6,7 @@ import (
 )
 
 //--------------------------------------------------------------------
-func ExtractGlobals(pyfile *Py_info, metaffiGuestLib string) ([]*IDL.GlobalDefinition, error){
+func ExtractGlobals(pyfile *PyInfo, metaffiGuestLib string) ([]*IDL.GlobalDefinition, error){
 
 	globalsDefs := make([]*IDL.GlobalDefinition, 0)
 

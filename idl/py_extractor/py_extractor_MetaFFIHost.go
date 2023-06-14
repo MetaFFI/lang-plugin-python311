@@ -276,23 +276,23 @@ func Free(){
 
 
 
-type Variable_info struct{
+type VariableInfo struct{
 	h Handle
 }
 
 
 
-func (this *Variable_info) GetHandle() Handle{
+func (this *VariableInfo) GetHandle() Handle{
 	return this.h
 }
 
-func (this *Variable_info) SetHandle(h Handle){
+func (this *VariableInfo) SetHandle(h Handle){
 	this.h = h
 }
 
 
 
-func (this *Variable_info) GetName() (name string, err error){
+func (this *VariableInfo) GetName() (name string, err error){
 	
 	
 
@@ -333,7 +333,7 @@ func (this *Variable_info) GetName() (name string, err error){
 
 
 
-func (this *Variable_info) GetType() (type__ string, err error){
+func (this *VariableInfo) GetType() (type__ string, err error){
 	
 	
 
@@ -374,7 +374,7 @@ func (this *Variable_info) GetType() (type__ string, err error){
 
 
 
-func (this *Variable_info) GetIsGetter() (is_getter bool, err error){
+func (this *VariableInfo) GetIsGetter() (is_getter bool, err error){
 	
 	
 
@@ -415,7 +415,7 @@ func (this *Variable_info) GetIsGetter() (is_getter bool, err error){
 
 
 
-func (this *Variable_info) GetIsSetter() (is_setter bool, err error){
+func (this *VariableInfo) GetIsSetter() (is_setter bool, err error){
 	
 	
 
@@ -457,7 +457,7 @@ func (this *Variable_info) GetIsSetter() (is_setter bool, err error){
 
 
 
-func (this *Variable_info) ReleasevariableInfo( this_instance interface{}) ( err error){
+func (this *VariableInfo) ReleasevariableInfo( this_instance interface{}) ( err error){
 	
 	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
@@ -481,23 +481,23 @@ func (this *Variable_info) ReleasevariableInfo( this_instance interface{}) ( err
 }
 
 
-type Parameter_info struct{
+type ParameterInfo struct{
 	h Handle
 }
 
 
 
-func (this *Parameter_info) GetHandle() Handle{
+func (this *ParameterInfo) GetHandle() Handle{
 	return this.h
 }
 
-func (this *Parameter_info) SetHandle(h Handle){
+func (this *ParameterInfo) SetHandle(h Handle){
 	this.h = h
 }
 
 
 
-func (this *Parameter_info) GetName() (name string, err error){
+func (this *ParameterInfo) GetName() (name string, err error){
 	
 	
 
@@ -538,7 +538,7 @@ func (this *Parameter_info) GetName() (name string, err error){
 
 
 
-func (this *Parameter_info) GetType() (type__ string, err error){
+func (this *ParameterInfo) GetType() (type__ string, err error){
 	
 	
 
@@ -579,7 +579,7 @@ func (this *Parameter_info) GetType() (type__ string, err error){
 
 
 
-func (this *Parameter_info) GetIsDefaultValue() (is_default_value bool, err error){
+func (this *ParameterInfo) GetIsDefaultValue() (is_default_value bool, err error){
 	
 	
 
@@ -620,7 +620,7 @@ func (this *Parameter_info) GetIsDefaultValue() (is_default_value bool, err erro
 
 
 
-func (this *Parameter_info) GetIsOptional() (is_optional bool, err error){
+func (this *ParameterInfo) GetIsOptional() (is_optional bool, err error){
 	
 	
 
@@ -661,7 +661,7 @@ func (this *Parameter_info) GetIsOptional() (is_optional bool, err error){
 
 
 
-func (this *Parameter_info) GetKind() (kind string, err error){
+func (this *ParameterInfo) GetKind() (kind string, err error){
 	
 	
 
@@ -703,7 +703,7 @@ func (this *Parameter_info) GetKind() (kind string, err error){
 
 
 
-func (this *Parameter_info) ReleaseparameterInfo( this_instance interface{}) ( err error){
+func (this *ParameterInfo) ReleaseparameterInfo( this_instance interface{}) ( err error){
 	
 	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
@@ -727,23 +727,23 @@ func (this *Parameter_info) ReleaseparameterInfo( this_instance interface{}) ( e
 }
 
 
-type Function_info struct{
+type FunctionInfo struct{
 	h Handle
 }
 
 
 
-func (this *Function_info) GetHandle() Handle{
+func (this *FunctionInfo) GetHandle() Handle{
 	return this.h
 }
 
-func (this *Function_info) SetHandle(h Handle){
+func (this *FunctionInfo) SetHandle(h Handle){
 	this.h = h
 }
 
 
 
-func (this *Function_info) GetName() (name string, err error){
+func (this *FunctionInfo) GetName() (name string, err error){
 	
 	
 
@@ -784,7 +784,7 @@ func (this *Function_info) GetName() (name string, err error){
 
 
 
-func (this *Function_info) GetComment() (comment string, err error){
+func (this *FunctionInfo) GetComment() (comment string, err error){
 	
 	
 
@@ -825,7 +825,7 @@ func (this *Function_info) GetComment() (comment string, err error){
 
 
 
-func (this *Function_info) GetParameters() (parameters []Parameter_info, err error){
+func (this *FunctionInfo) GetParameters() (parameters []ParameterInfo, err error){
 	
 	
 
@@ -856,14 +856,14 @@ func (this *Function_info) GetParameters() (parameters []Parameter_info, err err
 		
 		 
 		if len(parametersAsInterface.([]interface{})) > 0{
-			parameters = make([]Parameter_info, len(parametersAsInterface.([]interface{})))
+			parameters = make([]ParameterInfo, len(parametersAsInterface.([]interface{})))
 			if _, ok := parametersAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range parametersAsInterface.([]interface{}){
-					parameters[i] = Parameter_info{ h: h.(Handle) }
+					parameters[i] = ParameterInfo{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range parametersAsInterface.([]interface{}){
-					parameters[i] = obj.(Parameter_info)
+					parameters[i] = obj.(ParameterInfo)
 				}
 			}
 		}
@@ -881,7 +881,7 @@ func (this *Function_info) GetParameters() (parameters []Parameter_info, err err
 
 
 
-func (this *Function_info) GetReturnValues() (return_values []string, err error){
+func (this *FunctionInfo) GetReturnValues() (return_values []string, err error){
 	
 	
 
@@ -923,7 +923,7 @@ func (this *Function_info) GetReturnValues() (return_values []string, err error)
 
 
 
-func (this *Function_info) ReleasefunctionInfo( this_instance interface{}) ( err error){
+func (this *FunctionInfo) ReleasefunctionInfo( this_instance interface{}) ( err error){
 	
 	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
@@ -947,23 +947,23 @@ func (this *Function_info) ReleasefunctionInfo( this_instance interface{}) ( err
 }
 
 
-type Class_info struct{
+type ClassInfo struct{
 	h Handle
 }
 
 
 
-func (this *Class_info) GetHandle() Handle{
+func (this *ClassInfo) GetHandle() Handle{
 	return this.h
 }
 
-func (this *Class_info) SetHandle(h Handle){
+func (this *ClassInfo) SetHandle(h Handle){
 	this.h = h
 }
 
 
 
-func (this *Class_info) GetName() (name string, err error){
+func (this *ClassInfo) GetName() (name string, err error){
 	
 	
 
@@ -1004,7 +1004,7 @@ func (this *Class_info) GetName() (name string, err error){
 
 
 
-func (this *Class_info) GetComment() (comment string, err error){
+func (this *ClassInfo) GetComment() (comment string, err error){
 	
 	
 
@@ -1045,7 +1045,7 @@ func (this *Class_info) GetComment() (comment string, err error){
 
 
 
-func (this *Class_info) GetFields() (fields []Variable_info, err error){
+func (this *ClassInfo) GetFields() (fields []VariableInfo, err error){
 	
 	
 
@@ -1076,14 +1076,14 @@ func (this *Class_info) GetFields() (fields []Variable_info, err error){
 		
 		 
 		if len(fieldsAsInterface.([]interface{})) > 0{
-			fields = make([]Variable_info, len(fieldsAsInterface.([]interface{})))
+			fields = make([]VariableInfo, len(fieldsAsInterface.([]interface{})))
 			if _, ok := fieldsAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range fieldsAsInterface.([]interface{}){
-					fields[i] = Variable_info{ h: h.(Handle) }
+					fields[i] = VariableInfo{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range fieldsAsInterface.([]interface{}){
-					fields[i] = obj.(Variable_info)
+					fields[i] = obj.(VariableInfo)
 				}
 			}
 		}
@@ -1101,7 +1101,7 @@ func (this *Class_info) GetFields() (fields []Variable_info, err error){
 
 
 
-func (this *Class_info) GetMethods() (methods []Function_info, err error){
+func (this *ClassInfo) GetMethods() (methods []FunctionInfo, err error){
 	
 	
 
@@ -1132,14 +1132,14 @@ func (this *Class_info) GetMethods() (methods []Function_info, err error){
 		
 		 
 		if len(methodsAsInterface.([]interface{})) > 0{
-			methods = make([]Function_info, len(methodsAsInterface.([]interface{})))
+			methods = make([]FunctionInfo, len(methodsAsInterface.([]interface{})))
 			if _, ok := methodsAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range methodsAsInterface.([]interface{}){
-					methods[i] = Function_info{ h: h.(Handle) }
+					methods[i] = FunctionInfo{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range methodsAsInterface.([]interface{}){
-					methods[i] = obj.(Function_info)
+					methods[i] = obj.(FunctionInfo)
 				}
 			}
 		}
@@ -1158,7 +1158,7 @@ func (this *Class_info) GetMethods() (methods []Function_info, err error){
 
 
 
-func (this *Class_info) ReleaseclassInfo( this_instance interface{}) ( err error){
+func (this *ClassInfo) ReleaseclassInfo( this_instance interface{}) ( err error){
 	
 	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
@@ -1182,23 +1182,23 @@ func (this *Class_info) ReleaseclassInfo( this_instance interface{}) ( err error
 }
 
 
-type Py_info struct{
+type PyInfo struct{
 	h Handle
 }
 
 
 
-func (this *Py_info) GetHandle() Handle{
+func (this *PyInfo) GetHandle() Handle{
 	return this.h
 }
 
-func (this *Py_info) SetHandle(h Handle){
+func (this *PyInfo) SetHandle(h Handle){
 	this.h = h
 }
 
 
 
-func (this *Py_info) GetGlobals() (globals []Variable_info, err error){
+func (this *PyInfo) GetGlobals() (globals []VariableInfo, err error){
 	
 	
 
@@ -1229,14 +1229,14 @@ func (this *Py_info) GetGlobals() (globals []Variable_info, err error){
 		
 		 
 		if len(globalsAsInterface.([]interface{})) > 0{
-			globals = make([]Variable_info, len(globalsAsInterface.([]interface{})))
+			globals = make([]VariableInfo, len(globalsAsInterface.([]interface{})))
 			if _, ok := globalsAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range globalsAsInterface.([]interface{}){
-					globals[i] = Variable_info{ h: h.(Handle) }
+					globals[i] = VariableInfo{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range globalsAsInterface.([]interface{}){
-					globals[i] = obj.(Variable_info)
+					globals[i] = obj.(VariableInfo)
 				}
 			}
 		}
@@ -1254,7 +1254,7 @@ func (this *Py_info) GetGlobals() (globals []Variable_info, err error){
 
 
 
-func (this *Py_info) GetFunctions() (functions []Function_info, err error){
+func (this *PyInfo) GetFunctions() (functions []FunctionInfo, err error){
 	
 	
 
@@ -1285,14 +1285,14 @@ func (this *Py_info) GetFunctions() (functions []Function_info, err error){
 		
 		 
 		if len(functionsAsInterface.([]interface{})) > 0{
-			functions = make([]Function_info, len(functionsAsInterface.([]interface{})))
+			functions = make([]FunctionInfo, len(functionsAsInterface.([]interface{})))
 			if _, ok := functionsAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range functionsAsInterface.([]interface{}){
-					functions[i] = Function_info{ h: h.(Handle) }
+					functions[i] = FunctionInfo{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range functionsAsInterface.([]interface{}){
-					functions[i] = obj.(Function_info)
+					functions[i] = obj.(FunctionInfo)
 				}
 			}
 		}
@@ -1310,7 +1310,7 @@ func (this *Py_info) GetFunctions() (functions []Function_info, err error){
 
 
 
-func (this *Py_info) GetClasses() (classes []Class_info, err error){
+func (this *PyInfo) GetClasses() (classes []ClassInfo, err error){
 	
 	
 
@@ -1341,14 +1341,14 @@ func (this *Py_info) GetClasses() (classes []Class_info, err error){
 		
 		 
 		if len(classesAsInterface.([]interface{})) > 0{
-			classes = make([]Class_info, len(classesAsInterface.([]interface{})))
+			classes = make([]ClassInfo, len(classesAsInterface.([]interface{})))
 			if _, ok := classesAsInterface.([]interface{})[0].(Handle); ok{
 				for i, h := range classesAsInterface.([]interface{}){
-					classes[i] = Class_info{ h: h.(Handle) }
+					classes[i] = ClassInfo{ h: h.(Handle) }
 				}
 			} else {
 				for i, obj := range classesAsInterface.([]interface{}){
-					classes[i] = obj.(Class_info)
+					classes[i] = obj.(ClassInfo)
 				}
 			}
 		}
@@ -1367,7 +1367,7 @@ func (this *Py_info) GetClasses() (classes []Class_info, err error){
 
 
 
-func (this *Py_info) ReleasepyInfo( this_instance interface{}) ( err error){
+func (this *PyInfo) ReleasepyInfo( this_instance interface{}) ( err error){
 	
 	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 
@@ -1391,12 +1391,12 @@ func (this *Py_info) ReleasepyInfo( this_instance interface{}) ( err error){
 }
 
 
-type Py_extractor struct{
+type PyExtractor struct{
 	h Handle
 }
 
 
-func NewPyExtractor( filename string) (instance *Py_extractor, err error){
+func NewPyExtractor( filename string) (instance *PyExtractor, err error){
 	
 
 	xcall_params, parametersCDTS, return_valuesCDTS := XLLRAllocCDTSBuffer(1, 1)
@@ -1416,7 +1416,7 @@ func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 	}
 
 	
-	inst := &Py_extractor{}
+	inst := &PyExtractor{}
 
 	
 	new_instanceAsInterface := FromCDTToGo(return_valuesCDTS, 0)
@@ -1432,17 +1432,17 @@ func NewPyExtractor( filename string) (instance *Py_extractor, err error){
 }
 
 
-func (this *Py_extractor) GetHandle() Handle{
+func (this *PyExtractor) GetHandle() Handle{
 	return this.h
 }
 
-func (this *Py_extractor) SetHandle(h Handle){
+func (this *PyExtractor) SetHandle(h Handle){
 	this.h = h
 }
 
 
 
-func (this *Py_extractor) Extract() (info Py_info, err error){
+func (this *PyExtractor) Extract() (info PyInfo, err error){
 	
 	
 
@@ -1472,9 +1472,9 @@ func (this *Py_extractor) Extract() (info Py_info, err error){
 		
 		
 		if obj, ok := infoAsInterface.(Handle); ok{ // None Go object			
-			info = Py_info{ h: obj }
+			info = PyInfo{ h: obj }
 		} else {
-			info = Py_info(infoAsInterface.(Py_info))
+			info = PyInfo(infoAsInterface.(PyInfo))
 		}
 		
 
@@ -1487,7 +1487,7 @@ func (this *Py_extractor) Extract() (info Py_info, err error){
 }
 
 
-func (this *Py_extractor) ReleasepyExtractor( this_instance interface{}) ( err error){
+func (this *PyExtractor) ReleasepyExtractor( this_instance interface{}) ( err error){
 	
 	xcall_params, parametersCDTS, _ := XLLRAllocCDTSBuffer(1, 0)
 

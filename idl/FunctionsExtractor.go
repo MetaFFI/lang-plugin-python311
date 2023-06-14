@@ -7,7 +7,7 @@ import (
 )
 
 // --------------------------------------------------------------------
-func GenerateFunctionDefinition(name string, comment string, params []Parameter_info, retvals []string, metaffiGuestLib string) (*IDL.FunctionDefinition, error) {
+func GenerateFunctionDefinition(name string, comment string, params []ParameterInfo, retvals []string, metaffiGuestLib string) (*IDL.FunctionDefinition, error) {
 
 	pyfunc := IDL.NewFunctionDefinition(name)
 	pyfunc.Comment = comment
@@ -123,7 +123,7 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 }
 
 // --------------------------------------------------------------------
-func ExtractFunctions(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.FunctionDefinition, error) {
+func ExtractFunctions(pyinfo *PyInfo, metaffiGuestLib string) ([]*IDL.FunctionDefinition, error) {
 
 	functions := make([]*IDL.FunctionDefinition, 0)
 

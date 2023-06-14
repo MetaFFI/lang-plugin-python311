@@ -9,7 +9,7 @@ import (
 var classes map[string]*IDL.ClassDefinition
 
 // --------------------------------------------------------------------
-func ExtractClasses(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.ClassDefinition, error) {
+func ExtractClasses(pyinfo *PyInfo, metaffiGuestLib string) ([]*IDL.ClassDefinition, error) {
 
 	classes = make(map[string]*IDL.ClassDefinition)
 
@@ -118,7 +118,7 @@ func ExtractClasses(pyinfo *Py_info, metaffiGuestLib string) ([]*IDL.ClassDefini
 			if len(params) > 1 {
 				params = params[1:]
 			} else {
-				params = []Parameter_info{}
+				params = []ParameterInfo{}
 			}
 
 			retvals, err := f.GetReturnValues()

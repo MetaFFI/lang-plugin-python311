@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/MetaFFI/lang-plugin-go/go-runtime v0.0.0-20230606150647-cff3227f31ea
-	github.com/MetaFFI/plugin-sdk v0.0.0-20230603123223-4068ddb91bf1
+	github.com/MetaFFI/plugin-sdk v0.0.0-20230606151914-890f29e76128
 
 )
 
