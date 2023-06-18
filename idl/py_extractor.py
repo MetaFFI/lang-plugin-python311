@@ -290,7 +290,7 @@ class py_extractor:
 				pdata.type = 'any'
 
 			pdata.is_default_value = param.default != param.empty
-			pdata.is_optional = False
+			pdata.is_optional = 'VAR_' in param.kind.name
 			pdata.kind = param.kind.name
 
 			# cleanup the name

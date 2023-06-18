@@ -32,6 +32,13 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
 			return nil, err
 		}
 
+		isOptional, err := p.GetIsOptional()
+        if err != nil {
+            return nil, err
+        }
+
+        isOptional = isDefaultVal || isOptional
+
 		var pyty string
 
 		if kind == "KEYWORD_ONLY" {
@@ -44,12 +51,12 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
 			// if dict_named_args is NOT optional - add after last non-optional parameter
 
 			isAdd_dict_named_args = true
-			if isAllKeywordOnlyOptional && !isDefaultVal {
+			if isAllKeywordOnlyOptional && !isOptional {
 				isAllKeywordOnlyOptional = false
 			}
 
 			commentArgIsOptionalText := ""
-			if isDefaultVal{
+			if isOptional{
 				commentArgIsOptionalText = "(Optional)"
 			}
 
@@ -61,9 +68,16 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
 			// replace with "dict_var_args" parameter instead
 			pyty = "dict"
 
+			isOptional = true
+			pyfunc.Comment += fmt.Sprintf("\nvariant keyword argument - %v", paramName)
+
 		} else if kind == "VAR_POSITIONAL" {
 			// replace with "list_var_args" parameter instead
 			pyty = "list"
+
+			isOptional = true
+            pyfunc.Comment += fmt.Sprintf("\nvariant positional argument %v", paramName)
+
 		} else {
 			pyty, err = p.GetType()
 			if err != nil {
@@ -78,7 +92,7 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
 		}
 
 		mffiparam := IDL.NewArgArrayDefinitionWithAlias(paramName, mffiType, 0, talias)
-		mffiparam.IsOptional = isDefaultVal
+		mffiparam.IsOptional = isOptional
 
 		pyfunc.AddParameter(mffiparam)
 	}
