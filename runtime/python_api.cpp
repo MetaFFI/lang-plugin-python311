@@ -373,7 +373,7 @@ void xcall_params_ret(
 void xcall_no_params_ret(
 		int is_method,
 		PyObject* pyfunc,
-		cdts return_values[1],
+		cdts return_values[2],
 		char** out_err, uint64_t* out_err_len
 )
 {
@@ -424,7 +424,7 @@ void xcall_no_params_ret(
 		}
 #endif
 		// 3rd - nth - return value;
-		cdts_python3 return_cdts(return_values[0].pcdt, return_values[0].len);
+		cdts_python3 return_cdts(return_values[1].pcdt, return_values[1].len);
 		return_cdts.build(res, tuple_types, 2);
 		
 	}
@@ -439,7 +439,7 @@ void xcall_no_params_ret(
 void xcall_params_no_ret(
 		int is_method,
 		PyObject* pyfunc,
-		cdts parameters[1],
+		cdts parameters[2],
 		char** out_err, uint64_t* out_err_len
 )
 {

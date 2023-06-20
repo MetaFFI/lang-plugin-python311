@@ -8,7 +8,8 @@ import types
 import re
 import none_python_impl_definitions
 
-ignored_builtins = { 'False', 'Ellipsis', 'None', 'True', 'NotImplemented', 'super'}
+ignored_builtins = {'False', 'Ellipsis', 'None', 'True', 'NotImplemented', 'super'}
+
 
 class variable_info:
 	name: str
@@ -85,7 +86,7 @@ class py_extractor:
 			module_name = module_name.replace('.py', '')
 			module_name = module_name.replace('/', '.')
 
-		print('Py IDL Extractor: Going to parse '+module_name)
+		print('Py IDL Extractor: Going to parse ' + module_name)
 		self.mod = importlib.import_module(module_name)
 
 	def in_site_package(self, path: str) -> bool:
@@ -145,21 +146,25 @@ class py_extractor:
 				clsdata.comment = clsdata.comment.replace('#', '', 1).strip()
 
 			constructor_found = False
+			found_in_annotations = []
 			for member in getmembers(c[1]):
-				# if member[0] == '__annotations__' and not isgetsetdescriptor(member[1]):  # fields
-				#
-				# 	for k, v in member[1].items():
-				# 		if k.startswith('_'):
-				# 			continue
-				#
-				# 		clsdata.fields.append(self._extract_field([k, v], True, True))
+				if member[0] in found_in_annotations:  # already found in annotations
+					continue
+
+				if member[0] == '__annotations__' and not isgetsetdescriptor(member[1]):  # fields
+					for k, v in member[1].items():
+						if k.startswith('_'):
+							continue
+
+						clsdata.fields.append(self._extract_field([k, v], True, True))
+						found_in_annotations.append(k)
 
 				if ismethoddescriptor(member[1]):
 
 					# check if method is in "non_python_method_definitions"
 					method_data = none_python_impl_definitions.get_method_definition(self.mod.__name__, clsdata.name, member[0])
 					if method_data is None:
-						#print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
+						# print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
 						continue
 
 					if member[0] == '__init__':
@@ -182,7 +187,7 @@ class py_extractor:
 					if member[0].startswith('_'):
 						continue
 					else:
-						#print('Skipping {} of type {}'.format('{}.{}'.format(clsdata.name, member[0]), type(member[1]).__name__))
+						# print('Skipping {} of type {}'.format('{}.{}'.format(clsdata.name, member[0]), type(member[1]).__name__))
 						continue
 
 			# make sure class has a constructor, if not, add the default one
@@ -321,11 +326,10 @@ class py_extractor:
 				if rettype == 'typing.Any' or rettype == 'Any':
 					rettype = 'any'
 
-
 				func_info.return_values.append(rettype)
 
 		return func_info
 
+
 if '__main__' == __name__:
-	ext = py_extractor('pandas')
-	pandas_ext = ext.extract()
+	pass

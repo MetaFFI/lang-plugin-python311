@@ -28,6 +28,20 @@ def free_metaffi():
 	err_len = (c_ulonglong)(0)
 	xllr_handle.free_runtime_plugin(runtime_plugin, len(runtime_plugin), byref(err), byref(err_len))
 
+
+def dynamicTypeToMetaFFIType(obj):
+	if isinstance(obj, float):
+		return {{GetMetaFFITypeFromPyType "float"}}
+	elif isinstance(obj, str):
+		return {{GetMetaFFITypeFromPyType "str"}}
+	elif isinstance(obj, int):
+		return {{GetMetaFFITypeFromPyType "int"}}
+	elif isinstance(obj, bool):
+		return {{GetMetaFFITypeFromPyType "bool"}}
+	else:
+		return {{GetMetaFFITypeFromPyType "handle"}}
+
+
 def load_xllr_and_python_plugin():
 	global xllr_handle
 	global python_plugin_handle
@@ -238,7 +252,7 @@ def {{$f.Getter.Name}}():
 	{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues false}}
 
 	# xcall function
-	{{GenerateCodeXCall "" $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 1}}
+	{{GenerateCodeXCall "" $f.Getter.Name "" $f.Getter.Parameters $f.Getter.ReturnValues 1}}
 
 
 	{{GenerateCodeReturnValues $f.Getter.Parameters $f.Getter.ReturnValues}}
@@ -252,7 +266,7 @@ def set_{{$f.Setter.Name}}():
 	{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues false}}
 
 	# xcall function
-	{{GenerateCodeXCall "" $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 1}}
+	{{GenerateCodeXCall "" $f.Setter.Name "" $f.Setter.Parameters $f.Setter.ReturnValues 1}}
 
 	{{GenerateCodeReturnValues $f.Setter.Parameters $f.Setter.ReturnValues}}
 	{{GenerateCodeReturn $f.Setter.ReturnValues}}
@@ -269,7 +283,7 @@ def {{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{
 	{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues false}}
 
 	# xcall function
-	{{GenerateCodeXCall "" $f.Name $f.Parameters $f.ReturnValues 1}}
+	{{GenerateCodeXCall "" $f.Name "" $f.Parameters $f.ReturnValues 1}}
 
 	{{GenerateCodeReturnValues $f.Parameters $f.ReturnValues}}
 	{{GenerateCodeReturn $f.ReturnValues}}
@@ -288,7 +302,7 @@ class {{$c.Name}}:
 		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues true}}
 	
 		# xcall function
-		{{GenerateCodeXCall $c.Name $f.Name $f.Parameters $f.ReturnValues 2}}
+		{{GenerateCodeXCall $c.Name $f.Name "" $f.Parameters $f.ReturnValues 2}}
 
 		# unpack results
 	
@@ -306,7 +320,7 @@ class {{$c.Name}}:
 		{{GenerateCodeAllocateCDTS $f.Getter.Parameters $f.Getter.ReturnValues $f.Getter.InstanceRequired}}
 	
 		# xcall function
-		{{GenerateCodeXCall $c.Name $f.Getter.Name $f.Getter.Parameters $f.Getter.ReturnValues 2}}
+		{{GenerateCodeXCall $c.Name $f.Getter.Name "" $f.Getter.Parameters $f.Getter.ReturnValues 2}}
 
 		{{GenerateCodeReturnValues $f.Getter.Parameters $f.Getter.ReturnValues}}
 		{{GenerateCodeReturn $f.Getter.ReturnValues}}
@@ -321,7 +335,7 @@ class {{$c.Name}}:
 		{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues $f.Setter.InstanceRequired}}
 
 		# xcall function
-		{{GenerateCodeXCall $c.Name $f.Setter.Name $f.Setter.Parameters $f.Setter.ReturnValues 2}}
+		{{GenerateCodeXCall $c.Name $f.Setter.Name "" $f.Setter.Parameters $f.Setter.ReturnValues 2}}
 
 		{{GenerateCodeReturnValues $f.Setter.Parameters $f.Setter.ReturnValues}}
 		{{GenerateCodeReturn $f.Setter.ReturnValues}}
@@ -340,7 +354,7 @@ class {{$c.Name}}:
 		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), 0)
 
 		# xcall function
-		{{GenerateCodeXCall "" $fullName $f.Parameters $f.ReturnValues 2}}
+		{{GenerateCodeXCall "" $fullName "" $f.Parameters $f.ReturnValues 2}}
 	{{end}}
 
 	{{range $methindex, $f := $c.Methods}}
@@ -351,7 +365,7 @@ class {{$c.Name}}:
 		{{GenerateCodeAllocateCDTS $f.Parameters $f.ReturnValues $f.InstanceRequired}}
 
 		# xcall function
-		{{GenerateCodeXCall "" $fullName $f.Parameters $f.ReturnValues 2}}
+		{{GenerateCodeXCall "" $fullName "" $f.Parameters $f.ReturnValues 2}}
 	
 		# unpack results
 		{{GenerateCodeReturnValues $f.Parameters $f.ReturnValues}}

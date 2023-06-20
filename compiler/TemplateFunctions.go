@@ -156,14 +156,8 @@ func generateCodeReturnValues(parameters []*IDL.ArgDefinition, retvals []*IDL.Ar
 		return ""
 	}
 
-	var retvalsIndex int
-	if len(parameters) == 0 {
-		retvalsIndex = 0
-	} else {
-		retvalsIndex = 1
-	}
-
-	return fmt.Sprintf(`ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(xcall_params), %v)`, retvalsIndex)
+	// return values are always at index 1
+	return fmt.Sprintf(`ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(xcall_params), 1)`)
 
 }
 

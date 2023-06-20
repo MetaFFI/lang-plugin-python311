@@ -110,6 +110,20 @@ func (this *HostCompiler) parseHeader() (string, error) {
 }
 
 // --------------------------------------------------------------------
+func (this *HostCompiler) parseHostHelperFunctions() (string, error) {
+
+	tmp, err := template.New("Python HostHelperFunctions").Funcs(templatesFuncMap).Parse(HostHelperFunctions)
+    if err != nil {
+        return "", fmt.Errorf("Failed to parse Python HostHelperFunctions: %v", err)
+    }
+
+    buf := strings.Builder{}
+    err = tmp.Execute(&buf, this.def)
+
+    return buf.String(), err
+
+}
+// --------------------------------------------------------------------
 func (this *HostCompiler) parseForeignStubs() (string, error) {
 
 	tmp, err := template.New("Python HostFunctionStubsTemplate").Funcs(templatesFuncMap).Parse(HostFunctionStubsTemplate)
@@ -136,7 +150,12 @@ func (this *HostCompiler) generateCode() (string, error) {
 		return "", err
 	}
 
-	res := header + HostImports + HostHelperFunctions + functionStubs
+	hostHelperFunctions, err := this.parseHostHelperFunctions()
+    if err != nil {
+        return "", err
+    }
+
+	res := header + HostImports + hostHelperFunctions + functionStubs
 
 	return res, nil
 }
