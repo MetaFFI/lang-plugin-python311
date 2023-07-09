@@ -9,51 +9,51 @@ import (
 var classes map[string]*IDL.ClassDefinition
 
 // --------------------------------------------------------------------
-func ExtractClasses(pyinfo *PyInfo, metaffiGuestLib string) ([]*IDL.ClassDefinition, error) {
+func ExtractClasses(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.ClassDefinition, error) {
 
 	classes = make(map[string]*IDL.ClassDefinition)
 
-	pyclses, err := pyinfo.GetClasses()
+	pyclses, err := pyinfo.Get_Classes_MetaFFIGetter()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, c := range pyclses {
-		clsName, err := c.GetName()
+		clsName, err := c.Get_Name_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
 		pycls := IDL.NewClassDefinition(clsName)
 
-		comment, err := c.GetComment()
+		comment, err := c.Get_Comment_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 		pycls.Comment = comment
 
-		fields, err := c.GetFields()
+		fields, err := c.Get_Fields_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
 		for _, f := range fields {
-			name, err := f.GetName()
+			name, err := f.Get_Name_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
 
-			typy, err := f.GetType()
+			typy, err := f.Get_Type_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
 
-			isGetter, err := f.GetIsGetter()
+			isGetter, err := f.Get_Is_Getter_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
 
-			isSetter, err := f.GetIsSetter()
+			isSetter, err := f.Get_Is_Setter_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
@@ -93,24 +93,24 @@ func ExtractClasses(pyinfo *PyInfo, metaffiGuestLib string) ([]*IDL.ClassDefinit
 			}
 		}
 
-		pymethods, err := c.GetMethods()
+		pymethods, err := c.Get_Methods_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
 		for _, f := range pymethods {
 
-			name, err := f.GetName()
+			name, err := f.Get_Name_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
 
-			comment, err := f.GetComment()
+			comment, err := f.Get_Comment_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
 
-			params, err := f.GetParameters()
+			params, err := f.Get_Parameters_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
@@ -118,10 +118,10 @@ func ExtractClasses(pyinfo *PyInfo, metaffiGuestLib string) ([]*IDL.ClassDefinit
 			if len(params) > 1 {
 				params = params[1:]
 			} else {
-				params = []ParameterInfo{}
+				params = []Parameter_Info{}
 			}
 
-			retvals, err := f.GetReturnValues()
+			retvals, err := f.Get_Return_Values_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}

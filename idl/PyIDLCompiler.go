@@ -13,13 +13,13 @@ import (
 type PyIDLCompiler struct{
 	sourceCode         string
 	sourceCodeFilePath string
-	pyfile             *PyExtractor
+	pyfile             *Py_Extractor
 
 	idl *IDL.IDLDefinition
 }
 //--------------------------------------------------------------------
 func NewPyIDLCompiler() *PyIDLCompiler{
-	Load("py_extractor_MetaFFIGuest")
+	MetaFFILoad("py_extractor_MetaFFIGuest")
 	return &PyIDLCompiler{}
 }
 //--------------------------------------------------------------------
@@ -56,8 +56,8 @@ func (this *PyIDLCompiler) getModulesPathInSitePackages(pathToPyFile string) []s
 //--------------------------------------------------------------------
 func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.IDLDefinition, bool, error){
 
-	Load("py_extractor")
-    pyfile, err := NewPyExtractor(filePath)
+	MetaFFILoad("py_extractor")
+    pyfile, err := NewPy_Extractor(filePath)
     if err != nil{
         return nil, true, err
     }

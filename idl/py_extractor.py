@@ -11,6 +11,9 @@ import none_python_impl_definitions
 ignored_builtins = {'False', 'Ellipsis', 'None', 'True', 'NotImplemented', 'super'}
 
 
+def _dummy_generic_sig(*args, **named_args):
+	pass
+
 class variable_info:
 	name: str
 	type: str
@@ -104,6 +107,9 @@ class py_extractor:
 		is_not_var = isfunction(obj) or isclass(obj) or ismodule(obj)
 		return not is_not_var
 
+	def _is_callable(self, obj):
+		return isfunction(obj) or isbuiltin(obj) and hasattr(obj, '__call__')
+
 	def _extract_globals(self) -> List[variable_info]:
 		all_members = getmembers(self.mod)
 		global_vars = []
@@ -122,7 +128,7 @@ class py_extractor:
 		return global_vars
 
 	def _extract_functions(self) -> List[function_info]:
-		functions_members = getmembers(self.mod, isfunction)
+		functions_members = getmembers(self.mod, self._is_callable)
 		res = []
 
 		for f in functions_members:
@@ -266,7 +272,15 @@ class py_extractor:
 		if func_info.comment is not None:
 			func_info.comment = func_info.comment.replace('#', '', 1).strip()
 
-		sig = signature(f[1])
+		try:
+			sig = signature(f[1])
+		except ValueError as e:
+			# print('Failed extracting signature of {}. Retry without following wrappers. Error:\n{}'.format(f[0], e))
+			try:
+				sig = signature(f[1], follow_wrapped=False)
+			except ValueError as e:
+				# print('Failed extracting signature of {}. Skip. Error:\n{}'.format(f[0], e))
+				sig = signature(_dummy_generic_sig)
 
 		# parse parameters
 		for name, param in sig.parameters.items():
@@ -333,3 +347,5 @@ class py_extractor:
 
 if '__main__' == __name__:
 	pass
+
+

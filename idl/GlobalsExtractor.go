@@ -6,18 +6,18 @@ import (
 )
 
 //--------------------------------------------------------------------
-func ExtractGlobals(pyfile *PyInfo, metaffiGuestLib string) ([]*IDL.GlobalDefinition, error){
+func ExtractGlobals(pyfile *Py_Info, metaffiGuestLib string) ([]*IDL.GlobalDefinition, error){
 
 	globalsDefs := make([]*IDL.GlobalDefinition, 0)
 
-	globals, err := pyfile.GetGlobals()
+	globals, err := pyfile.Get_Globals_MetaFFIGetter()
 	if err != nil{ return nil, err}
 
 	for _, gs := range globals {
-		name, err := gs.GetName()
+		name, err := gs.Get_Name_MetaFFIGetter()
 		if err != nil{ return nil, err}
 
-		pytype, err := gs.GetType()
+		pytype, err := gs.Get_Type_MetaFFIGetter()
 		if err != nil{ return nil, err}
 		
 		global := IDL.NewGlobalDefinition(name, pyTypeToMFFI(pytype), "Get"+name, "Set"+name)

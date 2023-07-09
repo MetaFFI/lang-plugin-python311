@@ -7,7 +7,7 @@ import (
 )
 
 // --------------------------------------------------------------------
-func GenerateFunctionDefinition(name string, comment string, params []ParameterInfo, retvals []string, metaffiGuestLib string) (*IDL.FunctionDefinition, error) {
+func GenerateFunctionDefinition(name string, comment string, params []Parameter_Info, retvals []string, metaffiGuestLib string) (*IDL.FunctionDefinition, error) {
 
 	pyfunc := IDL.NewFunctionDefinition(name)
 	pyfunc.Comment = comment
@@ -17,22 +17,22 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
 
 	for _, p := range params {
 
-		paramName, err := p.GetName()
+		paramName, err := p.Get_Name_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
-		kind, err := p.GetKind()
+		kind, err := p.Get_Kind_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
-		isDefaultVal, err := p.GetIsDefaultValue()
+		isDefaultVal, err := p.Get_Is_Default_Value_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
-		isOptional, err := p.GetIsOptional()
+		isOptional, err := p.Get_Is_Optional_MetaFFIGetter()
         if err != nil {
             return nil, err
         }
@@ -79,7 +79,7 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
             pyfunc.Comment += fmt.Sprintf("\nvariant positional argument %v", paramName)
 
 		} else {
-			pyty, err = p.GetType()
+			pyty, err = p.Get_Type_MetaFFIGetter()
 			if err != nil {
 				return nil, err
 			}
@@ -137,33 +137,33 @@ func GenerateFunctionDefinition(name string, comment string, params []ParameterI
 }
 
 // --------------------------------------------------------------------
-func ExtractFunctions(pyinfo *PyInfo, metaffiGuestLib string) ([]*IDL.FunctionDefinition, error) {
+func ExtractFunctions(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.FunctionDefinition, error) {
 
 	functions := make([]*IDL.FunctionDefinition, 0)
 
-	funcs, err := pyinfo.GetFunctions()
+	funcs, err := pyinfo.Get_Functions_MetaFFIGetter()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, f := range funcs {
 
-		params, err := f.GetParameters()
+		params, err := f.Get_Parameters_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
-		name, err := f.GetName()
+		name, err := f.Get_Name_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
-		comment, err := f.GetComment()
+		comment, err := f.Get_Comment_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}
 
-		retvals, err := f.GetReturnValues()
+		retvals, err := f.Get_Return_Values_MetaFFIGetter()
 		if err != nil {
 			return nil, err
 		}

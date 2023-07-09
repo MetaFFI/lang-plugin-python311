@@ -126,7 +126,7 @@ runtime_plugin = """xllr.{{$.TargetLanguage}}""".encode("utf-8")
 
 {{end}}
 {{end}}
-def load(module_path: str)->None:
+def metaffi_load(module_path: str)->None:
 	# load foreign functions
 	load_xllr_and_python_plugin()
 
@@ -245,7 +245,7 @@ def load(module_path: str)->None:
 # globals
 {{range $findex, $f := $m.Globals}}
 {{if $f.Getter}}
-def {{$f.Getter.Name}}():
+def {{$f.Getter.Name}}_metaffi_getter():
 
 	{{GenerateCodeGlobals $f.Getter.GetNameWithOverloadIndex 1}}
 
@@ -260,7 +260,7 @@ def {{$f.Getter.Name}}():
 
 {{end}} {{/* end getter */}}
 {{if $f.Setter}}
-def set_{{$f.Setter.Name}}():
+def set_{{$f.Setter.Name}}_metaffi_setter():
 	{{GenerateCodeGlobals $f.Setter.GetNameWithOverloadIndex 1}}
 
 	{{GenerateCodeAllocateCDTS $f.Setter.Parameters $f.Setter.ReturnValues false}}
@@ -313,7 +313,7 @@ class {{$c.Name}}:
 
 	{{range $findex, $f := $c.Fields}}
 	{{if $f.Getter}}
-	def {{$f.Getter.Name}}(self):
+	def {{$f.Getter.Name}}_metaffi_getter(self):
 		{{$fullName := (print $c.Name "_" $f.Getter.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 	
@@ -328,7 +328,7 @@ class {{$c.Name}}:
 
 	{{end}} {{/* end getter */}}
 	{{if $f.Setter}}{{ $p := index $f.Setter.Parameters 1 }}
-	def {{$f.Setter.Name}}(self, {{$p.Name}} ):
+	def {{$f.Setter.Name}}_metaffi_setter(self, {{$p.Name}} ):
 		{{$fullName := (print $c.Name "_" $f.Setter.GetNameWithOverloadIndex)}}
 		{{GenerateCodeGlobals $fullName 2}}
 
