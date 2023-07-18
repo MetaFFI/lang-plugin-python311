@@ -229,7 +229,7 @@ func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDef
 				paramsNames = append(paramsNames, fmt.Sprintf("%v", name))
 			}
 
-			paramsTypes = append(paramsTypes, getMetaFFIType(p))
+			paramsTypes = append(paramsTypes, getMetaFFIType(p, false))
 		}
 
 		return fmt.Sprintf(code, strings.Join(paramsNames, ","), strings.Join(paramsTypes, ","), len(retvals))
@@ -243,13 +243,17 @@ func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDef
 }
 
 // --------------------------------------------------------------------
-func getMetaFFIType(elem *IDL.ArgDefinition) string {
+func getMetaFFIType(elem *IDL.ArgDefinition, isObjectField bool) string {
 
 	var val uint64
 	var found bool
 
 	if elem.Type == IDL.ANY {
-		return fmt.Sprintf("dynamicTypeToMetaFFIType(%v)", elem.Name)
+		if isObjectField{
+			return fmt.Sprintf("dynamicTypeToMetaFFIType(obj[0].%v)", elem.Name)
+		} else {
+			return fmt.Sprintf("dynamicTypeToMetaFFIType(%v)", elem.Name)
+		}
 	}
 
 	if elem.Dimensions == 0 && strings.HasSuffix(string(elem.Type), "_array") {

@@ -62,14 +62,14 @@ const GuestFunctionXLLRTemplate = `
 {{if $f.Getter}}{{$retvalLength := len $f.Getter.ReturnValues}}
 {{GenerateCEntryPoint $f.Getter.GetNameWithOverloadIndex $f.Getter.Parameters $f.Getter.ReturnValues false 0}}
 def EntryPoint_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}():
-	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	return (None, ret_val_types, {{$f.Getter.FunctionPath.module}}.{{$f.Name}})
 
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
 {{GenerateCEntryPoint $f.Setter.GetNameWithOverloadIndex $f.Setter.Parameters $f.Setter.ReturnValues false 0}}
 def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*val):
-	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	if len(val) != 1:
 		raise ValueError('received parameter in {{$f.Setter.Name}} expects exactly one parameter')
 	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val[0]
@@ -87,7 +87,7 @@ def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 		# call function
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}(*vals, **named_vals)
 		{{$retvalLength := len $f.ReturnValues}}
-		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
 		return ( None, ret_val_types {{range $index, $elem := $f.ReturnValues}}, {{$elem.Name}}{{end}})
 
@@ -106,7 +106,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **n
 		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}(*vals, **named_vals)
 		
 		{{$retvalLength := len $f.ReturnValues}}
-		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
 		return ( None, ret_val_types {{range $index, $elem := $f.ReturnValues}}, {{$elem.Name}}{{end}})
 
@@ -122,7 +122,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExist
 	try:
 
 		{{$retvalLength := len $f.Getter.ReturnValues}}
-		ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+		ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem true}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
 		if len(obj) != 1:
 			raise ValueError('received parameter in {{$c.Name}}_{{$f.Getter.Name}} expects exactly one parameter')
@@ -144,7 +144,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExist
 		vals[0].{{$f.Name}} = vals[1]
 
 		{{$retvalLength := len $f.Setter.ReturnValues}}
-		ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+		ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem true}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
 		return (None, ret_val_types)
 	except Exception as e:
@@ -167,7 +167,7 @@ def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **n
 		{{end}}
 		
 		{{$retvalLength := len $f.ReturnValues}}
-		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem}}{{end}}{{if eq $retvalLength 1}},{{end}})
+		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
 		return ( None, ret_val_types {{range $index, $elem := $f.ReturnValues}}, {{$elem.Name}}{{end}})
 		
