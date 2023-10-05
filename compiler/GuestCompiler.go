@@ -35,7 +35,7 @@ func NewGuestCompiler() *GuestCompiler {
 }
 
 // --------------------------------------------------------------------
-func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir string, outputFilename string, blockName string, blockCode string) (err error) {
+func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir string, outputFilename string, guestOptions map[string]string) (err error) {
 
 	if outputFilename == "" {
 		outputFilename = definition.IDLFilename
