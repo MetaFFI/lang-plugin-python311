@@ -296,8 +296,8 @@ class {{$c.Name}}:
 	def __init__(self, handle):
 		self.obj_handle = handle
 
-	{{constructorCount := len $c.Constructors}}
-	{{if eq constructorCount 0 }}
+	{{$constructorCount := len $c.Constructors}}
+	{{if eq $constructorCount 0 }}
 	def __init__(self):
 		self.obj_handle = None
 	{{end}}
