@@ -207,7 +207,7 @@ func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDef
 
 		{{if gt $paramsLength 0}}
 		params = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{if eq $paramsLength 1}},{{end}}{{end}}) // For object, ignore first parameter and use self.obj_handle
-		params_types = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem}}{{end}}{{if eq $paramsLength 1}},{{end}})
+		params_types = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem false}}{{end}}{{if eq $paramsLength 1}},{{end}})
 		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), {{$retLength}})
 		{{else if gt $retLength 0}}
 		xcall_params = xllr_handle.alloc_cdts_buffer(0, {{len $f.Getter.ReturnValues}})

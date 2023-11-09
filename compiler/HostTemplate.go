@@ -292,7 +292,16 @@ def {{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{
 {{range $classindex, $c := $m.Classes}}
 # Class to call methods of foreign class {{$c.Name}}
 class {{$c.Name}}:
-	
+	# create from existing MetaFFI handle
+	def __init__(self, handle):
+		self.obj_handle = handle
+
+	{{constructorCount := len $c.Constructors}}
+	{{if eq constructorCount 0 }}
+	def __init__(self):
+		self.obj_handle = None
+	{{end}}
+
 	{{range $cstrindex, $f := $c.Constructors}}
 	def __init__(self {{range $index, $elem := $f.Parameters}}, {{$elem.Name}}:{{ConvertToPythonTypeFromField $elem}}{{end}}):
 		self.obj_handle = None
@@ -350,7 +359,7 @@ class {{$c.Name}}:
 
 		{{$paramsLength := len $f.Parameters}}{{$h := index $f.Parameters 0}}
 		params = (self.obj_handle,)
-		params_types = ({{GetMetaFFIType $h}},)
+		params_types = ({{GetMetaFFIType $h false}},)
 		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), 0)
 
 		# xcall function

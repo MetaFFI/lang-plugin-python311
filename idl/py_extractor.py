@@ -24,6 +24,11 @@ class variable_info:
 		self.is_getter = True
 		self.is_setter = True
 
+	def __str__(self):
+		return '{}:{} (get: {} | set:{})'.format(self.name, self.type, self.is_getter, self.is_setter)
+
+	def __repr__(self):
+		return self.__str__()
 
 class parameter_info:
 	name: str
@@ -37,6 +42,12 @@ class parameter_info:
 		self.is_optional = False
 		self.kind = ''
 
+	def __str__(self):
+		return '{}:{}'.format(self.name, self.type)
+
+	def __repr__(self):
+		return self.__str__()
+
 
 class function_info:
 	name: str
@@ -48,6 +59,12 @@ class function_info:
 		self.parameters = list()
 		self.return_values = list()
 
+	def __str__(self):
+		return self.name
+
+	def __repr__(self):
+		return self.__str__()
+
 
 class class_info:
 	name: str
@@ -58,6 +75,12 @@ class class_info:
 	def __init__(self):
 		self.fields = list()
 		self.methods = list()
+
+	def __str__(self):
+		return self.name
+
+	def __repr__(self):
+		return self.__str__()
 
 
 class py_info:
@@ -108,7 +131,7 @@ class py_extractor:
 		return not is_not_var
 
 	def _is_callable(self, obj):
-		return isfunction(obj) or isbuiltin(obj) and hasattr(obj, '__call__')
+		return hasattr(obj, '__call__') and not isclass(obj)
 
 	def _extract_globals(self) -> List[variable_info]:
 		all_members = getmembers(self.mod)
