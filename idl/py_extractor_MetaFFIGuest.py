@@ -61,10 +61,10 @@ load_python_plugin()
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_variable_info_get_name(cdts, out_err, out_err_len):
+def CEntryPoint_variable_info_get_name_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_name), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_name'.encode(), CEntryPoint_variable_info_get_name)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_name_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_name_Overload'.encode(), CEntryPoint_variable_info_get_name_Overload)
 
 def EntryPoint_variable_info_get_name(*obj):
 	try:
@@ -85,10 +85,10 @@ def EntryPoint_variable_info_get_name(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_variable_info_get_type(cdts, out_err, out_err_len):
+def CEntryPoint_variable_info_get_type_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_type), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_type'.encode(), CEntryPoint_variable_info_get_type)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_type_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_type_Overload'.encode(), CEntryPoint_variable_info_get_type_Overload)
 
 def EntryPoint_variable_info_get_type(*obj):
 	try:
@@ -109,10 +109,10 @@ def EntryPoint_variable_info_get_type(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_variable_info_get_is_getter(cdts, out_err, out_err_len):
+def CEntryPoint_variable_info_get_is_getter_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_is_getter), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_is_getter'.encode(), CEntryPoint_variable_info_get_is_getter)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_is_getter_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_is_getter_Overload'.encode(), CEntryPoint_variable_info_get_is_getter_Overload)
 
 def EntryPoint_variable_info_get_is_getter(*obj):
 	try:
@@ -133,10 +133,10 @@ def EntryPoint_variable_info_get_is_getter(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_variable_info_get_is_setter(cdts, out_err, out_err_len):
+def CEntryPoint_variable_info_get_is_setter_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_is_setter), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_is_setter'.encode(), CEntryPoint_variable_info_get_is_setter)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_variable_info_get_is_setter_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_variable_info_get_is_setter_Overload'.encode(), CEntryPoint_variable_info_get_is_setter_Overload)
 
 def EntryPoint_variable_info_get_is_setter(*obj):
 	try:
@@ -160,16 +160,16 @@ def EntryPoint_variable_info_get_is_setter(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_variable_info_Releasevariable_info(cdts, out_err, out_err_len):
+def CEntryPoint_variable_info_Releasevariable_info_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_variable_info_Releasevariable_info), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_variable_info_Releasevariable_info'.encode(), CEntryPoint_variable_info_Releasevariable_info)
+	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_variable_info_Releasevariable_info_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_variable_info_Releasevariable_info_Overload'.encode(), CEntryPoint_variable_info_Releasevariable_info_Overload)
 
-def EntryPoint_variable_info_Releasevariable_info(*vals):
+def EntryPoint_variable_info_Releasevariable_info_Overload(*vals):
 	try:
 
 		if len(vals) != 1:
-			raise ValueError('received parameter in variable_info_Releasevariable_info expects exactly one parameter')
+			raise ValueError('received parameter in variable_info_Releasevariable_info_Overload expects exactly one parameter')
 
 		# xcall release object
 		python_plugin_handle.release_object(vals[0])
@@ -184,10 +184,10 @@ def EntryPoint_variable_info_Releasevariable_info(*vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_parameter_info_get_name(cdts, out_err, out_err_len):
+def CEntryPoint_parameter_info_get_name_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_name), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_name'.encode(), CEntryPoint_parameter_info_get_name)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_name_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_name_Overload'.encode(), CEntryPoint_parameter_info_get_name_Overload)
 
 def EntryPoint_parameter_info_get_name(*obj):
 	try:
@@ -208,10 +208,10 @@ def EntryPoint_parameter_info_get_name(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_parameter_info_get_type(cdts, out_err, out_err_len):
+def CEntryPoint_parameter_info_get_type_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_type), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_type'.encode(), CEntryPoint_parameter_info_get_type)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_type_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_type_Overload'.encode(), CEntryPoint_parameter_info_get_type_Overload)
 
 def EntryPoint_parameter_info_get_type(*obj):
 	try:
@@ -232,10 +232,10 @@ def EntryPoint_parameter_info_get_type(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_parameter_info_get_is_default_value(cdts, out_err, out_err_len):
+def CEntryPoint_parameter_info_get_is_default_value_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_is_default_value), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_is_default_value'.encode(), CEntryPoint_parameter_info_get_is_default_value)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_is_default_value_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_is_default_value_Overload'.encode(), CEntryPoint_parameter_info_get_is_default_value_Overload)
 
 def EntryPoint_parameter_info_get_is_default_value(*obj):
 	try:
@@ -256,10 +256,10 @@ def EntryPoint_parameter_info_get_is_default_value(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_parameter_info_get_is_optional(cdts, out_err, out_err_len):
+def CEntryPoint_parameter_info_get_is_optional_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_is_optional), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_is_optional'.encode(), CEntryPoint_parameter_info_get_is_optional)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_is_optional_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_is_optional_Overload'.encode(), CEntryPoint_parameter_info_get_is_optional_Overload)
 
 def EntryPoint_parameter_info_get_is_optional(*obj):
 	try:
@@ -280,10 +280,10 @@ def EntryPoint_parameter_info_get_is_optional(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_parameter_info_get_kind(cdts, out_err, out_err_len):
+def CEntryPoint_parameter_info_get_kind_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_kind), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_kind'.encode(), CEntryPoint_parameter_info_get_kind)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_parameter_info_get_kind_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_get_kind_Overload'.encode(), CEntryPoint_parameter_info_get_kind_Overload)
 
 def EntryPoint_parameter_info_get_kind(*obj):
 	try:
@@ -307,16 +307,16 @@ def EntryPoint_parameter_info_get_kind(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_parameter_info_Releaseparameter_info(cdts, out_err, out_err_len):
+def CEntryPoint_parameter_info_Releaseparameter_info_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_parameter_info_Releaseparameter_info), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_Releaseparameter_info'.encode(), CEntryPoint_parameter_info_Releaseparameter_info)
+	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_parameter_info_Releaseparameter_info_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_parameter_info_Releaseparameter_info_Overload'.encode(), CEntryPoint_parameter_info_Releaseparameter_info_Overload)
 
-def EntryPoint_parameter_info_Releaseparameter_info(*vals):
+def EntryPoint_parameter_info_Releaseparameter_info_Overload(*vals):
 	try:
 
 		if len(vals) != 1:
-			raise ValueError('received parameter in parameter_info_Releaseparameter_info expects exactly one parameter')
+			raise ValueError('received parameter in parameter_info_Releaseparameter_info_Overload expects exactly one parameter')
 
 		# xcall release object
 		python_plugin_handle.release_object(vals[0])
@@ -331,10 +331,10 @@ def EntryPoint_parameter_info_Releaseparameter_info(*vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_function_info_get_name(cdts, out_err, out_err_len):
+def CEntryPoint_function_info_get_name_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_name), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_name'.encode(), CEntryPoint_function_info_get_name)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_name_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_name_Overload'.encode(), CEntryPoint_function_info_get_name_Overload)
 
 def EntryPoint_function_info_get_name(*obj):
 	try:
@@ -355,10 +355,10 @@ def EntryPoint_function_info_get_name(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_function_info_get_comment(cdts, out_err, out_err_len):
+def CEntryPoint_function_info_get_comment_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_comment), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_comment'.encode(), CEntryPoint_function_info_get_comment)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_comment_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_comment_Overload'.encode(), CEntryPoint_function_info_get_comment_Overload)
 
 def EntryPoint_function_info_get_comment(*obj):
 	try:
@@ -379,10 +379,10 @@ def EntryPoint_function_info_get_comment(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_function_info_get_parameters(cdts, out_err, out_err_len):
+def CEntryPoint_function_info_get_parameters_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_parameters), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_parameters'.encode(), CEntryPoint_function_info_get_parameters)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_parameters_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_parameters_Overload'.encode(), CEntryPoint_function_info_get_parameters_Overload)
 
 def EntryPoint_function_info_get_parameters(*obj):
 	try:
@@ -403,10 +403,10 @@ def EntryPoint_function_info_get_parameters(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_function_info_get_return_values(cdts, out_err, out_err_len):
+def CEntryPoint_function_info_get_return_values_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_return_values), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_return_values'.encode(), CEntryPoint_function_info_get_return_values)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_function_info_get_return_values_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_function_info_get_return_values_Overload'.encode(), CEntryPoint_function_info_get_return_values_Overload)
 
 def EntryPoint_function_info_get_return_values(*obj):
 	try:
@@ -430,16 +430,16 @@ def EntryPoint_function_info_get_return_values(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_function_info_Releasefunction_info(cdts, out_err, out_err_len):
+def CEntryPoint_function_info_Releasefunction_info_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_function_info_Releasefunction_info), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_function_info_Releasefunction_info'.encode(), CEntryPoint_function_info_Releasefunction_info)
+	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_function_info_Releasefunction_info_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_function_info_Releasefunction_info_Overload'.encode(), CEntryPoint_function_info_Releasefunction_info_Overload)
 
-def EntryPoint_function_info_Releasefunction_info(*vals):
+def EntryPoint_function_info_Releasefunction_info_Overload(*vals):
 	try:
 
 		if len(vals) != 1:
-			raise ValueError('received parameter in function_info_Releasefunction_info expects exactly one parameter')
+			raise ValueError('received parameter in function_info_Releasefunction_info_Overload expects exactly one parameter')
 
 		# xcall release object
 		python_plugin_handle.release_object(vals[0])
@@ -454,10 +454,10 @@ def EntryPoint_function_info_Releasefunction_info(*vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_class_info_get_name(cdts, out_err, out_err_len):
+def CEntryPoint_class_info_get_name_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_name), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_name'.encode(), CEntryPoint_class_info_get_name)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_name_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_name_Overload'.encode(), CEntryPoint_class_info_get_name_Overload)
 
 def EntryPoint_class_info_get_name(*obj):
 	try:
@@ -478,10 +478,10 @@ def EntryPoint_class_info_get_name(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_class_info_get_comment(cdts, out_err, out_err_len):
+def CEntryPoint_class_info_get_comment_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_comment), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_comment'.encode(), CEntryPoint_class_info_get_comment)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_comment_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_comment_Overload'.encode(), CEntryPoint_class_info_get_comment_Overload)
 
 def EntryPoint_class_info_get_comment(*obj):
 	try:
@@ -502,10 +502,10 @@ def EntryPoint_class_info_get_comment(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_class_info_get_fields(cdts, out_err, out_err_len):
+def CEntryPoint_class_info_get_fields_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_fields), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_fields'.encode(), CEntryPoint_class_info_get_fields)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_fields_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_fields_Overload'.encode(), CEntryPoint_class_info_get_fields_Overload)
 
 def EntryPoint_class_info_get_fields(*obj):
 	try:
@@ -526,10 +526,10 @@ def EntryPoint_class_info_get_fields(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_class_info_get_methods(cdts, out_err, out_err_len):
+def CEntryPoint_class_info_get_methods_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_methods), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_methods'.encode(), CEntryPoint_class_info_get_methods)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_class_info_get_methods_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_class_info_get_methods_Overload'.encode(), CEntryPoint_class_info_get_methods_Overload)
 
 def EntryPoint_class_info_get_methods(*obj):
 	try:
@@ -553,16 +553,16 @@ def EntryPoint_class_info_get_methods(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_class_info_Releaseclass_info(cdts, out_err, out_err_len):
+def CEntryPoint_class_info_Releaseclass_info_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_class_info_Releaseclass_info), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_class_info_Releaseclass_info'.encode(), CEntryPoint_class_info_Releaseclass_info)
+	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_class_info_Releaseclass_info_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_class_info_Releaseclass_info_Overload'.encode(), CEntryPoint_class_info_Releaseclass_info_Overload)
 
-def EntryPoint_class_info_Releaseclass_info(*vals):
+def EntryPoint_class_info_Releaseclass_info_Overload(*vals):
 	try:
 
 		if len(vals) != 1:
-			raise ValueError('received parameter in class_info_Releaseclass_info expects exactly one parameter')
+			raise ValueError('received parameter in class_info_Releaseclass_info_Overload expects exactly one parameter')
 
 		# xcall release object
 		python_plugin_handle.release_object(vals[0])
@@ -577,10 +577,10 @@ def EntryPoint_class_info_Releaseclass_info(*vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_info_get_globals(cdts, out_err, out_err_len):
+def CEntryPoint_py_info_get_globals_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_info_get_globals), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_info_get_globals'.encode(), CEntryPoint_py_info_get_globals)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_info_get_globals_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_info_get_globals_Overload'.encode(), CEntryPoint_py_info_get_globals_Overload)
 
 def EntryPoint_py_info_get_globals(*obj):
 	try:
@@ -601,10 +601,10 @@ def EntryPoint_py_info_get_globals(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_info_get_functions(cdts, out_err, out_err_len):
+def CEntryPoint_py_info_get_functions_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_info_get_functions), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_info_get_functions'.encode(), CEntryPoint_py_info_get_functions)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_info_get_functions_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_info_get_functions_Overload'.encode(), CEntryPoint_py_info_get_functions_Overload)
 
 def EntryPoint_py_info_get_functions(*obj):
 	try:
@@ -625,10 +625,10 @@ def EntryPoint_py_info_get_functions(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_info_get_classes(cdts, out_err, out_err_len):
+def CEntryPoint_py_info_get_classes_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_info_get_classes), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_info_get_classes'.encode(), CEntryPoint_py_info_get_classes)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_info_get_classes_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_info_get_classes_Overload'.encode(), CEntryPoint_py_info_get_classes_Overload)
 
 def EntryPoint_py_info_get_classes(*obj):
 	try:
@@ -652,16 +652,16 @@ def EntryPoint_py_info_get_classes(*obj):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_info_Releasepy_info(cdts, out_err, out_err_len):
+def CEntryPoint_py_info_Releasepy_info_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_py_info_Releasepy_info), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_info_Releasepy_info'.encode(), CEntryPoint_py_info_Releasepy_info)
+	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_py_info_Releasepy_info_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_info_Releasepy_info_Overload'.encode(), CEntryPoint_py_info_Releasepy_info_Overload)
 
-def EntryPoint_py_info_Releasepy_info(*vals):
+def EntryPoint_py_info_Releasepy_info_Overload(*vals):
 	try:
 
 		if len(vals) != 1:
-			raise ValueError('received parameter in py_info_Releasepy_info expects exactly one parameter')
+			raise ValueError('received parameter in py_info_Releasepy_info_Overload expects exactly one parameter')
 
 		# xcall release object
 		python_plugin_handle.release_object(vals[0])
@@ -673,10 +673,10 @@ def EntryPoint_py_info_Releasepy_info(*vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_extractor_py_extractor(cdts, out_err, out_err_len):
+def CEntryPoint_py_extractor_py_extractor_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_extractor_py_extractor), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_extractor_py_extractor'.encode(), CEntryPoint_py_extractor_py_extractor)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_extractor_py_extractor_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_extractor_py_extractor_Overload'.encode(), CEntryPoint_py_extractor_py_extractor_Overload)
 
 def EntryPoint_py_extractor_py_extractor(*vals, **named_vals):
 	try:
@@ -697,10 +697,10 @@ def EntryPoint_py_extractor_py_extractor(*vals, **named_vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_extractor_extract(cdts, out_err, out_err_len):
+def CEntryPoint_py_extractor_extract_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_extractor_extract), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_extractor_extract'.encode(), CEntryPoint_py_extractor_extract)
+	python_plugin_handle.xcall_params_ret(1, py_object(EntryPoint_py_extractor_extract_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_extractor_extract_Overload'.encode(), CEntryPoint_py_extractor_extract_Overload)
 
 def EntryPoint_py_extractor_extract(*vals, **named_vals):
 	try:
@@ -723,16 +723,16 @@ def EntryPoint_py_extractor_extract(*vals, **named_vals):
 
 
 @CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))
-def CEntryPoint_py_extractor_Releasepy_extractor(cdts, out_err, out_err_len):
+def CEntryPoint_py_extractor_Releasepy_extractor_Overload(cdts, out_err, out_err_len):
 	global python_plugin_handle
-	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_py_extractor_Releasepy_extractor), c_void_p(cdts), out_err, out_err_len)
-python_plugin_handle.set_entrypoint('EntryPoint_py_extractor_Releasepy_extractor'.encode(), CEntryPoint_py_extractor_Releasepy_extractor)
+	python_plugin_handle.xcall_params_no_ret(1, py_object(EntryPoint_py_extractor_Releasepy_extractor_Overload), c_void_p(cdts), out_err, out_err_len)
+python_plugin_handle.set_entrypoint('EntryPoint_py_extractor_Releasepy_extractor_Overload'.encode(), CEntryPoint_py_extractor_Releasepy_extractor_Overload)
 
-def EntryPoint_py_extractor_Releasepy_extractor(*vals):
+def EntryPoint_py_extractor_Releasepy_extractor_Overload(*vals):
 	try:
 
 		if len(vals) != 1:
-			raise ValueError('received parameter in py_extractor_Releasepy_extractor expects exactly one parameter')
+			raise ValueError('received parameter in py_extractor_Releasepy_extractor_Overload expects exactly one parameter')
 
 		# xcall release object
 		python_plugin_handle.release_object(vals[0])
