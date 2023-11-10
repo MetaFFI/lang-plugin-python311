@@ -292,14 +292,12 @@ def {{$f.Name}}({{range $index, $elem := $f.Parameters}}{{if $index}},{{end}} {{
 {{range $classindex, $c := $m.Classes}}
 # Class to call methods of foreign class {{$c.Name}}
 class {{$c.Name}}:
-	# create from existing MetaFFI handle
-	def __init__(self, handle):
-		self.obj_handle = handle
 
 	{{$constructorCount := len $c.Constructors}}
 	{{if eq $constructorCount 0 }}
-	def __init__(self):
-		self.obj_handle = None
+	# create from existing MetaFFI handle
+	def __init__(self, handle=None):
+		self.obj_handle = handle
 	{{end}}
 
 	{{range $cstrindex, $f := $c.Constructors}}
