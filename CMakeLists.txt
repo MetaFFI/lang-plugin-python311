@@ -41,7 +41,7 @@ list(APPEND CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/lib")
 # add targets
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/compiler/)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/runtime/)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/idl/)
+#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/idl/)
 
 # cmake install (not cpack)
 set(CMAKE_INSTALL_PREFIX [[$ENV{METAFFI_HOME}]])

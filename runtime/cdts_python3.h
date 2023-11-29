@@ -10,28 +10,17 @@
 #include <Python.h>
 #endif
 
-/*
-struct cstr_cmp : public std::binary_function<const char*, const char*, bool>
-{
-	bool operator()(const char*& l, const char*& r) const{ return strcmp( l, r ) == 0; }
-};
 
-struct cstr_hash_func
-{
-	int operator()(char* str)const
-	{
-		int seed = 131;//31  131 1313 13131131313 etc//
-		int hash = 0;
-		while(*str)
-		{
-			hash = (hash * seed) + (*str);
-			str ++;
-		}
-		
-		return hash & (0x7FFFFFFF);
-	}
-};
-*/
+
+#define build_constructor_param(type) \
+	const decltype(set_##type)& set_##type, \
+    const decltype(set_##type##_array)& set_##type##_array
+
+#define build_constructor_init_param(type) \
+	set_##type(std::move(set_##type)),\
+	set_##type##_array(std::move(set_##type##_array))
+
+
 class cdts_python3
 {
 private:
@@ -54,7 +43,8 @@ public:
 	 * @param starting_index Starting index in tuple to fill CDTS
 	 */
 	void build(PyObject* tuple, PyObject* tuple_types, int starting_index);
-
+	void build(PyObject* tuple, metaffi_types_ptr types, uint8_t types_length, int starting_index);
+	
 
 private:
 	
@@ -181,9 +171,18 @@ private:
 	//====================================================================
 
 	template<typename T>
-	static void set_numeric_to_cdts(PyObject* tuple, int index, T& val, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
+	static void set_numeric_to_cdts(PyObject* obj_to_convert, int index, T& val, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
 	{
-		PyObject* obj = PyTuple_GetItem(tuple, index);
+		PyObject* obj;
+		if(PyTuple_Check(obj_to_convert)){
+			obj = PyTuple_GetItem(obj_to_convert, index);
+		}
+		else
+		{
+			if(index > 0){ throw std::runtime_error("given object is not tuple, but index is not 0"); }
+			
+			obj = obj_to_convert;
+		}
 
 #ifdef _DEBUG
 		if(!check_pyobject(obj))
@@ -197,9 +196,18 @@ private:
 	}
 	
 	template<typename T>
-	static void set_numeric_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
+	static void set_numeric_array_to_cdts(PyObject* obj_to_convert, int index, T*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<T(PyObject*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject)
 	{
-		PyObject* obj = PyTuple_GetItem(tuple, index);
+		PyObject* obj;
+		if(PyTuple_Check(obj_to_convert)){
+			obj = PyTuple_GetItem(obj_to_convert, index);
+		}
+		else
+		{
+			if(index > 0){ throw std::runtime_error("given object is not tuple, but index is not 0"); }
+			
+			obj = obj_to_convert;
+		}
 		
 		if(obj == Py_None)
 		{
@@ -250,9 +258,18 @@ private:
 	}
 	
 	template<typename T, typename char_t>
-	static void set_string_to_cdts(PyObject* tuple, int index, T& val, metaffi_size& s, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
+	static void set_string_to_cdts(PyObject* obj_to_convert, int index, T& val, metaffi_size& s, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
-		PyObject* obj = PyTuple_GetItem(tuple, index);
+		PyObject* obj;
+		if(PyTuple_Check(obj_to_convert)){
+			obj = PyTuple_GetItem(obj_to_convert, index);
+		}
+		else
+		{
+			if(index > 0){ throw std::runtime_error("given object is not tuple, but index is not 0"); }
+			
+			obj = obj_to_convert;
+		}
 		
 		if(obj == Py_None)
 		{
@@ -279,9 +296,18 @@ private:
 	}
 	
 	template<typename T, typename char_t>
-	static void set_string_array_to_cdts(PyObject* tuple, int index, T*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
+	static void set_string_array_to_cdts(PyObject* obj_to_convert, int index, T*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, const std::function<char_t*(PyObject*, Py_ssize_t*)>& pyobject_to_c, const std::function<int(PyObject*)>& check_pyobject, const std::function<char_t*(char_t*, const char_t*, size_t)>& scpy)
 	{
-		PyObject* obj = PyTuple_GetItem(tuple, index);
+		PyObject* obj;
+		if(PyTuple_Check(obj_to_convert)){
+			obj = PyTuple_GetItem(obj_to_convert, index);
+		}
+		else
+		{
+			if(index > 0){ throw std::runtime_error("given object is not tuple, but index is not 0"); }
+			
+			obj = obj_to_convert;
+		}
 		
 		if(obj == Py_None)
 		{

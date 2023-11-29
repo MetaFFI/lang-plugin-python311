@@ -169,6 +169,9 @@ cdts_build_callbacks cdts_python3::build_callback
 	},
 	[](void* values_to_set, int index, metaffi_string32*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
 		set_string_array_to_cdts<metaffi_string32, wchar_t>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
+	},
+	[](int index,void* values_to_set)->metaffi_type{
+		return cdts_python3::get_metaffi_type((PyObject*)values_to_set);
 	}
 };
 
@@ -345,18 +348,19 @@ PyObject* cdts_python3::parse()
 thread_local metaffi_type_t g_param_types[50];
 void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_index)
 {
+
 #ifdef _DEBUG
 	if (!PyTuple_Check(tuple))
 	{
 		throw std::runtime_error("data is not in a tuple type");
 	}
-	
+
 	if ((PyTuple_Size(tuple)-starting_index) != PyTuple_Size(tuple_types))
 	{
 		throw std::runtime_error("metaffi_types list has a different size of parameters list");
 	}
 #endif
-	
+
 	// convert tuple types to metaffi_types[]
 	Py_ssize_t types_length = PyTuple_Size(tuple_types);
 	metaffi_types_ptr types = types_length > 50 ? new metaffi_type_t[types_length] : g_param_types;
@@ -364,7 +368,7 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 	{
 		PyObject* pytype = PyTuple_GetItem(tuple_types, i);
 		types[i] = (metaffi_types)PyLong_AsLong(pytype);
-		
+
 		if(types[i] == metaffi_any_type) // if any, replace with actual type
 		{
 			PyObject* obj = PyTuple_GetItem(tuple, i+starting_index);
@@ -372,11 +376,17 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		}
 	}
 	
+	this->build(tuple, types, (uint8_t)types_length, starting_index);
 	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
 	
 	if(types_length > 50){
 		delete types;
 	}
+}
+//--------------------------------------------------------------------
+void cdts_python3::build(PyObject* tuple, metaffi_types_ptr types, uint8_t types_length, int starting_index)
+{
+	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
 }
 //--------------------------------------------------------------------
 metaffi_types cdts_python3::get_metaffi_type(PyObject* obj)

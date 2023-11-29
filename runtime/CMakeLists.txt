@@ -26,3 +26,10 @@ set_target_properties( ${target_name}
 
 # install
 install_target(${target_name} .)
+
+
+# unitests
+add_executable(python_api_test "python_api_test.cpp" ${utils_srcs} ${runtime_srcs})
+target_link_libraries(python_api_test PRIVATE Catch2::Catch2 ${target_name} Boost::filesystem Python3::Python)
+target_include_directories(python_api_test PRIVATE ${METAFFI_SDK})
+add_test(NAME "Python3 Runtime API" COMMAND expand_env_test)
