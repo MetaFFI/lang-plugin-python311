@@ -12,15 +12,18 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	module_path = module_path.parent_path();
 	module_path.append("runtime_test_target.py");
 
-	char* err = nullptr;
-	uint32_t err_len = 0;
-	load_runtime(&err, &err_len);
-
-	if(err){
-		FAIL(err);
+	SECTION("Load Runtime")
+	{
+		char* err = nullptr;
+		uint32_t err_len = 0;
+		load_runtime(&err, &err_len);
+		
+		if(err){
+			FAIL(err);
+		}
+		
+		REQUIRE(err_len == 0);
 	}
-
-	REQUIRE(err_len == 0);
 
 	SECTION("runtime_test_target.hello_world")
 	{
