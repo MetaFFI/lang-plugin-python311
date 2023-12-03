@@ -345,7 +345,7 @@ PyObject* cdts_python3::parse()
 	return res;
 }
 //--------------------------------------------------------------------
-thread_local metaffi_type_t g_param_types[50];
+thread_local metaffi_type_with_alias g_param_types[50];
 void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_index)
 {
 
@@ -363,16 +363,16 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 
 	// convert tuple types to metaffi_types[]
 	Py_ssize_t types_length = PyTuple_Size(tuple_types);
-	metaffi_types_ptr types = types_length > 50 ? new metaffi_type_t[types_length] : g_param_types;
+	metaffi_types_with_alias_ptr types = types_length > 50 ? new metaffi_type_with_alias[types_length] : g_param_types;
 	for(Py_ssize_t i = 0 ; i < types_length ; i++)
 	{
 		PyObject* pytype = PyTuple_GetItem(tuple_types, i);
-		types[i] = (metaffi_types)PyLong_AsLong(pytype);
+		types[i].type = (metaffi_types)PyLong_AsLong(pytype);
 
-		if(types[i] == metaffi_any_type) // if any, replace with actual type
+		if(types[i].type == metaffi_any_type) // if any, replace with actual type
 		{
 			PyObject* obj = PyTuple_GetItem(tuple, i+starting_index);
-			types[i] = get_metaffi_type(obj);
+			types[i].type = get_metaffi_type(obj);
 		}
 	}
 	
@@ -384,7 +384,7 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 	}
 }
 //--------------------------------------------------------------------
-void cdts_python3::build(PyObject* tuple, metaffi_types_ptr types, uint8_t types_length, int starting_index)
+void cdts_python3::build(PyObject* tuple, metaffi_types_with_alias_ptr types, uint8_t types_length, int starting_index)
 {
 	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
 }

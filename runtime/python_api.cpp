@@ -65,8 +65,8 @@ struct python3_context
 	std::vector<std::string> attribute_path;
 	PyObject* entrypoint;
 	PyObject* attribute_holder;
-	std::vector<metaffi_type> params_types;
-	std::vector<metaffi_type> retvals_types;
+	std::vector<metaffi_type_with_alias> params_types;
+	std::vector<metaffi_type_with_alias> retvals_types;
 	
 	[[nodiscard]] uint8_t params_count() const{ return params_types.size(); };
 	[[nodiscard]] uint8_t retvals_count() const{ return retvals_types.size(); };
@@ -236,7 +236,7 @@ void free_runtime(char** err, uint32_t* err_len)
 //	printf("+++ DONE freeing!\n");
 }
 //--------------------------------------------------------------------
-void** load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, metaffi_types_ptr param_types, metaffi_types_ptr ret_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+void** load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, metaffi_types_with_alias_ptr param_types, metaffi_types_with_alias_ptr ret_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
 {
 	if(!Py_IsInitialized())
 	{
