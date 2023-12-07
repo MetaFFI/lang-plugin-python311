@@ -10,7 +10,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	
 	std::filesystem::path module_path(__FILE__);
 	module_path = module_path.parent_path();
-	module_path.append("runtime_test_target.py");
+	module_path.append("./test/runtime_test_target.py");
 	char* err = nullptr;
 	uint32_t err_len = 0;
 	
