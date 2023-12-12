@@ -3,6 +3,7 @@
 #include <runtime/runtime_plugin_api.h>
 #include <filesystem>
 #include <runtime/cdts_wrapper.h>
+#include "runtime_id.h"
 
 TEST_CASE( "python3 runtime api", "[python3runtime]" )
 {
@@ -187,6 +188,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		metaffi::runtime::cdts_wrapper wrapper_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
 		REQUIRE(wrapper_ret[0]->type == metaffi_handle_type);
 		REQUIRE(wrapper_ret[0]->cdt_val.metaffi_handle_val.val != nullptr);
+		REQUIRE(wrapper_ret[0]->cdt_val.metaffi_handle_val.runtime_id == PYTHON3_RUNTIME_ID);
 		
 		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
 			free(cdts_param_ret);
@@ -215,6 +217,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		metaffi::runtime::cdts_wrapper wrapper(cdts_param_ret[0].pcdt, cdts_param_ret[0].len, false);
 		wrapper[0]->type = metaffi_handle_type;
 		wrapper[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
+		wrapper[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON3_RUNTIME_ID;
 		wrapper[1]->type = metaffi_string8_type;
 		wrapper[1]->cdt_val.metaffi_string8_val.val = (char*)"key";
 		wrapper[1]->cdt_val.metaffi_string8_val.length = strlen("key");
@@ -231,7 +234,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		}
 		
 		// contains
-		function_path = "callable=testmap.contains";
+		function_path = "callable=testmap.contains,instance_required";
 		params_types[0].type = metaffi_handle_type;
 		params_types[1].type = metaffi_string8_type;
 		retvals_types[0].type = metaffi_bool_type;
@@ -251,6 +254,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		metaffi::runtime::cdts_wrapper wrapper_contains_params(cdts_param_ret[0].pcdt, cdts_param_ret[0].len, false);
 		wrapper_contains_params[0]->type = metaffi_handle_type;
 		wrapper_contains_params[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
+		wrapper_contains_params[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON3_RUNTIME_ID;
 		wrapper_contains_params[1]->type = metaffi_string8_type;
 		wrapper_contains_params[1]->cdt_val.metaffi_string8_val.val = (char*)"key";
 		wrapper_contains_params[1]->cdt_val.metaffi_string8_val.length = strlen("key");
@@ -269,7 +273,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		}
 		
 		// get
-		function_path = "callable=testmap.get";
+		function_path = "callable=testmap.get,instance_required";
 		params_types[0].type = metaffi_handle_type;
 		params_types[1].type = metaffi_string8_type;
 		retvals_types[0].type = metaffi_any_type;
@@ -289,6 +293,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		metaffi::runtime::cdts_wrapper wrapper_get_params(cdts_param_ret[0].pcdt, cdts_param_ret[0].len, false);
 		wrapper_get_params[0]->type = metaffi_handle_type;
 		wrapper_get_params[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
+		wrapper_get_params[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON3_RUNTIME_ID;
 		wrapper_get_params[1]->type = metaffi_string8_type;
 		wrapper_get_params[1]->cdt_val.metaffi_string8_val.val = (char*)"key";
 		wrapper_get_params[1]->cdt_val.metaffi_string8_val.length = strlen("key");
@@ -301,6 +306,150 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		metaffi::runtime::cdts_wrapper wrapper_get_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
 		REQUIRE(wrapper_get_ret[0]->type == metaffi_int64_type);
 		REQUIRE(wrapper_get_ret[0]->cdt_val.metaffi_int64_val.val == 42);
+		
+		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
+			free(cdts_param_ret);
+		}
+	}
+	
+	SECTION("runtime_test_target.testmap.set_get_contains_cpp_object")
+	{
+		// create new testmap
+		std::string function_path = "callable=testmap";
+		metaffi_type_with_alias retvals_types[] = {{metaffi_handle_type}};
+		
+		void** pnew_testmap = load_function(module_path.string().c_str(), module_path.string().length(),
+		                                    function_path.c_str(), function_path.length(),
+		                                    nullptr, retvals_types,
+		                                    0, 1,
+		                                    &err, &err_len);
+		
+		if(err){ FAIL(err); }
+		REQUIRE(err_len == 0);
+		REQUIRE(pnew_testmap[0] != nullptr);
+		REQUIRE(pnew_testmap[1] != nullptr);
+		
+		cdts* cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(0, 1);
+		
+		uint64_t long_err_len = 0;
+		((void(*)(void*,cdts*,char**,uint64_t*))pnew_testmap[0])(pnew_testmap[1], (cdts*)cdts_param_ret, &err, &long_err_len);
+		if(err){ FAIL(err); }
+		REQUIRE(long_err_len == 0);
+		
+		metaffi::runtime::cdts_wrapper wrapper_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
+		REQUIRE(wrapper_ret[0]->type == metaffi_handle_type);
+		REQUIRE(wrapper_ret[0]->cdt_val.metaffi_handle_val.val != nullptr);
+		REQUIRE(wrapper_ret[0]->cdt_val.metaffi_handle_val.runtime_id == PYTHON3_RUNTIME_ID);
+		
+		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
+			free(cdts_param_ret);
+		}
+		
+		metaffi_handle testmap_instance = wrapper_ret[0]->cdt_val.metaffi_handle_val.val;
+		
+		// set
+		function_path = "callable=testmap.set,instance_required";
+		metaffi_type_with_alias params_types[] = {{metaffi_handle_type}, {metaffi_string8_type}, {metaffi_any_type}};
+		
+		void** p_testmap_set = load_function(module_path.string().c_str(), module_path.string().length(),
+		                                     function_path.c_str(), function_path.length(),
+		                                     params_types, nullptr,
+		                                     3, 0,
+		                                     &err, &err_len);
+		
+		if(err){ FAIL(err); }
+		REQUIRE(err_len == 0);
+		REQUIRE(p_testmap_set[0] != nullptr);
+		REQUIRE(p_testmap_set[1] != nullptr);
+		
+		std::vector<int> vec_to_insert = {1,2,3};
+		
+		cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(3, 0);
+		metaffi::runtime::cdts_wrapper wrapper(cdts_param_ret[0].pcdt, cdts_param_ret[0].len);
+		wrapper.set(0, testmap_instance, PYTHON3_RUNTIME_ID);
+		wrapper.set(1, std::string("key"));
+		wrapper.set(2, &vec_to_insert, 733);
+		
+		long_err_len = 0;
+		((void(*)(void*,cdts*,char**,uint64_t*))p_testmap_set[0])(p_testmap_set[1], (cdts*)cdts_param_ret, &err, &long_err_len);
+		if(err){ FAIL(err); }
+		REQUIRE(long_err_len == 0);
+		
+		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
+			free(cdts_param_ret);
+		}
+		
+		// contains
+		function_path = "callable=testmap.contains,instance_required";
+		metaffi_type_with_alias params_contains_types[] = {{metaffi_handle_type}, {metaffi_string8_type}};
+		metaffi_type_with_alias retvals_contains_types[] = {{metaffi_bool_type}};
+		
+		void** p_testmap_contains = load_function(module_path.string().c_str(), module_path.string().length(),
+		                                          function_path.c_str(), function_path.length(),
+		                                          params_contains_types, retvals_contains_types,
+		                                          2, 1,
+		                                          &err, &err_len);
+		
+		if(err){ FAIL(err); }
+		REQUIRE(err_len == 0);
+		REQUIRE(p_testmap_contains[0] != nullptr);
+		REQUIRE(p_testmap_contains[1] != nullptr);
+		
+		cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(2, 1);
+		metaffi::runtime::cdts_wrapper wrapper_contains_params(cdts_param_ret[0].pcdt, cdts_param_ret[0].len);
+		wrapper_contains_params.set(0, testmap_instance, PYTHON3_RUNTIME_ID);
+		wrapper_contains_params.set(1, std::string("key"));
+		
+		long_err_len = 0;
+		((void(*)(void*,cdts*,char**,uint64_t*))p_testmap_contains[0])(p_testmap_contains[1], (cdts*)cdts_param_ret, &err, &long_err_len);
+		if(err){ FAIL(err); }
+		REQUIRE(long_err_len == 0);
+		
+		metaffi::runtime::cdts_wrapper wrapper_contains_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
+		REQUIRE(wrapper_contains_ret[0]->type == metaffi_bool_type);
+		REQUIRE(wrapper_contains_ret[0]->cdt_val.metaffi_bool_val.val != 0);
+		
+		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
+			free(cdts_param_ret);
+		}
+		
+		// get
+		function_path = "callable=testmap.get,instance_required";
+		metaffi_type_with_alias params_get_types[] = {{metaffi_handle_type}, {metaffi_string8_type}};
+		metaffi_type_with_alias retvals_get_types[] = {{metaffi_any_type}};
+		
+		void** p_testmap_get = load_function(module_path.string().c_str(), module_path.string().length(),
+		                                     function_path.c_str(), function_path.length(),
+		                                     params_get_types, retvals_get_types,
+		                                     2, 1,
+		                                     &err, &err_len);
+		
+		if(err){ FAIL(err); }
+		REQUIRE(err_len == 0);
+		REQUIRE(p_testmap_get[0] != nullptr);
+		REQUIRE(p_testmap_get[1] != nullptr);
+		
+		cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(2, 1);
+		metaffi::runtime::cdts_wrapper wrapper_get_params(cdts_param_ret[0].pcdt, cdts_param_ret[0].len, false);
+		wrapper_get_params[0]->type = metaffi_handle_type;
+		wrapper_get_params[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
+		wrapper_get_params[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON3_RUNTIME_ID;
+		wrapper_get_params[1]->type = metaffi_string8_type;
+		wrapper_get_params[1]->cdt_val.metaffi_string8_val.val = (char*)"key";
+		wrapper_get_params[1]->cdt_val.metaffi_string8_val.length = strlen("key");
+		
+		long_err_len = 0;
+		((void(*)(void*,cdts*,char**,uint64_t*))p_testmap_get[0])(p_testmap_get[1], (cdts*)cdts_param_ret, &err, &long_err_len);
+		if(err){ FAIL(err); }
+		REQUIRE(long_err_len == 0);
+		
+		metaffi::runtime::cdts_wrapper wrapper_get_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
+		REQUIRE(wrapper_get_ret[0]->type == metaffi_handle_type);
+		std::vector<int>* vector_pulled = (std::vector<int>*)wrapper_get_ret[0]->cdt_val.metaffi_handle_val.val;
+		
+		REQUIRE((*vector_pulled)[0] == 1);
+		REQUIRE((*vector_pulled)[1] == 2);
+		REQUIRE((*vector_pulled)[2] == 3);
 		
 		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
 			free(cdts_param_ret);

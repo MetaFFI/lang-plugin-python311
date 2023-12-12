@@ -8,6 +8,7 @@
 {
 	try
 	{
+		
 		pyscope();
 		
 #ifdef _DEBUG
@@ -23,6 +24,7 @@
 			return nullptr;
 		}
 #endif
+
 		Py_ssize_t params_size = PyTuple_Size(params);
 		if(params_size == 0)
 		{
@@ -37,21 +39,37 @@
 		// get the data from the local objects
 		cdts* cdts_buf = xllr_alloc_cdts_buffer(PyTuple_Size(params), return_values_size);
 		cdts_python3 pycdts(cdts_buf[0].pcdt, cdts_buf[0].len );
+
 		pycdts.build(params, params_types, 0);
+
 		return cdts_buf;
 	}
 	catch(std::exception& e)
 	{
-		printf("Failed convert_host_params_to_cdts: %s\n", e.what());
+		std::stringstream ss;
+		ss << "Failed convert_host_params_to_cdts: " << e.what();
+		
+		PyErr_SetString(PyExc_ValueError, ss.str().c_str());
 		return nullptr;
 	}
 }
 //--------------------------------------------------------------------
-[[maybe_unused]] PyObject* convert_host_return_values_from_cdts(cdts* pcdts, int index)
+[[maybe_unused]] PyObject* convert_host_return_values_from_cdts(cdts* pcdts, metaffi_size index)
 {
-	pyscope();
-	cdts_python3 cdts(pcdts[index].pcdt, pcdts[index].len);
-	PyObject* o = cdts.parse();
-	return o;
+	try
+	{
+		pyscope();
+		cdts_python3 cdts(pcdts[index].pcdt, pcdts[index].len);
+		PyObject* o = cdts.parse();
+		
+		return o;
+	}
+	catch(std::exception& e)
+	{
+		std::stringstream ss;
+		ss << "Failed convert_host_params_to_cdts: " << e.what();
+		PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+		return Py_None;
+	}
 }
 //--------------------------------------------------------------------

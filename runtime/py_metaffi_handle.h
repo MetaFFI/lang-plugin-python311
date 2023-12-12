@@ -8,4 +8,4 @@
 #endif
 #include <runtime/metaffi_primitives.h>
 
-extern "C" PyObject* new_py_metaffi_handle(metaffi_handle h);
+PyObject* new_py_metaffi_handle(metaffi_handle h, metaffi_uint64 runtime_id);

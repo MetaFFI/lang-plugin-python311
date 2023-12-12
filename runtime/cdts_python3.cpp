@@ -3,6 +3,7 @@
 #include "py_metaffi_handle.h"
 #include <runtime/cdt_capi_loader.h>
 #include <mutex>
+#include "runtime_id.h"
 
 using namespace metaffi::runtime;
 std::once_flag load_capi_flag;
@@ -85,13 +86,12 @@ cdts_build_callbacks cdts_python3::build_callback
 	[](void* values_to_set, int index, metaffi_bool*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
 		set_numeric_array_to_cdts<metaffi_bool>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
 	},
-	[](void* values_to_set, int index, metaffi_handle& val, int starting_index)
+	[](void* values_to_set, int index, cdt_metaffi_handle& val, int starting_index)
 	{
-		auto set_object = [](PyObject* pybj)->metaffi_handle
+		auto set_object = [](PyObject* pybj)->cdt_metaffi_handle
 		{
-			
 			if(pybj == Py_None){
-				return nullptr;
+				return cdt_metaffi_handle{0, PYTHON3_RUNTIME_ID};
 			}
 			
 			if(!python3_objects_table::instance().contains(pybj))
@@ -105,7 +105,14 @@ cdts_build_callbacks cdts_python3::build_callback
 						throw std::runtime_error("handle attribute is not found in metaffi_handle object");
 					}
 					
-					auto res = (metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle);
+					PyObject* runtime_id = PyObject_GetAttrString(pybj, "runtime_id");
+					if(!runtime_id)
+					{
+						throw std::runtime_error("runtime_id attribute is not found in metaffi_handle object");
+					}
+					
+					auto res = cdt_metaffi_handle{(metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle),
+					                              PyLong_AsUnsignedLongLong(runtime_id)};
 					
 					return res;
 				}
@@ -114,17 +121,17 @@ cdts_build_callbacks cdts_python3::build_callback
 				python3_objects_table::instance().set(pybj);
 			};
 			
-			return (metaffi_handle)pybj;
+			return {(metaffi_handle)pybj, PYTHON3_RUNTIME_ID};
 		};
 		
-		set_numeric_to_cdts<metaffi_handle>((PyObject*)values_to_set, index+starting_index, val, set_object, [](PyObject* o)->int{ return 1; });
+		set_numeric_to_cdts<cdt_metaffi_handle>((PyObject*)values_to_set, index+starting_index, val, set_object, [](PyObject* o)->int{ return 1; });
 	},
-	[](void* values_to_set, int index, metaffi_handle*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index)
+	[](void* values_to_set, int index, cdt_metaffi_handle* arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index)
 	{
-		auto set_object = [](PyObject* pybj)->metaffi_handle
+		auto set_object = [](PyObject* pybj)->cdt_metaffi_handle
 		{
 			if(pybj == Py_None){
-				return nullptr;
+				return {nullptr, PYTHON3_RUNTIME_ID};
 			}
 			
 			if(!python3_objects_table::instance().contains(pybj))
@@ -138,17 +145,26 @@ cdts_build_callbacks cdts_python3::build_callback
 						throw std::runtime_error("handle attribute is not found in metaffi_handle object");
 					}
 					
-					return (metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle);
+					PyObject* runtime_id = PyObject_GetAttrString(pybj, "runtime_id");
+					if(!runtime_id)
+					{
+						throw std::runtime_error("runtime_id attribute is not found in metaffi_handle object");
+					}
+					
+					auto res = cdt_metaffi_handle{(metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle),
+					                              PyLong_AsUnsignedLongLong(runtime_id)};
+					
+					return res;
 				}
 				
 				// a python object
 				python3_objects_table::instance().set(pybj);
 			}
 			
-			return (metaffi_handle)pybj;
+			return {(metaffi_handle)pybj, PYTHON3_RUNTIME_ID};
 		};
 		
-		set_numeric_array_to_cdts<metaffi_handle>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, set_object, [](PyObject* o)->int{ return 1; });
+		set_numeric_array_to_cdts<cdt_metaffi_handle>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, set_object, [](PyObject* o)->int{ return 1; });
 	},
 	
 	[](void* values_to_set, int index, metaffi_string8& val, metaffi_size& s, int starting_index) {
@@ -248,44 +264,46 @@ cdts_parse_callbacks cdts_python3::parse_callback
 		set_numeric_array_to_tuple<metaffi_uint64>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromUnsignedLongLong);
 	},
 	
-	[](void* values_to_set, int index, const metaffi_bool& val) { set_numeric_to_tuple<metaffi_bool>((PyObject*) values_to_set, index, val, PyBool_FromLong); },
+	[](void* values_to_set, int index, const metaffi_bool& val)
+	{
+		set_numeric_to_tuple<metaffi_bool>((PyObject*)values_to_set, index, val, PyBool_FromLong);
+	},
 	[](void* values_to_set, int index, const metaffi_bool* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
 	{
 		numeric_n_array_wrapper<metaffi_bool> arr_wrap((metaffi_bool*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
 		set_numeric_array_to_tuple<metaffi_bool>((PyObject*) values_to_set, index, arr_wrap, PyBool_FromLong);
 	},
 	
-	[](void* values_to_set, int index, const metaffi_handle& val)
+	[](void* values_to_set, int index, const cdt_metaffi_handle& val)
 	{
-		auto get_object = [](metaffi_handle h)->PyObject*
+		auto get_object = [](const cdt_metaffi_handle& h)->PyObject*
 		{
-			if(h == nullptr){ return Py_None; }
-		
-			if(!python3_objects_table::instance().contains((PyObject*)h))
+			if(h.val == nullptr){ return Py_None; }
+			if(h.runtime_id != PYTHON3_RUNTIME_ID)
 			{
-				return new_py_metaffi_handle(h);
+				return new_py_metaffi_handle(h.val, h.runtime_id);
 			}
-			
-			Py_IncRef((PyObject*)h);
-			
-			return (PyObject*)h;
+			Py_IncRef((PyObject*)h.val);
+			return (PyObject*)h.val;
 		};
-		set_numeric_to_tuple<metaffi_handle>((PyObject*) values_to_set, index, val, get_object);
+		
+		set_numeric_to_tuple<cdt_metaffi_handle>((PyObject*) values_to_set, index, val, get_object);
+		
 	},
-	[](void* values_to_set, int index, const metaffi_handle* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
+	[](void* values_to_set, int index, const cdt_metaffi_handle* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
 	{
-		auto get_object = [](metaffi_handle h)->PyObject*
+		auto get_object = [](const cdt_metaffi_handle& h)->PyObject*
 		{
-			if(!python3_objects_table::instance().contains((PyObject*)h))
+			if(h.runtime_id != PYTHON3_RUNTIME_ID)
 			{
-				return new_py_metaffi_handle(h);
+				return new_py_metaffi_handle(h.val, h.runtime_id);
 			}
-			Py_IncRef((PyObject*)h);
-			return (PyObject*)h;
+			Py_IncRef((PyObject*)h.val);
+			return (PyObject*)h.val;
 		};
 		
-		numeric_n_array_wrapper<metaffi_handle> arr_wrap((metaffi_handle*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_handle>((PyObject*) values_to_set, index, arr_wrap, get_object);
+		numeric_n_array_wrapper<cdt_metaffi_handle> arr_wrap((cdt_metaffi_handle*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
+		set_numeric_array_to_tuple<cdt_metaffi_handle>((PyObject*) values_to_set, index, arr_wrap, get_object);
 	},
 	
 	[](void* values_to_set, int index, const metaffi_string8& val, const metaffi_size& s){
@@ -340,7 +358,6 @@ cdt* cdts_python3::get_cdts()
 PyObject* cdts_python3::parse()
 {
 	PyObject* res = PyTuple_New((Py_ssize_t)this->cdts.get_cdts_length());
-
 	this->cdts.parse(res, parse_callback);
 	return res;
 }
@@ -368,6 +385,8 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 	{
 		PyObject* pytype = PyTuple_GetItem(tuple_types, i);
 		types[i].type = (metaffi_types)PyLong_AsLong(pytype);
+		types[i].alias = nullptr;
+		types[i].alias_length = 0;
 
 		if(types[i].type == metaffi_any_type) // if any, replace with actual type
 		{
@@ -376,7 +395,6 @@ void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_in
 		}
 	}
 	
-	this->build(tuple, types, (uint8_t)types_length, starting_index);
 	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
 	
 	if(types_length > 50){
