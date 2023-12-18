@@ -38,4 +38,4 @@ class testmap:
 
 
 	def contains(self, k:str):
-		return self.curdict[k] is not None
+		return k in self.curdict

@@ -662,7 +662,8 @@ void pyxcall_params_no_ret(
 			if (out_params || out_kwargs)
 			{
 				PyObject_Call(pctxt->entrypoint, out_params, out_kwargs);
-			} else
+			}
+			else
 			{
 				// in case of function with default values and there are no actual from caller
 				PyObject_CallObject(pctxt->entrypoint, nullptr);
