@@ -21,6 +21,8 @@
 	set_##type##_array(std::move(set_##type##_array))
 
 
+extern "C" const char* create_lambda_python_code;
+
 class cdts_python3
 {
 private:

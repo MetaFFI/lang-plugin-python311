@@ -2,43 +2,8 @@ import ctypes.util
 from typing import *
 import metaffi_types
 import xllr_wrapper
-import pycdts_converter
 from metaffi_types import *
 import metaffi_runtime
-
-
-
-def call_sub(pxcall, pcontext, param_metaffi_types, retval_metaffi_types, *args):
-	# convert args to CDTS
-	
-	param_metaffi_types = tuple(param_metaffi_types)
-	retval_metaffi_types = tuple(retval_metaffi_types)
-	
-	# call xcall
-	if len(param_metaffi_types) > 0 or len(retval_metaffi_types) > 0:
-
-		cdts = pycdts_converter.py_cdts_converter.convert_host_params_to_cdts(args, param_metaffi_types, len(retval_metaffi_types))
-
-		out_err = ctypes.c_char_p()
-		out_err_len = ctypes.c_uint64()
-
-		pxcall(pcontext, ctypes.c_void_p(cdts), ctypes.byref(out_err), ctypes.byref(out_err_len))
-
-		if out_err_len.value > 0:
-			raise RuntimeError(out_err.value[:out_err_len.value].decode('utf-8'))
-
-		# convert return values to python
-		if len(retval_metaffi_types) == 0:
-			return
-		
-		return pycdts_converter.py_cdts_converter.convert_host_return_values_from_cdts(ctypes.c_void_p(cdts), 1)
-		
-	else:
-		out_err = ctypes.c_char_p()
-		out_err_len = ctypes.c_uint64()
-		pxcall(pcontext, ctypes.byref(out_err), ctypes.byref(out_err_len))
-		if out_err_len.value > 0:
-			raise RuntimeError(out_err.raw[:out_err_len.value].decode('utf-8'))
 
 
 XCallParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
@@ -46,6 +11,45 @@ XCallNoParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, 
 XCallParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
 XCallNoParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64))
 
+create_lambda_python_code = ctypes.c_char_p.in_dll(xllr_wrapper.xllr_python3, 'create_lambda_python_code').value.decode('utf-8')
+exec(create_lambda_python_code)
+
+
+def make_metaffi_callable(f: Callable) -> Callable:
+	
+	params_metaffi_types, retval_metaffi_types = metaffi_types.get_callable_types(f)
+	
+	params_type = ctypes.c_uint64 * len(params_metaffi_types)
+	params_array = params_type(*params_metaffi_types)
+	
+	retvals_type = ctypes.c_uint64 * len(retval_metaffi_types)
+	retvals_array = retvals_type(*retval_metaffi_types)
+	
+	err = ctypes.c_char_p()
+	err_len = ctypes.c_uint32()
+	
+	xllr_python3_bytes = 'xllr.python3'.encode('utf-8')
+	
+	pxcall_and_context_array = xllr_wrapper.xllr.make_callable(xllr_python3_bytes, len(xllr_python3_bytes), f, params_array, retvals_array, len(params_metaffi_types), len(retval_metaffi_types), ctypes.byref(err), ctypes.byref(err_len))
+	
+	pxcall_and_context_array = ctypes.cast(pxcall_and_context_array, ctypes.POINTER(ctypes.c_void_p * 2))
+	
+	if len(params_metaffi_types) > 0 and len(retval_metaffi_types) > 0:
+		pxcall = XCallParamsRetType(pxcall_and_context_array.contents[0])
+	elif len(params_metaffi_types) > 0 and len(retval_metaffi_types) == 0:
+		pxcall = XCallParamsNoRetType(pxcall_and_context_array.contents[0])
+	elif len(params_metaffi_types) == 0 and len(retval_metaffi_types) > 0:
+		pxcall = XCallNoParamsRetType(pxcall_and_context_array.contents[0])
+	else:
+		pxcall = XCallNoParamsNoRetType(pxcall_and_context_array.contents[0])
+	
+	context = pxcall_and_context_array.contents[1]
+	
+	res = create_lambda(pxcall, context, params_array, retvals_array)
+	setattr(res, 'pxcall_and_context', ctypes.addressof(pxcall_and_context_array.contents))
+	setattr(res, 'params_metaffi_types', params_metaffi_types)
+	setattr(res, 'retval_metaffi_types', retval_metaffi_types)
+	return res
 
 class MetaFFIModule:
 	def __init__(self, runtime: metaffi_runtime.MetaFFIRuntime, xllr:xllr_wrapper._XllrWrapper, module_path: str):
@@ -94,7 +98,7 @@ class MetaFFIModule:
 		for t in retval_metaffi_types:
 			retval_types_without_alias.append(t.type)
 		
-		func_lambda: Callable[..., ...] = lambda *args: call_sub(pxcall, context, param_types_without_alias, retval_types_without_alias, *args)
+		func_lambda: Callable[..., ...] = lambda *args: xllr_wrapper.xllr_python3.call_xcall(pxcall, context, tuple(param_types_without_alias), tuple(retval_types_without_alias), None if not args else args)
 		
 		return func_lambda
 		

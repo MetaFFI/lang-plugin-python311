@@ -1,5 +1,7 @@
 package sanity;
 
+import java.util.function.Function;
+
 public class TestRuntime
 {
 	private TestRuntime(){}
@@ -34,5 +36,11 @@ public class TestRuntime
 	{
 		System.out.printf("Sleeping for %d seconds\n", seconds);
 		Thread.sleep(seconds * 1000);
+	}
+
+	public static void callCallback(metaffi.Caller fadd)
+	{
+		var res = fadd.call(1L, 2L);
+		System.out.println(((Object[])res)[0]);
 	}
 }

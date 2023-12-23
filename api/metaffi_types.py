@@ -1,6 +1,9 @@
 import ctypes.util
+import inspect
 from enum import IntFlag
 import platform
+from typing import *
+
 
 # This should be taken from metaffi_primitives.h
 class MetaFFITypes(IntFlag):
@@ -26,6 +29,7 @@ class MetaFFITypes(IntFlag):
 	metaffi_size_type = 262144
 	metaffi_any_type = 4194304
 	metaffi_null_type = 8388608
+	metaffi_callable_type = 16777216
 	metaffi_float64_array_type = metaffi_float64_type | metaffi_array_type
 	metaffi_float32_array_type = metaffi_float32_type | metaffi_array_type
 	metaffi_int8_array_type = metaffi_int8_type | metaffi_array_type
@@ -49,7 +53,6 @@ class MetaFFITypes(IntFlag):
 		return self.name, self.value
 
 
-
 # Define the struct metaffi_type_with_alias in Python using ctypes
 class metaffi_type_with_alias(ctypes.Structure):
 	_fields_ = [("type", ctypes.c_uint64),  # metaffi_type is defined as uint64_t
@@ -67,17 +70,19 @@ if platform.system() == 'Windows':
 		'float': MetaFFITypes.metaffi_float64_type.value,
 		'bool': MetaFFITypes.metaffi_bool_type.value,
 		'list': MetaFFITypes.metaffi_any_type.value,
-		'tuple': MetaFFITypes.metaffi_any_type.value
+		'tuple': MetaFFITypes.metaffi_any_type.value,
+		'Tuple': MetaFFITypes.metaffi_any_type.value
 	}
 
-def pytype_to_metaffi_type(t:type):
+
+def pytype_to_metaffi_type(t: type):
 	global pytype_to_metaffi_type_dict
 	
 	if t.__name__ in pytype_to_metaffi_type_dict:
 		return pytype_to_metaffi_type_dict[t.__name__]
 	
 	return MetaFFITypes.metaffi_handle_type.value
-	
+
 
 def new_metaffi_type_with_alias(metaffi_type: MetaFFITypes, alias: str = None) -> metaffi_type_with_alias:
 	# Create a new metaffi_type_with_alias instance
@@ -96,3 +101,27 @@ def new_metaffi_type_with_alias(metaffi_type: MetaFFITypes, alias: str = None) -
 		new_type.alias_length = ctypes.c_uint64(0)
 	
 	return new_type
+
+
+def get_callable_types(callable: Callable) -> Tuple[tuple[int], tuple[int]]:
+	type_hints = get_type_hints(callable)
+	param_metaffi_types = []
+	return_metaffi_types = []
+	
+	if 'return' in type_hints:
+		if hasattr(type_hints['return'], '__args__'):
+			return_metaffi_types.extend(pytype_to_metaffi_type(t) for t in type_hints['return'].__args__)
+		else:
+			return_metaffi_types.append(pytype_to_metaffi_type(type_hints['return']))
+	else:
+		return_metaffi_types.append(pytype_to_metaffi_type(ctypes.py_object))
+	
+	params = inspect.signature(callable).parameters
+	for param in params:
+		if param in type_hints:
+			param_metaffi_types.append(pytype_to_metaffi_type(type_hints[param]))
+		else:
+			param_metaffi_types.append(pytype_to_metaffi_type(ctypes.py_object))
+	
+	return tuple(param_metaffi_types), tuple(return_metaffi_types)
+

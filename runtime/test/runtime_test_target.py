@@ -1,3 +1,4 @@
+import sys
 import time
 
 def hello_world()->None:
@@ -34,7 +35,8 @@ class testmap:
 
 
 	def get(self, k:str):
-		return self.curdict[k]
+		v = self.curdict[k]
+		return v
 
 
 	def contains(self, k:str):

@@ -12,7 +12,7 @@
 		pyscope();
 		
 #ifdef _DEBUG
-		if(!PyTuple_Check(params))
+		if(PyTuple_Size(params_types) > 0 && !PyTuple_Check(params))
 		{
 			PyErr_SetString(PyExc_ValueError, "params is not a tuple as expected");
 			return nullptr;
@@ -25,7 +25,7 @@
 		}
 #endif
 
-		Py_ssize_t params_size = PyTuple_Size(params);
+		Py_ssize_t params_size = Py_IsNone(params) ? 0 : PyTuple_Size(params);
 		if(params_size == 0)
 		{
 			if(return_values_size == 0){

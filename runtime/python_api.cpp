@@ -10,6 +10,7 @@
 #include "cdts_python3.h"
 #include <regex>
 #include <filesystem>
+#include "python_error.h"
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -102,46 +103,6 @@ struct python3_context
 		return true;
 	}
 };
-
-//--------------------------------------------------------------------
-std::string check_python_error()
-{
-	std::string message;
-
-	if (!PyErr_Occurred()){
-		return message;
-	}
-
-	PyObject *excType, *excValue, *excTraceback = nullptr;
-	PyErr_Fetch(&excType, &excValue, &excTraceback);
-	PyErr_NormalizeException(&excType, &excValue, &excTraceback);
-
-	PyObject* str_exc_type = PyObject_Repr(excType);
-	PyObject* pyStr_exc_type = PyUnicode_AsEncodedString(str_exc_type, "utf-8", "Error ~");
-	message = PyBytes_AS_STRING(pyStr_exc_type);
-
-	PyObject* str_exc_value = PyObject_Repr(excValue);
-	PyObject* pyStr_exc_value = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "Error ~");
-	message += ": " + std::string(PyBytes_AS_STRING(pyStr_exc_value));
-
-	if (excTraceback != nullptr)
-	{
-		PyObject* module_name = PyUnicode_FromString("traceback");
-		PyObject* pyth_module = PyImport_Import(module_name);
-		PyObject* pyth_func = PyObject_GetAttrString(pyth_module, "format_tb");
-		PyObject* pyth_val = PyObject_CallFunctionObjArgs(pyth_func, excTraceback, NULL);
-		PyObject* pyth_str = PyUnicode_Join(PyUnicode_FromString(""), pyth_val);
-		PyObject* pyStr = PyUnicode_AsEncodedString(pyth_str, "utf-8", "Error ~");
-		message += "\n";
-		message += PyBytes_AS_STRING(pyStr);
-	}
-
-	Py_XDECREF(excType);
-	Py_XDECREF(excValue);
-	Py_XDECREF(excTraceback);
-
-	return message;
-}
 //--------------------------------------------------------------------
 std::unordered_map<std::string, void*> foreign_entities;
 void set_entrypoint(const char* entrypoint_name, void* pfunction)
@@ -279,7 +240,7 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 		return nullptr;
 	}
 	
-	python3_context* ctxt = new python3_context();
+	python3_context* ctxt = new python3_context(); // should be deleted only when the function is released
 	if(param_types){
 		ctxt->params_types.insert(ctxt->params_types.end(), param_types, param_types + params_count);
 	}
@@ -351,6 +312,33 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 		handle_err(err, err_len, "expecting \"callable\" or \"variable\" in function path");
 		return nullptr;
 	}
+
+	void* xcall_func = params_count > 0 && retval_count > 0 ? (void*)xcall_params_ret :
+						params_count == 0 && retval_count > 0 ? (void*)xcall_no_params_ret :
+						params_count > 0 && retval_count == 0 ? (void*)xcall_params_no_ret :
+						(void*)xcall_no_params_no_ret;
+
+	void** result = (void**)malloc(2*sizeof(void*));
+	result[0] = xcall_func;
+	result[1] = ctxt;
+
+	return result;
+}
+//--------------------------------------------------------------------
+void** make_callable(void* py_callable_as_py_object, metaffi_types_with_alias_ptr params_types, metaffi_types_with_alias_ptr retvals_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+{
+	python3_context* ctxt = new python3_context(); // should be deleted only when the function is released
+	if(params_types){
+		ctxt->params_types.insert(ctxt->params_types.end(), params_types, params_types + params_count);
+	}
+	if(retvals_types){
+		ctxt->retvals_types.insert(ctxt->retvals_types.end(), retvals_types, retvals_types+retval_count);
+	}
+
+
+	ctxt->is_instance_required = false;
+
+	ctxt->entrypoint = (PyObject*)py_callable_as_py_object;
 
 	void* xcall_func = params_count > 0 && retval_count > 0 ? (void*)xcall_params_ret :
 						params_count == 0 && retval_count > 0 ? (void*)xcall_no_params_ret :
