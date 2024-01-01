@@ -1,7 +1,6 @@
 import ctypes.util
-from typing import *
-import metaffi_types
-import xllr_wrapper
+import metaffi.metaffi_types
+import metaffi.xllr_wrapper
 from metaffi.metaffi_types import *
 import metaffi.metaffi_runtime
 
@@ -11,13 +10,13 @@ XCallNoParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, 
 XCallParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
 XCallNoParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64))
 
-create_lambda_python_code = ctypes.c_char_p.in_dll(xllr_wrapper.xllr_python3, 'create_lambda_python_code').value.decode('utf-8')
+create_lambda_python_code = ctypes.c_char_p.in_dll(metaffi.xllr_wrapper.xllr_python3, 'create_lambda_python_code').value.decode('utf-8')
 exec(create_lambda_python_code)
 
 
 def make_metaffi_callable(f: Callable) -> Callable:
 	
-	params_metaffi_types, retval_metaffi_types = metaffi_types.get_callable_types(f)
+	params_metaffi_types, retval_metaffi_types = metaffi.metaffi_types.get_callable_types(f)
 	
 	params_type = ctypes.c_uint64 * len(params_metaffi_types)
 	params_array = params_type(*params_metaffi_types)
@@ -30,7 +29,7 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	
 	xllr_python3_bytes = 'xllr.python3'.encode('utf-8')
 	
-	pxcall_and_context_array = xllr_wrapper.xllr.make_callable(xllr_python3_bytes, len(xllr_python3_bytes), f, params_array, retvals_array, len(params_metaffi_types), len(retval_metaffi_types), ctypes.byref(err), ctypes.byref(err_len))
+	pxcall_and_context_array = metaffi.xllr_wrapper.xllr.make_callable(xllr_python3_bytes, len(xllr_python3_bytes), f, params_array, retvals_array, len(params_metaffi_types), len(retval_metaffi_types), ctypes.byref(err), ctypes.byref(err_len))
 	
 	pxcall_and_context_array = ctypes.cast(pxcall_and_context_array, ctypes.POINTER(ctypes.c_void_p * 2))
 	
@@ -52,13 +51,13 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	return res
 
 class MetaFFIModule:
-	def __init__(self, runtime: metaffi_runtime.MetaFFIRuntime, xllr:xllr_wrapper._XllrWrapper, module_path: str):
+	def __init__(self, runtime: metaffi.metaffi_runtime.MetaFFIRuntime, xllr: metaffi.xllr_wrapper._XllrWrapper, module_path: str):
 		self.runtime = runtime
 		self.xllr = xllr
 		self.module_path = module_path
 	
-	def load(self, function_path: str, params_metaffi_types: List[metaffi_types.metaffi_type_with_alias],
-			retval_metaffi_types: List[metaffi_types.metaffi_type_with_alias]) -> Callable[..., Tuple[Any, ...]]:
+	def load(self, function_path: str, params_metaffi_types: List[metaffi.metaffi_types.metaffi_type_with_alias],
+			retval_metaffi_types: List[metaffi.metaffi_types.metaffi_type_with_alias]) -> Callable[..., Tuple[Any, ...]]:
 		
 		if params_metaffi_types is None:
 			params_metaffi_types = []
@@ -67,10 +66,10 @@ class MetaFFIModule:
 			retval_metaffi_types = []
 		
 		# Create ctypes arrays for params_metaffi_types and retval_metaffi_types
-		ParamsArray = metaffi_types.metaffi_type_with_alias * len(params_metaffi_types)
+		ParamsArray = metaffi.metaffi_types.metaffi_type_with_alias * len(params_metaffi_types)
 		params_array = ParamsArray(*params_metaffi_types)
 		
-		RetvalArray = metaffi_types.metaffi_type_with_alias * len(retval_metaffi_types)
+		RetvalArray = metaffi.metaffi_types.metaffi_type_with_alias * len(retval_metaffi_types)
 		retval_array = RetvalArray(*retval_metaffi_types)
 		
 		# Call xllr.load_function
@@ -98,7 +97,7 @@ class MetaFFIModule:
 		for t in retval_metaffi_types:
 			retval_types_without_alias.append(t.type)
 		
-		func_lambda: Callable[..., ...] = lambda *args: xllr_wrapper.xllr_python3.call_xcall(pxcall, context, tuple(param_types_without_alias), tuple(retval_types_without_alias), None if not args else args)
+		func_lambda: Callable[..., ...] = lambda *args: metaffi.xllr_wrapper.xllr_python3.call_xcall(pxcall, context, tuple(param_types_without_alias), tuple(retval_types_without_alias), None if not args else args)
 		
 		return func_lambda
 		

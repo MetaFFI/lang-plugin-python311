@@ -5,7 +5,7 @@ import platform
 import os
 
 
-def get_dynamic_lib_path_from_metaffi_home(fname:str):
+def get_dynamic_lib_path_from_metaffi_home(fname: str):
 	osname = platform.system()
 	if os.getenv('METAFFI_HOME') is None:
 		raise RuntimeError('No METAFFI_HOME environment variable')
