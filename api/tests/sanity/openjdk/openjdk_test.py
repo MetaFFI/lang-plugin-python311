@@ -1,3 +1,4 @@
+import os
 import unittest
 import collections
 import sys
@@ -128,6 +129,7 @@ class TestSanity(unittest.TestCase):
 		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		testMapNameGetter = test_runtime_module.load('class=sanity.TestMap,field=name,instance_required,getter', param_type, ret_type)
 		
+		print(f'PID: {os.getpid()}')
 		map = newTestMap()
 		map = map[0]
 		

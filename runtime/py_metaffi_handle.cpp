@@ -12,7 +12,7 @@ PyObject* new_py_metaffi_handle(metaffi_handle h, metaffi_uint64 runtime_id)
 	PyObject* sys_mod_dict = PyImport_GetModuleDict();
 	PyObject* metaffi_handle_mod = nullptr;
 	
-	metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi_handle");
+	metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi.metaffi_handle");
 	if(!metaffi_handle_mod)
 	{
 		metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "__main__");
