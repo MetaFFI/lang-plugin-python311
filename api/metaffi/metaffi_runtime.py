@@ -1,4 +1,4 @@
-from xllr_wrapper import *
+from metaffi.xllr_wrapper import *
 
 class MetaFFIRuntime:
 	def __init__(self, runtime_plugin: str):

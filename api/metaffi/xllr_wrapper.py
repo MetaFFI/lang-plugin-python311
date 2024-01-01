@@ -1,6 +1,6 @@
 import ctypes
 from ctypes import *
-from metaffi_types import *
+from metaffi.metaffi_types import *
 import platform
 import os
 

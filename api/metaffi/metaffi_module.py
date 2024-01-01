@@ -2,8 +2,8 @@ import ctypes.util
 from typing import *
 import metaffi_types
 import xllr_wrapper
-from metaffi_types import *
-import metaffi_runtime
+from metaffi.metaffi_types import *
+import metaffi.metaffi_runtime
 
 
 XCallParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))

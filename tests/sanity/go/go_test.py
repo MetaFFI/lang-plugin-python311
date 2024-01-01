@@ -3,9 +3,6 @@ import collections
 import sys
 import ctypes
 
-sys.path.append('../..')
-
-import api
 
 runtime: api.metaffi_runtime.MetaFFIRuntime = None
 test_runtime_module: api.metaffi_module.MetaFFIModule = None

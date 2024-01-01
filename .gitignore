@@ -63,3 +63,6 @@ go.sum
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+/api/dist/
+/api/metaffi_api.egg-info/
+/dist/

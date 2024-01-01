@@ -3,7 +3,7 @@ from ctypes import py_object
 from typing import List
 import os
 import platform
-import xllr_wrapper
+import metaffi.xllr_wrapper
 
 class _PyCdtsConverter:
 	def __init__(self):
