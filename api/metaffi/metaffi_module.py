@@ -1,5 +1,4 @@
 import ctypes.util
-import metaffi.metaffi_types
 import metaffi.xllr_wrapper
 from metaffi.metaffi_types import *
 import metaffi.metaffi_runtime

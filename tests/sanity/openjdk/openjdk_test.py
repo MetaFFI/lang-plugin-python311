@@ -5,6 +5,9 @@ import sys
 import ctypes
 
 import metaffi
+import metaffi.metaffi_runtime
+import metaffi.metaffi_module
+import metaffi.metaffi_types
 
 runtime: metaffi.metaffi_runtime.MetaFFIRuntime = None
 test_runtime_module: metaffi.metaffi_module.MetaFFIModule = None
