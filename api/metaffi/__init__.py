@@ -1,6 +1,6 @@
 """Python MetaFFI API"""
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 __all__ = ['metaffi', 'metaffi_types', 'metaffi_runtime', 'metaffi_module', 'metaffi_handle', 'metaffi_types', 'xllr_wrapper', 'pycdts_converter']
 

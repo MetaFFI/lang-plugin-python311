@@ -21,7 +21,8 @@ def get_dynamic_lib_path_from_metaffi_home(fname: str):
 			'METAFFI_HOME') + '/' + fname + '.so'  # for everything that is not windows or mac, return .so
 
 
-os.add_dll_directory(os.getenv('METAFFI_HOME')+'\\bin\\')
+if platform.system() == 'Windows':
+	os.add_dll_directory(os.getenv('METAFFI_HOME')+'\\bin\\')
 
 xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('xllr.python3'))
 xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, py_object, py_object, py_object]

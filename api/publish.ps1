@@ -1,0 +1,1 @@
+flit publish --repository testpypi --pypirc C:\Users\green\.pyirc

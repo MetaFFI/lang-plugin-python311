@@ -24,8 +24,10 @@ def init():
 
 
 def fini():
-	global runtime
-	runtime.release_runtime_plugin()
+	# TODO
+	# global runtime
+	# runtime.release_runtime_plugin()
+	pass
 
 
 class TestSanity(unittest.TestCase):

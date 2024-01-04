@@ -29,8 +29,8 @@ if 'create_lambda' not in globals():
 		else:
 			return os.getenv('METAFFI_HOME') + '/' + fname + '.so'  # for everything that is not windows or mac, return .so
 
-
-	os.add_dll_directory(os.getenv('METAFFI_HOME')+'\\bin\\')
+	if platform.system() == 'Windows':
+		os.add_dll_directory(os.getenv('METAFFI_HOME')+'\\bin\\')
 
 	xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('xllr.python3'))
 	xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
