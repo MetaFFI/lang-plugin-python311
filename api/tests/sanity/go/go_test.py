@@ -1,3 +1,4 @@
+import platform
 import unittest
 import collections
 import sys
@@ -20,7 +21,12 @@ def init():
 	
 	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('go')
 	runtime.load_runtime_plugin()
-	test_runtime_module = runtime.load_module('TestRuntime_MetaFFIGuest.dll')
+	if platform.system() == 'Windows':
+		test_runtime_module = runtime.load_module('TestRuntime_MetaFFIGuest.dll')
+	elif platform.system() == 'Linux':
+		test_runtime_module = runtime.load_module('TestRuntime_MetaFFIGuest.so')
+	else:
+		raise Exception(f'Unsupported system {platform.system()}')
 
 
 def fini():

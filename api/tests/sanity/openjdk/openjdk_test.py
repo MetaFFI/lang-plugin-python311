@@ -46,6 +46,8 @@ class TestSanity(unittest.TestCase):
 	
 	def test_hello_world(self):
 		global test_runtime_module
+
+		print(os.getpid())
 		
 		# load hello world
 		hello_world = test_runtime_module.load('class=sanity.TestRuntime,callable=helloWorld', None, None)

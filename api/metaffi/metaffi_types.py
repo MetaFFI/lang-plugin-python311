@@ -63,15 +63,14 @@ class metaffi_type_with_alias(ctypes.Structure):
 # Define the pointer type for metaffi_type_with_alias
 metaffi_types_with_alias_ptr = ctypes.POINTER(metaffi_type_with_alias)
 
-if platform.system() == 'Windows':
-	pytype_to_metaffi_type_dict = {
-		'str': MetaFFITypes.metaffi_string8_type.value,
-		'int': MetaFFITypes.metaffi_int64_type.value,
-		'float': MetaFFITypes.metaffi_float64_type.value,
-		'bool': MetaFFITypes.metaffi_bool_type.value,
-		'list': MetaFFITypes.metaffi_any_type.value,
-		'tuple': MetaFFITypes.metaffi_any_type.value,
-		'Tuple': MetaFFITypes.metaffi_any_type.value
+pytype_to_metaffi_type_dict = {
+	'str': MetaFFITypes.metaffi_string8_type.value,
+	'int': MetaFFITypes.metaffi_int64_type.value,
+	'float': MetaFFITypes.metaffi_float64_type.value,
+	'bool': MetaFFITypes.metaffi_bool_type.value,
+	'list': MetaFFITypes.metaffi_any_type.value,
+	'tuple': MetaFFITypes.metaffi_any_type.value,
+	'Tuple': MetaFFITypes.metaffi_any_type.value
 	}
 
 
