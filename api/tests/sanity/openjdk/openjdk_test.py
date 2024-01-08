@@ -46,8 +46,6 @@ class TestSanity(unittest.TestCase):
 	
 	def test_hello_world(self):
 		global test_runtime_module
-
-		print(os.getpid())
 		
 		# load hello world
 		hello_world = test_runtime_module.load('class=sanity.TestRuntime,callable=helloWorld', None, None)
@@ -134,7 +132,6 @@ class TestSanity(unittest.TestCase):
 		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		testMapNameGetter = test_runtime_module.load('class=sanity.TestMap,field=name,instance_required,getter', param_type, ret_type)
 		
-		print(f'PID: {os.getpid()}')
 		map = newTestMap()
 		map = map[0]
 		
