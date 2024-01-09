@@ -14,8 +14,11 @@
 #include <utils/scope_guard.hpp>
 #include <thread>
 
+bool is_pycallable_or_property(PyObject* obj);
+bool is_property(PyObject* obj);
+
 // get current python error message
-std::string get_py_error(void);
+std::string check_python_error();
 
 extern PyThreadState* _save;
 

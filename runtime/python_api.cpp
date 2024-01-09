@@ -10,7 +10,8 @@
 #include "cdts_python3.h"
 #include <regex>
 #include <filesystem>
-#include "python_error.h"
+#include <chrono>
+#include <utility>
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -19,9 +20,7 @@
 #else
 #include <Python.h>
 #endif
-#include <chrono>
-#include <ctime>
-#include <utility>
+
 using namespace metaffi::utils;
 
 #define handle_err(err, err_len, desc) \
@@ -37,7 +36,7 @@ using namespace metaffi::utils;
 	memset((*err+*err_len), 0, 1);
 
 #define handle_py_err(err, err_len) \
-	std::string pyerr(get_py_error()); \
+	std::string pyerr(check_python_error()); \
 	handle_err_str(err, err_len, pyerr);
 
 #define TRUE 1
@@ -68,6 +67,8 @@ struct python3_context
 	PyObject* attribute_holder;
 	std::vector<metaffi_type_with_alias> params_types;
 	std::vector<metaffi_type_with_alias> retvals_types;
+	bool is_varargs = false;
+	bool is_named_args = false;
 	
 	[[nodiscard]] uint8_t params_count() const{ return params_types.size(); };
 	[[nodiscard]] uint8_t retvals_count() const{ return retvals_types.size(); };
@@ -269,6 +270,7 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 				handle_err(err, err_len, ss.str().c_str());
 				return nullptr;
 			}
+
 		}
 		
 		if(fp.contains("callable") && !PyCallable_Check(pyobj))
@@ -276,6 +278,9 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 			handle_err(err, err_len, "Given callable is not PyCallable");
 			return nullptr;
 		}
+
+		ctxt->is_varargs = fp.contains("varargs");
+		ctxt->is_named_args = fp.contains("named_args");
 		
 		ctxt->entrypoint = pyobj;
 	}
@@ -357,7 +362,7 @@ void free_function(void* pff, char** err, uint32_t* err_len)
 	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
-void extract_args(int is_method, PyObject* params, PyObject*& out_params, PyObject*& out_kwargs)
+void extract_args(int is_method, PyObject* params, PyObject*& out_params, PyObject*& out_kwargs, bool is_varargs, bool is_kwargs)
 {
 	// calculate size of new "out_params"
 	Py_ssize_t params_count = PyTuple_Size(params);
@@ -369,65 +374,78 @@ void extract_args(int is_method, PyObject* params, PyObject*& out_params, PyObje
 	}
 	
 	Py_ssize_t new_size = params_count;
-	PyObject* positionalArgsTuple = nullptr;
+	PyObject* positionalArgsList = nullptr;
 	PyObject* keywordArgsDict = nullptr;
+	int index_positional = -1;
+	int index_kw = -1;
 	for(int i=0 ; i < params_count ; i++)
 	{
-		
 		PyObject* curParam = PyTuple_GetItem(params, i);
-		
-		if(((is_method && i != 0) || !is_method) && strcmp(curParam->ob_type->tp_name, "metaffi_positional_args") == 0) // found positional args
+
+		if(params_count-i >= -2 && (is_varargs || is_kwargs))
 		{
-			positionalArgsTuple = PyObject_GetAttrString(curParam, "t");
-		}
-		else if(((is_method && i != 0) || !is_method) && strcmp(curParam->ob_type->tp_name, "metaffi_keyword_args") == 0)
-		{
-			keywordArgsDict = curParam;
+			// varargs (must be a list) is one before the last parameter, or the last parameter.
+			// kwargs (must be a dict) is the last parameter.
+			if(is_varargs && strcmp(curParam->ob_type->tp_name, "list") == 0)
+			{
+				if(!is_kwargs && i+1 < params_count) // if only "is_varargs", it must be the last parameter
+				{
+					continue;
+				}
+
+				positionalArgsList = curParam;
+				index_positional = i;
+			}
+			else if(is_kwargs && strcmp(curParam->ob_type->tp_name, "dict") == 0)
+			{
+				if(!is_varargs && i+1 < params_count) // it must be the last parameters
+				{
+					continue;
+				}
+
+				keywordArgsDict = curParam;
+				index_kw = i;
+			}
 		}
 	}
-	
-	if(!positionalArgsTuple && !keywordArgsDict) // no variadic
+
+	if(!positionalArgsList && !keywordArgsDict) // no variadic
 	{
 		out_params = params;
 		return;
 	}
-	
+
 	if(keywordArgsDict)
 	{
 		out_kwargs = keywordArgsDict;
 		new_size--; // remove keywordArgs from parameters tuple
 	}
-	
+
 	Py_ssize_t positionalArgsTupleSize = 0;
-	if(positionalArgsTuple)
+	if(positionalArgsList)
 	{
-		positionalArgsTupleSize = PyTuple_Size(positionalArgsTuple);
+		positionalArgsTupleSize = PyList_Size(positionalArgsList);
 		new_size += positionalArgsTupleSize;
 		new_size--; // remove the parameter holding "positionalArgsTuple"
 	}
-	
+
 	out_params = PyTuple_New(new_size);
 	int j=0;
 	for(int i=0 ; i < params_count ; i++)
 	{
 		PyObject* curParam = PyTuple_GetItem(params, i);
-		
-		if(((is_method && i != 0) || !is_method) && (strcmp(curParam->ob_type->tp_name, "metaffi_positional_args") == 0 ||
-													 strcmp(curParam->ob_type->tp_name, "metaffi_keyword_args") == 0)) // found positional args
-		{
-			continue;
-		}
-		else
+
+		if(i != index_positional && i != index_kw) // found positional args
 		{
 			Py_INCREF(curParam);
 			PyTuple_SetItem(out_params, j, curParam);
 			j++;
 		}
 	}
-	
+
 	for(int i=0 ; i < positionalArgsTupleSize ; i++)
 	{
-		PyObject* curParam = PyTuple_GetItem(positionalArgsTuple, i);
+		PyObject* curParam = PyList_GetItem(positionalArgsList, i);
 		Py_INCREF(curParam);
 		PyTuple_SetItem(out_params, j, curParam);
 		j++;
@@ -453,7 +471,7 @@ void pyxcall_params_ret(
 		PyObject* out_params = nullptr;
 		PyObject* out_kwargs = nullptr;
 		
-		extract_args(pctxt->is_instance_required, params, out_params, out_kwargs);
+		extract_args(pctxt->is_instance_required, params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
 		
 		scope_guard sgParams([&]()
 	    {
@@ -642,7 +660,7 @@ void pyxcall_params_no_ret(
 		// if parameter is of type "metaffi_keyword_args" - pass dict as "keyword args"
 		PyObject* out_params = nullptr;
 		PyObject* out_kwargs = nullptr;
-		extract_args(pctxt->is_instance_required, params, out_params, out_kwargs);
+		extract_args(pctxt->is_instance_required, params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
 		
 		// call function
 		if(PyCallable_Check(pctxt->entrypoint))
@@ -654,7 +672,8 @@ void pyxcall_params_no_ret(
 			else
 			{
 				// in case of function with default values and there are no actual from caller
-				PyObject_CallObject(pctxt->entrypoint, nullptr);
+				PyObject* params = nullptr;
+				PyObject_CallObject(pctxt->entrypoint, params);
 			}
 		}
 		else

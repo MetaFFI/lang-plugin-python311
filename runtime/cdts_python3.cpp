@@ -4,7 +4,7 @@
 #include <runtime/cdt_capi_loader.h>
 #include <mutex>
 #include "runtime_id.h"
-#include "python_error.h"
+#include "utils.h"
 
 using namespace metaffi::runtime;
 std::once_flag load_capi_flag;
