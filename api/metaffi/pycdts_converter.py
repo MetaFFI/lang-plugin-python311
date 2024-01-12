@@ -11,7 +11,7 @@ class _PyCdtsConverter:
 			os.add_dll_directory(os.environ['METAFFI_HOME'])
 			os.add_dll_directory(os.environ['METAFFI_HOME'] + '\\bin')
 		
-		self.xllr_python3 = ctypes.cdll.LoadLibrary(metaffi.xllr_wrapper.get_dynamic_lib_path_from_metaffi_home('xllr.python3'))
+		self.xllr_python3 = ctypes.cdll.LoadLibrary(metaffi.xllr_wrapper.get_dynamic_lib_path_from_metaffi_home('xllr.python311'))
 		
 		# Set argtypes and restype for convert_host_params_to_cdts
 		self.xllr_python3.convert_host_params_to_cdts.argtypes = [py_object, py_object, ctypes.c_uint64]
