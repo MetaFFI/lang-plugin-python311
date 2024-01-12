@@ -26,7 +26,7 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	err = ctypes.c_char_p()
 	err_len = ctypes.c_uint32()
 	
-	xllr_python3_bytes = 'xllr.python3'.encode('utf-8')
+	xllr_python3_bytes = 'xllr.python311'.encode('utf-8')
 	
 	pxcall_and_context_array = metaffi.xllr_wrapper.xllr.make_callable(xllr_python3_bytes, len(xllr_python3_bytes), f, params_array, retvals_array, len(params_metaffi_types), len(retval_metaffi_types), ctypes.byref(err), ctypes.byref(err_len))
 	
