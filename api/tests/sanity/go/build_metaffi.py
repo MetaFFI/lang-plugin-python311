@@ -17,7 +17,10 @@ def run_command(command: str):
 	except FileNotFoundError as e:
 		print(f'Failed running {command} with {e.strerror}.\nfile: {e.filename}')
 		exit(1)
-		
+	
+	if output.returncode != 0:
+		raise Exception(f'Failed to run {command}. Exit code: {output.returncode}. Output:\n{str(output.stdout).strip()}{str(output.stderr).strip()}')
+	
 	all_stdout = output.stdout
 	
 	# if the return code is not zero, raise an exception
@@ -28,11 +31,7 @@ def main():
 	
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 	
-	run_command('go mod init gomcache')
-	run_command('go get github.com/OrlovEvgeny/go-mcache@v0.0.0-20200121124330-1a8195b34f3a')
-	
-	gopath = run_command("go env GOPATH")
-	run_command(f'metaffi -c --idl github.com/OrlovEvgeny/go-mcache@v0.0.0-20200121124330-1a8195b34f3a/mcache.go -g')
+	run_command(f'metaffi -c --idl TestRuntime.go -g')
 
 
 if __name__ == '__main__':

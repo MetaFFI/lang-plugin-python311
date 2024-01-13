@@ -67,6 +67,6 @@ install(CODE
 		list(APPEND package_files py_extractor.py)
 		list(APPEND package_files py_extractor_MetaFFIGuest.py)
 		list(APPEND package_files metaffi.compiler.python3${dylib_ext})
-		list(APPEND package_files xllr.python3${dylib_ext})
+		list(APPEND package_files xllr.python311${dylib_ext})
 		metaffi_pack("${PACKAGE_ROOT}" "${package_files}")
 ]])

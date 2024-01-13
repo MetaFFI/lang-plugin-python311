@@ -4,7 +4,7 @@
 add_boost(filesystem)
 add_python3()
 
-set(target_name "xllr.python3")
+set(target_name "xllr.python311")
 
 # build xllr.python3
 get_dir_sources(${CMAKE_CURRENT_LIST_DIR} ${target_name}_sources)
