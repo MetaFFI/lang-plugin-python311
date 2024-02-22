@@ -32,7 +32,6 @@ def main():
 	
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 	
-	run_command('go mod init gomcache')
 	run_command('go get github.com/OrlovEvgeny/go-mcache@v0.0.0-20200121124330-1a8195b34f3a')
 	
 	gopath = run_command("go env GOPATH")
