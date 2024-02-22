@@ -23,12 +23,12 @@ class Log4jlogger:
 		log4j_api_module = runtime.load_module('log4j-api-2.21.1.jar;log4j-core-2.21.1.jar')
 		
 		# load methods
-		params_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type, 'org.apache.logging.log4j.Logger')]
+		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type, 'org.apache.logging.log4j.Logger')]
 		getLogger = log4j_api_module.load('class=org.apache.logging.log4j.LogManager,callable=getLogger', params_type, ret_type)
 		
-		params_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-						metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+						metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		self.perror = log4j_api_module.load('class=org.apache.logging.log4j.Logger,callable=error,instance_required', params_type, None)
 		self.pwarning = log4j_api_module.load('class=org.apache.logging.log4j.Logger,callable=warn,instance_required', params_type, None)
 		

@@ -84,7 +84,7 @@ func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.ID
 	// parse AST and build IDLDefinition
 
 	
-	module := IDL.NewModuleDefinition(this.idl.IDLFilename)
+	module := IDL.NewModuleDefinition(this.idl.IDLSource)
 
 	module.AddGlobals(globals)
 	module.AddFunctions(functions)

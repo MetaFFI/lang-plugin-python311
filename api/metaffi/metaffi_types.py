@@ -53,15 +53,16 @@ class MetaFFITypes(IntFlag):
 		return self.name, self.value
 
 
-# Define the struct metaffi_type_with_alias in Python using ctypes
-class metaffi_type_with_alias(ctypes.Structure):
+# Define the struct metaffi_type_info in Python using ctypes
+class metaffi_type_info(ctypes.Structure):
 	_fields_ = [("type", ctypes.c_uint64),  # metaffi_type is defined as uint64_t
 	            ("alias", ctypes.c_char_p),
-	            ("alias_length", ctypes.c_uint64)]
+	            ("alias_length", ctypes.c_uint64),
+	            ("dimensions", ctypes.c_int32)]
 
 
-# Define the pointer type for metaffi_type_with_alias
-metaffi_types_with_alias_ptr = ctypes.POINTER(metaffi_type_with_alias)
+# Define the pointer type for metaffi_type_info
+metaffi_type_infos_ptr = ctypes.POINTER(metaffi_type_info)
 
 pytype_to_metaffi_type_dict = {
 	'str': MetaFFITypes.metaffi_string8_type.value,
@@ -83,12 +84,13 @@ def pytype_to_metaffi_type(t: type):
 	return MetaFFITypes.metaffi_handle_type.value
 
 
-def new_metaffi_type_with_alias(metaffi_type: MetaFFITypes, alias: str = None) -> metaffi_type_with_alias:
-	# Create a new metaffi_type_with_alias instance
-	new_type = metaffi_type_with_alias()
+def new_metaffi_type_info(metaffi_type: MetaFFITypes, alias: str = None, dims: int = 0) -> metaffi_type_info:
+	# Create a new metaffi_type_info instance
+	new_type = metaffi_type_info()
 	
 	# Set the type
 	new_type.type = ctypes.c_uint64(metaffi_type.value)
+	new_type.dimensions = dims
 	
 	# If alias is not None, set the alias and alias_length
 	if alias is not None:

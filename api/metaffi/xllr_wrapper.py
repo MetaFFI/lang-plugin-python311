@@ -36,7 +36,7 @@ xllr.load_runtime_plugin.restype = None
 xllr.free_runtime_plugin.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint32)]
 xllr.free_runtime_plugin.restype = None
 
-xllr.load_function.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(metaffi_type_with_alias), ctypes.POINTER(metaffi_type_with_alias), ctypes.c_uint8, ctypes.c_uint8, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint32)]
+xllr.load_function.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(metaffi_type_info), ctypes.POINTER(metaffi_type_info), ctypes.c_uint8, ctypes.c_uint8, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint32)]
 xllr.load_function.restype = ctypes.POINTER(ctypes.c_void_p)
 
 xllr.free_function.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint32)]
@@ -71,8 +71,8 @@ class _XllrWrapper:
 			raise RuntimeError(err.value[:err_len.value].decode('utf-8'))
 	
 	def load_function(self, runtime_plugin_name: str, module_path: str, function_path: str,
-						params_types: ctypes.POINTER(metaffi_type_with_alias),
-						retvals_types: ctypes.POINTER(metaffi_type_with_alias), params_count: int,
+						params_types: ctypes.POINTER(metaffi_type_info),
+						retvals_types: ctypes.POINTER(metaffi_type_info), params_count: int,
 						retval_count: int) -> ctypes.c_void_p:
 		err = ctypes.c_char_p()
 		err_len = ctypes.c_uint32()

@@ -45,7 +45,7 @@ public:
 	 * @param starting_index Starting index in tuple to fill CDTS
 	 */
 	void build(PyObject* tuple, PyObject* tuple_types, int starting_index);
-	void build(PyObject* tuple, metaffi_types_with_alias_ptr types, uint8_t types_length, int starting_index);
+	void build(PyObject* tuple, metaffi_type_infos_ptr types, uint8_t types_length, int starting_index);
 	
 
 private:

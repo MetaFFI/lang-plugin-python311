@@ -68,7 +68,7 @@ func (this *HostCompiler) Compile(definition *IDL.IDLDefinition, outputDir strin
 	compiler.ModifyKeywords(definition, pythonKeywords, func(keyword string) string { return keyword + "__" })
 
 	if outputFilename == "" {
-		outputFilename = definition.IDLFilename
+		outputFilename = definition.IDLSource
 	}
 
 	outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")

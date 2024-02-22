@@ -55,8 +55,8 @@ class MetaFFIModule:
 		self.xllr = xllr
 		self.module_path = module_path
 	
-	def load(self, function_path: str, params_metaffi_types: List[metaffi.metaffi_types.metaffi_type_with_alias],
-			retval_metaffi_types: List[metaffi.metaffi_types.metaffi_type_with_alias]) -> Callable[..., Tuple[Any, ...]]:
+	def load(self, function_path: str, params_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info],
+			retval_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info]) -> Callable[..., Tuple[Any, ...]]:
 		
 		if params_metaffi_types is None:
 			params_metaffi_types = []
@@ -65,10 +65,10 @@ class MetaFFIModule:
 			retval_metaffi_types = []
 		
 		# Create ctypes arrays for params_metaffi_types and retval_metaffi_types
-		ParamsArray = metaffi.metaffi_types.metaffi_type_with_alias * len(params_metaffi_types)
+		ParamsArray = metaffi.metaffi_types.metaffi_type_info * len(params_metaffi_types)
 		params_array = ParamsArray(*params_metaffi_types)
 		
-		RetvalArray = metaffi.metaffi_types.metaffi_type_with_alias * len(retval_metaffi_types)
+		RetvalArray = metaffi.metaffi_types.metaffi_type_info * len(retval_metaffi_types)
 		retval_array = RetvalArray(*retval_metaffi_types)
 		
 		# Call xllr.load_function

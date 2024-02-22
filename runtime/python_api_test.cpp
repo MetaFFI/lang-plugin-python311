@@ -71,13 +71,13 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	SECTION("runtime_test_target.div_integers")
 	{
 		std::string function_path = "callable=div_integers";
-		metaffi_type_with_alias p1, p2, r1 = {0};
+		metaffi_type_info p1, p2, r1 = {0};
 		p1.type = metaffi_int64_type;
 		p2.type = metaffi_int64_type;
 		r1.type = metaffi_float32_type;
 		
-		metaffi_type_with_alias params_types[] = {p1, p2};
-		metaffi_type_with_alias retvals_types[] = {r1};
+		metaffi_type_info params_types[] = {p1, p2};
+		metaffi_type_info retvals_types[] = {r1};
 		
 		uint8_t params_count = 2;
 		uint8_t retvals_count = 1;
@@ -118,8 +118,8 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	SECTION("runtime_test_target.join_strings")
 	{
 		std::string function_path = "callable=join_strings";
-		metaffi_type_with_alias params_types[] = {metaffi::runtime::make_type_with_alias(metaffi_string8_array_type)};
-		metaffi_type_with_alias retvals_types[] = {metaffi::runtime::make_type_with_alias(metaffi_string8_type)};
+		metaffi_type_info params_types[] = {metaffi::runtime::make_type_with_options(metaffi_string8_array_type)};
+		metaffi_type_info retvals_types[] = {metaffi::runtime::make_type_with_options(metaffi_string8_type)};
 		
 		void** join_strings = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                     function_path.c_str(), function_path.length(),
@@ -165,7 +165,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	{
 		// create new testmap
 		std::string function_path = "callable=testmap";
-		metaffi_type_with_alias retvals_types[] = {metaffi::runtime::make_type_with_alias(metaffi_handle_type)};
+		metaffi_type_info retvals_types[] = {metaffi::runtime::make_type_with_options(metaffi_handle_type)};
 		
 		void** pnew_testmap = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                    function_path.c_str(), function_path.length(),
@@ -198,9 +198,9 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		// set
 		function_path = "callable=testmap.set,instance_required";
-		metaffi_type_with_alias params_types[] = {metaffi::runtime::make_type_with_alias(metaffi_handle_type),
-		                                          metaffi::runtime::make_type_with_alias(metaffi_string8_type),
-		                                          metaffi::runtime::make_type_with_alias(metaffi_any_type)};
+		metaffi_type_info params_types[] = {metaffi::runtime::make_type_with_options(metaffi_handle_type),
+		                                          metaffi::runtime::make_type_with_options(metaffi_string8_type),
+		                                          metaffi::runtime::make_type_with_options(metaffi_any_type)};
 		
 		void** p_testmap_set = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                    function_path.c_str(), function_path.length(),
@@ -316,7 +316,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	{
 		// create new testmap
 		std::string function_path = "callable=testmap";
-		metaffi_type_with_alias retvals_types[] = {{metaffi_handle_type}};
+		metaffi_type_info retvals_types[] = {{metaffi_handle_type}};
 		
 		void** pnew_testmap = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                    function_path.c_str(), function_path.length(),
@@ -349,7 +349,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		// set
 		function_path = "callable=testmap.set,instance_required";
-		metaffi_type_with_alias params_types[] = {{metaffi_handle_type}, {metaffi_string8_type}, {metaffi_any_type}};
+		metaffi_type_info params_types[] = {{metaffi_handle_type}, {metaffi_string8_type}, {metaffi_any_type}};
 		
 		void** p_testmap_set = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                     function_path.c_str(), function_path.length(),
@@ -389,8 +389,8 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		// contains
 		function_path = "callable=testmap.contains,instance_required";
-		metaffi_type_with_alias params_contains_types[] = {{metaffi_handle_type}, {metaffi_string8_type}};
-		metaffi_type_with_alias retvals_contains_types[] = {{metaffi_bool_type}};
+		metaffi_type_info params_contains_types[] = {{metaffi_handle_type}, {metaffi_string8_type}};
+		metaffi_type_info retvals_contains_types[] = {{metaffi_bool_type}};
 		
 		void** p_testmap_contains = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                          function_path.c_str(), function_path.length(),
@@ -423,8 +423,8 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		// get
 		function_path = "callable=testmap.get,instance_required";
-		metaffi_type_with_alias params_get_types[] = {{metaffi_handle_type}, {metaffi_string8_type}};
-		metaffi_type_with_alias retvals_get_types[] = {{metaffi_any_type}};
+		metaffi_type_info params_get_types[] = {{metaffi_handle_type}, {metaffi_string8_type}};
+		metaffi_type_info retvals_get_types[] = {{metaffi_any_type}};
 		
 		void** p_testmap_get = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                     function_path.c_str(), function_path.length(),
@@ -480,7 +480,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	{
 		// load constructor
 		std::string function_path = "callable=testmap";
-		metaffi_type_with_alias retvals_types[] = {metaffi::runtime::make_type_with_alias(metaffi_handle_type)};
+		metaffi_type_info retvals_types[] = {metaffi::runtime::make_type_with_options(metaffi_handle_type)};
 		
 		void** pnew_testmap = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                    function_path.c_str(), function_path.length(),
@@ -496,7 +496,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		// load getter
 		function_path = "attribute=name,instance_required,getter";
-		metaffi_type_with_alias params_types[2] = {0};
+		metaffi_type_info params_types[2] = {0};
 		params_types[0].type = metaffi_handle_type;
 		retvals_types[0].type = metaffi_string8_type;
 		
@@ -596,7 +596,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	SECTION("runtime_test_target.wait_a_bit")
 	{
 		// get five_seconds global
-		metaffi_type_with_alias var_type[] = {metaffi::runtime::make_type_with_alias(metaffi_int64_type)};
+		metaffi_type_info var_type[] = {metaffi::runtime::make_type_with_options(metaffi_int64_type)};
 		std::string variable_path = "attribute=five_seconds,getter";
 		void** pfive_seconds_getter = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                            variable_path.c_str(), variable_path.length(),
@@ -621,7 +621,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		// call wait_a_bit
 		std::string function_path = "callable=wait_a_bit";
-		metaffi_type_with_alias params_types[] = {metaffi::runtime::make_type_with_alias(metaffi_int64_type)};
+		metaffi_type_info params_types[] = {metaffi::runtime::make_type_with_options(metaffi_int64_type)};
 		
 		void** pwait_a_bit = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                   function_path.c_str(), function_path.length(),
@@ -653,7 +653,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 	SECTION("runtime_test_target.set_five_seconds")
 	{
 		// set five_seconds global
-		metaffi_type_with_alias var_type[] = {metaffi::runtime::make_type_with_alias(metaffi_int64_type)};
+		metaffi_type_info var_type[] = {metaffi::runtime::make_type_with_options(metaffi_int64_type)};
 		std::string variable_path = "attribute=five_seconds,setter";
 		void** pfive_seconds_setter = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                            variable_path.c_str(), variable_path.length(),
@@ -677,7 +677,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		
 		
 		// get five_seconds global
-		metaffi_type_with_alias get_var_type[] = {metaffi::runtime::make_type_with_alias(metaffi_int64_type)};
+		metaffi_type_info get_var_type[] = {metaffi::runtime::make_type_with_options(metaffi_int64_type)};
 		std::string getter_variable_path = "attribute=five_seconds,getter";
 		void** pfive_seconds_getter = load_function(module_path.string().c_str(), module_path.string().length(),
 		                                            getter_variable_path.c_str(), getter_variable_path.length(),

@@ -64,9 +64,9 @@ class TestSanity(unittest.TestCase):
 			pass
 	
 	def test_div_integers(self):
-		params_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type),
-						metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_float32_type)]
+		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type),
+						metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_float32_type)]
 		
 		div_integers = test_runtime_module.load('callable=DivIntegers', params_type, ret_type)
 		
@@ -82,8 +82,8 @@ class TestSanity(unittest.TestCase):
 	
 	
 	def test_join_strings(self):
-		params_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_array_type)]
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_array_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		
 		joinStrings = test_runtime_module.load('callable=JoinStrings', params_type, ret_type)
 		
@@ -93,7 +93,7 @@ class TestSanity(unittest.TestCase):
 	
 	
 	def test_wait_a_bit(self):
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
 		
 		getFiveSeconds = test_runtime_module.load('global=FiveSeconds,getter', None, ret_type)
 		
@@ -103,7 +103,7 @@ class TestSanity(unittest.TestCase):
 		
 		fiveSeconds = fiveSeconds[0]
 		
-		params_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
+		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
 		
 		waitABit = test_runtime_module.load('callable=WaitABit', params_type, None)
 		
@@ -113,30 +113,30 @@ class TestSanity(unittest.TestCase):
 	def test_test_map(self):
 		# load functions
 		
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)]
 		newTestMap = test_runtime_module.load('callable=NewTestMap', None, ret_type)
 		
-		param_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-					metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type),
-					metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type)]
+		param_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+					metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type),
+					metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type)]
 		testMapSet = test_runtime_module.load('callable=TestMap.Set,instance_required', param_type, None)
 		
-		param_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-					metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type)]
+		param_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+					metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type)]
 		testMapGet = test_runtime_module.load('callable=TestMap.Get,instance_required', param_type, ret_type)
 		
-		param_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-					metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_bool_type)]
+		param_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+					metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_bool_type)]
 		testMapContains = test_runtime_module.load('callable=TestMap.Contains,instance_required', param_type, ret_type)
 		
-		param_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-						metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		param_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+						metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		testMapNameSetter = test_runtime_module.load('field=TestMap.Name,instance_required,setter', param_type, None)
 		
-		param_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)]
-		ret_type = [metaffi.metaffi_types.new_metaffi_type_with_alias(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
+		param_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)]
+		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		testMapNameGetter = test_runtime_module.load('field=TestMap.Name,instance_required,getter', param_type, ret_type)
 		
 		map = newTestMap()
