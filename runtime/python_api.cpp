@@ -8,6 +8,7 @@
 #include <sstream>
 #include <map>
 #include "cdts_python3.h"
+#include "py_tuple.h"
 #include <regex>
 #include <filesystem>
 #include <chrono>
@@ -208,6 +209,8 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 	
 	pyscope();
 	
+	PyObject* iserr = PyErr_Occurred();
+	
 	metaffi::utils::function_path_parser fp(std::string(function_path, function_path_len));
 	std::string modpath(module_path, module_path_len);
 	std::filesystem::path p(modpath.c_str());
@@ -215,21 +218,34 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 	std::string dir_str = dir.string();
 	
 	// Escape the backslashes in the string
-	std::string dir_escaped = dir_str;
-	for (size_t i = 0; i < dir_escaped.length(); i++)
+	PyObject *sysPath = PySys_GetObject((char*)"path");
+	PyObject *path = PyUnicode_FromString(dir_str.c_str());
+	if (path != nullptr)
 	{
-		if (dir_escaped[i] == '\\')
+		if (PySequence_Contains(sysPath, path) == 0)
 		{
-			dir_escaped.insert(i, "\\");
-			i++;
+			PyList_Append(sysPath, path);
 		}
+		Py_DECREF(path);
 	}
+
+
+
+//	std::string dir_escaped = dir_str;
+//	for (size_t i = 0; i < dir_escaped.length(); i++)
+//	{
+//		if (dir_escaped[i] == '\\')
+//		{
+//			dir_escaped.insert(i, "\\");
+//			i++;
+//		}
+//	}
 	
-	std::stringstream ss;
-	ss << "import os" << std::endl;
-	ss << "if '"<<dir_escaped<<"' not in sys.path:" << std::endl;
-	ss << "\tsys.path.append('"<<dir_escaped<<"')" << std::endl << std::endl;
-	PyRun_SimpleString(ss.str().c_str());
+//	std::stringstream ss;
+//	ss << "import os" << std::endl;
+//	ss << "if '"<<dir_escaped<<"' not in sys.path:" << std::endl;
+//	ss << "\tsys.path.append('"<<dir_escaped<<"')" << std::endl << std::endl;
+//	PyRun_SimpleString(ss.str().c_str());
 	
 	
 	PyObject* pymod = PyImport_ImportModuleEx(p.stem().string().c_str(), Py_None, Py_None, Py_None);
@@ -362,7 +378,7 @@ void free_function(void* pff, char** err, uint32_t* err_len)
 	// TODO: if all functions in a module are freed, module should be freed as well
 }
 //--------------------------------------------------------------------
-void extract_args(int is_method, PyObject* params, PyObject*& out_params, PyObject*& out_kwargs, bool is_varargs, bool is_kwargs)
+void orginize_arguments(int is_method, PyObject* params, PyObject*& out_params, PyObject*& out_kwargs, bool is_varargs, bool is_kwargs)
 {
 	// calculate size of new "out_params"
 	Py_ssize_t params_count = PyTuple_Size(params);
@@ -464,35 +480,16 @@ void pyxcall_params_ret(
 	
 		// convert CDT to Python3
 		cdts_python3 params_cdts(params_ret[0].pcdt, params_ret[0].len);
-		PyObject* params = params_cdts.parse();
+		py_tuple params = params_cdts.to_py_tuple();
+		
 		
 		// if parameter is of type "metaffi_positional_args" - pass internal tuple as "positional args"
 		// if parameter is of type "metaffi_keyword_args" - pass dict as "keyword args"
 		PyObject* out_params = nullptr;
 		PyObject* out_kwargs = nullptr;
 		
-		extract_args(pctxt->is_instance_required, params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
+		orginize_arguments(pctxt->is_instance_required, (PyObject*)params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
 		
-		scope_guard sgParams([&]()
-	    {
-			if(params != out_params)
-			{
-				Py_DecRef(params);
-				
-				if(out_params){
-					Py_DecRef(out_params);
-				}
-			}
-			else
-			{
-				Py_DecRef(params);
-			}
-			
-			if(out_kwargs){
-				Py_DecRef(out_kwargs);
-			}
-	    });
-
 		// call function or set variable
 		PyObject* res = nullptr;
 		if(PyCallable_Check(pctxt->entrypoint))
@@ -518,7 +515,7 @@ void pyxcall_params_ret(
 					return;
 				}
 				
-				if(!pctxt->find_attribute_holder_and_attribute(PyTuple_GetItem(params, 0)))
+				if(!pctxt->find_attribute_holder_and_attribute(params[0]))
 				{
 					handle_err(out_err, out_err_len, "attribute not found");
 					return;
@@ -531,7 +528,7 @@ void pyxcall_params_ret(
 			}
 			else if(pctxt->foreign_object_type == attribute_action_setter)
 			{
-				PyObject_SetAttr(pctxt->attribute_holder, pctxt->entrypoint, PyTuple_GetItem(params, 1));
+				PyObject_SetAttr(pctxt->attribute_holder, pctxt->entrypoint, params[1]);
 			}
 			else
 			{
@@ -549,7 +546,7 @@ void pyxcall_params_ret(
 
 		// return values;
 		cdts_python3 return_cdts(params_ret[1].pcdt, params_ret[1].len);
-		return_cdts.build(res, &pctxt->retvals_types[0], pctxt->retvals_types.size(), 0);
+		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 		
 	}
 	catch(std::exception& err)
@@ -621,7 +618,7 @@ void pyxcall_no_params_ret(
 		
 		// return value;
 		cdts_python3 return_cdts(return_values[1].pcdt, return_values[1].len);
-		return_cdts.build(res, &pctxt->retvals_types[0], pctxt->retvals_types.size(), 0);
+		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 		
 	}
 	catch(std::exception& err)
@@ -650,17 +647,14 @@ void pyxcall_params_no_ret(
 		
 		// convert CDT to Python3
 		cdts_python3 params_cdts(parameters[0].pcdt, parameters[0].len);
-		PyObject* params = params_cdts.parse();
-		scope_guard sgParams([&]()
-		                     {
-			                     Py_DecRef(params);
-		                     });
-
+		py_tuple params = params_cdts.to_py_tuple();
+		
 		// if parameter is of type "metaffi_positional_args" - pass internal tuple as "positional args"
 		// if parameter is of type "metaffi_keyword_args" - pass dict as "keyword args"
 		PyObject* out_params = nullptr;
 		PyObject* out_kwargs = nullptr;
-		extract_args(pctxt->is_instance_required, params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
+		orginize_arguments(pctxt->is_instance_required, (PyObject*)params, out_params, out_kwargs, pctxt->is_varargs,
+		                   pctxt->is_named_args);
 		
 		// call function
 		if(PyCallable_Check(pctxt->entrypoint))
@@ -672,8 +666,7 @@ void pyxcall_params_no_ret(
 			else
 			{
 				// in case of function with default values and there are no actual from caller
-				PyObject* params = nullptr;
-				PyObject_CallObject(pctxt->entrypoint, params);
+				PyObject_CallObject(pctxt->entrypoint, nullptr);
 			}
 		}
 		else
@@ -687,7 +680,7 @@ void pyxcall_params_no_ret(
 					return;
 				}
 				
-				if(!pctxt->find_attribute_holder_and_attribute(PyTuple_GetItem(params, 0)))
+				if(!pctxt->find_attribute_holder_and_attribute(params[0]))
 				{
 					handle_err(out_err, out_err_len, "attribute not found");
 					return;
@@ -697,8 +690,7 @@ void pyxcall_params_no_ret(
 			if(pctxt->foreign_object_type == attribute_action_setter)
 			{
 				PyObject_SetAttr(pctxt->attribute_holder, pctxt->entrypoint,
-								 pctxt->is_instance_required ? PyTuple_GetItem(params, 1) :
-								                                PyTuple_GetItem(params, 0));
+								 pctxt->is_instance_required ? params[1] : params[0]);
 			}
 			else
 			{

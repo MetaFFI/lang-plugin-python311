@@ -155,7 +155,7 @@ func (this *GuestCompiler) parseImports() (string, error) {
 func (this *GuestCompiler) parseGuestHelperFunctions() (string, error) {
 	tmpEntryPoint, err := template.New("GuestHelperFunctions").Funcs(templatesFuncMap).Parse(GuestHelperFunctions)
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse GuestHelperFunctions: %v", err)
+		return "", fmt.Errorf("Failed to to_py_tuple GuestHelperFunctions: %v", err)
 	}
 
 	bufEntryPoint := strings.Builder{}

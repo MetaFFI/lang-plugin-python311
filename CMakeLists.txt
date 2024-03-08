@@ -39,7 +39,7 @@ list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/lib")
 list(APPEND CMAKE_BUILD_RPATH "$ORIGIN;$ORIGIN/lib")
 
 # add targets
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/compiler/)
+#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/compiler/)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/runtime/)
 #add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/idl/)
 

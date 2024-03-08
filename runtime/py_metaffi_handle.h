@@ -7,5 +7,20 @@
 #include <Python.h>
 #endif
 #include <runtime/metaffi_primitives.h>
+#include "py_object.h"
 
-PyObject* new_py_metaffi_handle(metaffi_handle h, metaffi_uint64 runtime_id);
+struct cdt_metaffi_handle;
+
+class py_metaffi_handle : public py_object
+{
+public:
+	static bool check(PyObject* obj);
+	static PyObject* extract_pyobject_from_handle(const cdt_metaffi_handle* cdt_handle);
+	
+public:
+	explicit py_metaffi_handle(PyObject* obj);
+	py_metaffi_handle(py_metaffi_handle&& other) noexcept;
+	py_metaffi_handle& operator=(const py_metaffi_handle& other);
+	
+	explicit operator cdt_metaffi_handle() const;
+};

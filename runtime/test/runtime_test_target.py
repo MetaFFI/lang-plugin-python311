@@ -41,3 +41,29 @@ class testmap:
 
 	def contains(self, k:str):
 		return k in self.curdict
+
+
+class SomeClass:
+	def print(self):
+		print("Hello from inner class")
+
+
+def get_some_classes():
+	return [SomeClass() for _ in range(3)]
+
+
+def expect_three_some_classes(arr):
+	if len(arr) != 3:
+		raise ValueError("Array length is not 3")
+
+
+def expect_three_buffers(buffers):
+	if len(buffers) != 3:
+		raise ValueError("Buffers length is not 3")
+
+
+def get_three_buffers():
+	buffers = []
+	for _ in range(3):
+		buffers.append(bytes([1, 2, 3]))
+	return buffers

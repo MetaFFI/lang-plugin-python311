@@ -5,6 +5,15 @@
 #include <mutex>
 #include "runtime_id.h"
 #include "utils.h"
+#include "py_tuple.h"
+#include "py_float.h"
+#include "py_str.h"
+#include "py_bool.h"
+#include "py_int.h"
+#include "py_list.h"
+#include "py_metaffi_handle.h"
+#include "py_int.h"
+#include "py_bytes.h"
 
 using namespace metaffi::runtime;
 std::once_flag load_capi_flag;
@@ -56,514 +65,560 @@ if 'create_lambda' not in globals():
 )";
 
 
-cdts_build_callbacks cdts_python3::build_callback
-{
-	[](void* values_to_set, int index, metaffi_float32& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_float32>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_float32{ return (metaffi_float32)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_float32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_float32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_float32{ return (metaffi_float32)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_float64& val, int starting_index){
-		set_numeric_to_cdts<metaffi_float64>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_float64{ return (metaffi_float64)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_float64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_float64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_float64{ return (metaffi_float64)PyFloat_AsDouble(o); }, [](PyObject* o)->int{ return (int)PyFloat_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_int8& val, int starting_index){
-		set_numeric_to_cdts<metaffi_int8>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int8{ return (metaffi_int8)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_int8*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int8{ return (metaffi_int8)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_int16& val, int starting_index){
-		set_numeric_to_cdts<metaffi_int16>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int16{ return (metaffi_int16)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_int16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int16{ return (metaffi_int16)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_int32& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_int32>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int32{ return (metaffi_int32)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_int32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int32{ return (metaffi_int32)PyLong_AsLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_int64& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_int64>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_int64{ return (metaffi_int64)PyLong_AsLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_int64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_int64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_int64{ return (metaffi_int64)PyLong_AsLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_uint8& val, int starting_index){
-		set_numeric_to_cdts<metaffi_uint8>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint8{ return (metaffi_uint8)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_uint8*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint8>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint8{ return (metaffi_uint8)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_uint16& val, int starting_index){
-		set_numeric_to_cdts<metaffi_uint16>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint16{ return (metaffi_uint16)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_uint16*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint16>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint16{ return (metaffi_uint16)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_uint32& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_uint32>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint32{ return (metaffi_uint32)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_uint32*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint32>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint32{ return (metaffi_uint32)PyLong_AsUnsignedLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	
-	[](void* values_to_set, int index, metaffi_uint64& val, int starting_index) {
-		set_numeric_to_cdts<metaffi_uint64>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* o)->metaffi_uint64{ return (metaffi_uint64)PyLong_AsUnsignedLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_uint64*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_uint64>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* o)->metaffi_uint64{ return (metaffi_uint64)PyLong_AsUnsignedLongLong(o); }, [](PyObject* o)->int{ return (int)PyLong_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_bool& val, int starting_index){
-		set_numeric_to_cdts<metaffi_bool>((PyObject*)values_to_set, index+starting_index, val, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
-	},
-	[](void* values_to_set, int index, metaffi_bool*& arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_numeric_array_to_cdts<metaffi_bool>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, [](PyObject* pybool)->int{ return pybool == Py_False? 0 : 1; }, [](PyObject* o)->int{ return PyBool_Check(o); });
-	},
-	[](void* values_to_set, int index, cdt_metaffi_handle& val, int starting_index)
-	{
-		auto set_object = [](PyObject* pybj)->cdt_metaffi_handle
-		{
-			if(pybj == Py_None){
-				return cdt_metaffi_handle{0, PYTHON3_RUNTIME_ID};
-			}
-			
-			if(!python3_objects_table::instance().contains(pybj))
-			{
-				// if metaffi handle - pass as it is.
-				if(strcmp(pybj->ob_type->tp_name, "metaffi_handle") == 0)
-				{
-					PyObject* pyhandle = PyObject_GetAttrString(pybj, "handle");
-					if(!pyhandle)
-					{
-						throw std::runtime_error("handle attribute is not found in metaffi_handle object");
-					}
-					
-					PyObject* runtime_id = PyObject_GetAttrString(pybj, "runtime_id");
-					if(!runtime_id)
-					{
-						throw std::runtime_error("runtime_id attribute is not found in metaffi_handle object");
-					}
-					
-					auto res = cdt_metaffi_handle{(metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle),
-					                              PyLong_AsUnsignedLongLong(runtime_id)};
-					
-					return res;
-				}
-				
-				// a python object
-				python3_objects_table::instance().set(pybj);
-			};
-			
-			return {(metaffi_handle)pybj, PYTHON3_RUNTIME_ID};
-		};
-		
-		set_numeric_to_cdts<cdt_metaffi_handle>((PyObject*)values_to_set, index+starting_index, val, set_object, [](PyObject* o)->int{ return 1; });
-	},
-	[](void* values_to_set, int index, cdt_metaffi_handle* arr, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index)
-	{
-		auto set_object = [](PyObject* pybj)->cdt_metaffi_handle
-		{
-			if(pybj == Py_None){
-				return {nullptr, PYTHON3_RUNTIME_ID};
-			}
-			
-			if(!python3_objects_table::instance().contains(pybj))
-			{
-				// if metaffi handle - pass as it is.
-				if(strcmp(pybj->ob_type->tp_name, "metaffi_handle") == 0)
-				{
-					PyObject* pyhandle = PyObject_GetAttrString(pybj, "handle");
-					if(!pyhandle)
-					{
-						throw std::runtime_error("handle attribute is not found in metaffi_handle object");
-					}
-					
-					PyObject* runtime_id = PyObject_GetAttrString(pybj, "runtime_id");
-					if(!runtime_id)
-					{
-						throw std::runtime_error("runtime_id attribute is not found in metaffi_handle object");
-					}
-					
-					auto res = cdt_metaffi_handle{(metaffi_handle)PyLong_AsUnsignedLongLong(pyhandle),
-					                              PyLong_AsUnsignedLongLong(runtime_id)};
-					
-					return res;
-				}
-				
-				// a python object
-				python3_objects_table::instance().set(pybj);
-			}
-			
-			return {(metaffi_handle)pybj, PYTHON3_RUNTIME_ID};
-		};
-		
-		set_numeric_array_to_cdts<cdt_metaffi_handle>((PyObject*)values_to_set, index+starting_index, arr, dimensions_lengths, dimensions, set_object, [](PyObject* o)->int{ return 1; });
-	},
-	
-	[](void* values_to_set, int index, metaffi_string8& val, metaffi_size& s, int starting_index) {
-		set_string_to_cdts<metaffi_string8, char>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->metaffi_string8{ return (metaffi_string8)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
-	},
-	[](void* values_to_set, int index, metaffi_string8*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_string_array_to_cdts<metaffi_string8, char>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->metaffi_string8{ return (metaffi_string8)PyUnicode_AsUTF8AndSize(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, strncpy);
-	},
-	
-	[](void* values_to_set, int index, metaffi_string16& val, metaffi_size& s, int starting_index) {
-		set_string_to_cdts<metaffi_string16, wchar_t>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
-	},
-	[](void* values_to_set, int index, metaffi_string16*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_string_array_to_cdts<metaffi_string16, wchar_t>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
-	},
-	[](void* values_to_set, int index, metaffi_string32& val, metaffi_size& s, int starting_index) {
-		set_string_to_cdts<metaffi_string32, wchar_t>((PyObject*)values_to_set, index+starting_index, val, s, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
-	},
-	[](void* values_to_set, int index, metaffi_string32*& arr, metaffi_size*& strings_lengths, metaffi_size*& dimensions_lengths, metaffi_size& dimensions, metaffi_bool& free_required, int starting_index){
-		set_string_array_to_cdts<metaffi_string32, wchar_t>((PyObject*)values_to_set, index+starting_index, arr, strings_lengths, dimensions_lengths, dimensions, [](PyObject* o, Py_ssize_t* s)->wchar_t*{ return (wchar_t*)PyUnicode_AsWideCharString(o, s); }, [](PyObject* o)->int{ return PyUnicode_Check(o); }, wcsncpy);
-	},
-	[](void* values_to_set, int index, cdt_metaffi_callable& val_to_set, int starting_index){
-		PyObject* callable_func = PyTuple_GetItem((PyObject*)values_to_set, index);
-		val_to_set.val = PyLong_AsVoidPtr(PyObject_GetAttrString(callable_func, "pxcall_and_context"));
-		PyObject* params_tuple = PyObject_GetAttrString(callable_func, "params_metaffi_types");
-		PyObject* retvals_tuple = PyObject_GetAttrString(callable_func, "retval_metaffi_types");
-
-		if(!PyTuple_Check(params_tuple)){ throw std::runtime_error("params_metaffi_types is not a tuple"); }
-		if(!PyTuple_Check(retvals_tuple)){ throw std::runtime_error("retval_metaffi_types is not a tuple"); }
-
-		val_to_set.params_types_length = PyTuple_Size(params_tuple);
-		val_to_set.retval_types_length = PyTuple_Size(retvals_tuple);
-
-		if(val_to_set.params_types_length > 0){
-			val_to_set.parameters_types = new metaffi_type[val_to_set.params_types_length];
-		}
-
-		if(val_to_set.retval_types_length > 0){
-			val_to_set.retval_types = new metaffi_type[val_to_set.retval_types_length];
-		}
-
-		for(Py_ssize_t i=0 ; i < val_to_set.params_types_length ; i++)
-		{
-			PyObject* item = PyTuple_GetItem(params_tuple, i);
-			if (!PyLong_Check(item)){ throw std::runtime_error("item in params_types is not PyLong"); }
-			val_to_set.parameters_types[i] = PyLong_AsUnsignedLongLong(item);
-		}
-
-		for(Py_ssize_t i=0 ; i < val_to_set.retval_types_length ; i++)
-		{
-			PyObject* item = PyTuple_GetItem(retvals_tuple, i);
-			if (!PyLong_Check(item)){ throw std::runtime_error("item in retval_types is not PyLong"); }
-			val_to_set.retval_types[i] = PyLong_AsUnsignedLongLong(item);
-		}
-	},
-	[](int index,void* values_to_set)->metaffi_type{ // dynamic resolution of type
-		return cdts_python3::get_metaffi_type((PyObject*)values_to_set);
-	}
-};
-
-
-cdts_parse_callbacks cdts_python3::parse_callback
-{
-	[](void* values_to_set, int index, const metaffi_float32& val) { set_numeric_to_tuple<metaffi_float32>((PyObject*) values_to_set, index, val, PyFloat_FromDouble); },
-	[](void* values_to_set, int index, const metaffi_float32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_float32> arr_wrap((metaffi_float32*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_float32>((PyObject*) values_to_set, index, arr_wrap, PyFloat_FromDouble);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_float64& val) { set_numeric_to_tuple<metaffi_float64>((PyObject*) values_to_set, index, val, PyFloat_FromDouble); },
-	[](void* values_to_set, int index, const metaffi_float64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_float64> arr_wrap((metaffi_float64*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_float64>((PyObject*) values_to_set, index, arr_wrap, PyFloat_FromDouble);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_int8& val) { set_numeric_to_tuple<metaffi_int8>((PyObject*) values_to_set, index, val, PyLong_FromLong); },
-	[](void* values_to_set, int index, const metaffi_int8* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_int8> arr_wrap((metaffi_int8*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_int8>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_int16& val) { set_numeric_to_tuple<metaffi_int16>((PyObject*) values_to_set, index, val, PyLong_FromLong); },
-	[](void* values_to_set, int index, const metaffi_int16* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_int16> arr_wrap((metaffi_int16*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_int16>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_int32& val) { set_numeric_to_tuple<metaffi_int32>((PyObject*) values_to_set, index, val, PyLong_FromLong); },
-	[](void* values_to_set, int index, const metaffi_int32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_int32> arr_wrap((metaffi_int32*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_int32>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_int64& val) { set_numeric_to_tuple<metaffi_int64>((PyObject*) values_to_set, index, val, PyLong_FromLongLong); },
-	[](void* values_to_set, int index, const metaffi_int64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_int64> arr_wrap((metaffi_int64*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_int64>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromLongLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_uint8& val) { set_numeric_to_tuple<metaffi_uint8>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLong); },
-	[](void* values_to_set, int index, const metaffi_uint8* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_uint8> arr_wrap((metaffi_uint8*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_uint8>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromUnsignedLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_uint16& val) { set_numeric_to_tuple<metaffi_uint16>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLong); },
-	[](void* values_to_set, int index, const metaffi_uint16* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_uint16> arr_wrap((metaffi_uint16*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_uint16>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromUnsignedLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_uint32& val) { set_numeric_to_tuple<metaffi_uint32>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLong); },
-	[](void* values_to_set, int index, const metaffi_uint32* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_uint32> arr_wrap((metaffi_uint32*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_uint32>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromUnsignedLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_uint64& val) { set_numeric_to_tuple<metaffi_uint64>((PyObject*) values_to_set, index, val, PyLong_FromUnsignedLongLong); },
-	[](void* values_to_set, int index, const metaffi_uint64* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_uint64> arr_wrap((metaffi_uint64*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_uint64>((PyObject*) values_to_set, index, arr_wrap, PyLong_FromUnsignedLongLong);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_bool& val)
-	{
-		set_numeric_to_tuple<metaffi_bool>((PyObject*)values_to_set, index, val, PyBool_FromLong);
-	},
-	[](void* values_to_set, int index, const metaffi_bool* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		numeric_n_array_wrapper<metaffi_bool> arr_wrap((metaffi_bool*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<metaffi_bool>((PyObject*) values_to_set, index, arr_wrap, PyBool_FromLong);
-	},
-	
-	[](void* values_to_set, int index, const cdt_metaffi_handle& val)
-	{
-		auto get_object = [](const cdt_metaffi_handle& h)->PyObject*
-		{
-			if(h.val == nullptr){ return Py_None; }
-			if(h.runtime_id != PYTHON3_RUNTIME_ID)
-			{
-				return new_py_metaffi_handle(h.val, h.runtime_id);
-			}
-			Py_IncRef((PyObject*)h.val);
-			return (PyObject*)h.val;
-		};
-		
-		set_numeric_to_tuple<cdt_metaffi_handle>((PyObject*) values_to_set, index, val, get_object);
-		
-	},
-	[](void* values_to_set, int index, const cdt_metaffi_handle* arr, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		auto get_object = [](const cdt_metaffi_handle& h)->PyObject*
-		{
-			if(h.runtime_id != PYTHON3_RUNTIME_ID)
-			{
-				return new_py_metaffi_handle(h.val, h.runtime_id);
-			}
-			Py_IncRef((PyObject*)h.val);
-			return (PyObject*)h.val;
-		};
-		
-		numeric_n_array_wrapper<cdt_metaffi_handle> arr_wrap((cdt_metaffi_handle*)arr, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_numeric_array_to_tuple<cdt_metaffi_handle>((PyObject*) values_to_set, index, arr_wrap, get_object);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_string8& val, const metaffi_size& s){
-		set_string_to_tuple<metaffi_string8, char>((PyObject*) values_to_set, index, val, s, PyUnicode_FromStringAndSize);
-	},
-	[](void* values_to_set, int index, const metaffi_string8* arr, const metaffi_size* strings_lengths, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		string_n_array_wrapper<metaffi_string8> arr_wrap((metaffi_string8*)arr, (metaffi_size*)strings_lengths, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_string_array_to_tuple<metaffi_string8, char>((PyObject*)values_to_set, index, arr_wrap, PyUnicode_FromStringAndSize);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_string16& val, const metaffi_size& s){
-		set_string_to_tuple<metaffi_string16, wchar_t>((PyObject*)values_to_set, index, val, s, PyUnicode_FromWideChar);
-	},
-	[](void* values_to_set, int index, const metaffi_string16* arr, const metaffi_size* strings_lengths, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		string_n_array_wrapper<metaffi_string16> arr_wrap((metaffi_string16*)arr, (metaffi_size*)strings_lengths, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_string_array_to_tuple<metaffi_string16, wchar_t>((PyObject*)values_to_set, index, arr_wrap, PyUnicode_FromWideChar);
-	},
-	
-	[](void* values_to_set, int index, const metaffi_string32& val, const metaffi_size& s){
-		set_string_to_tuple<metaffi_string32, wchar_t>((PyObject*)values_to_set, index, val, s, PyUnicode_FromWideChar);
-	},
-	[](void* values_to_set, int index, const metaffi_string32* arr, const metaffi_size* strings_lengths, const metaffi_size* dimensions_lengths, const metaffi_size& dimensions)
-	{
-		string_n_array_wrapper<metaffi_string32> arr_wrap((metaffi_string32*)arr, (metaffi_size*)strings_lengths, (metaffi_size*)dimensions_lengths, (metaffi_size&)dimensions);
-		set_string_array_to_tuple<metaffi_string32, wchar_t>((PyObject*)values_to_set, index, arr_wrap, PyUnicode_FromWideChar);
-	},
-	[](void* values_to_set, int index, const cdt_metaffi_callable& val_to_set)
-	{
-		PyRun_SimpleString(create_lambda_python_code); // make sure "create_lambda" exists
-		PyObject* main_module = PyImport_AddModule("__main__");  // Get the main module
-		PyObject* global_dict = PyModule_GetDict(main_module);  // Get the global dictionary
-
-		// Get the create_lambda function
-		PyObject* pyFunc = PyDict_GetItemString(global_dict, "create_lambda");
-
-		if(!pyFunc || !PyCallable_Check(pyFunc))
-		{
-			throw std::runtime_error("failed to create or import create_lambda python function");
-		}
-
-		// Convert the void* to PyObject*
-		PyObject* py_pxcall = PyLong_FromVoidPtr(((void**)val_to_set.val)[0]);
-		PyObject* py_pcontext = PyLong_FromVoidPtr(((void**)val_to_set.val)[1]);
-
-		// Convert the metaffi_type arrays to PyTuple*
-		PyObject* py_param_types = PyTuple_New(val_to_set.params_types_length);
-		for (int i = 0; i < val_to_set.params_types_length; i++) {
-			PyTuple_SetItem(py_param_types, i, PyLong_FromUnsignedLongLong(val_to_set.parameters_types[i]));
-		}
-
-		PyObject* py_retval_types = PyTuple_New(val_to_set.retval_types_length);
-		for (int i = 0; i < val_to_set.retval_types_length; i++) {
-			PyTuple_SetItem(py_retval_types, i, PyLong_FromUnsignedLongLong(val_to_set.retval_types[i]));
-		}
-
-		PyObject* argsTuple = PyTuple_New(4);  // Create a tuple to hold the arguments
-
-		PyTuple_SetItem(argsTuple, 0, py_pxcall);
-		PyTuple_SetItem(argsTuple, 1, py_pcontext);
-		PyTuple_SetItem(argsTuple, 2, py_param_types);
-		PyTuple_SetItem(argsTuple, 3, py_retval_types);
-
-		// Call the Python function
-		PyObject* result = PyObject_CallObject(pyFunc, argsTuple);
-		Py_DECREF(argsTuple);
-
-		std::string err = check_python_error();
-		if(!err.empty())
-		{
-			throw std::runtime_error(err);
-		}
-
-		PyTuple_SetItem((PyObject*)values_to_set, index, result); // set lambda in return values tuple
-	}
-};
-
-
-std::unordered_map<std::string, metaffi_types> cdts_python3::pytypes_to_metaffi_types =
-{
-	{"str", metaffi_string8_type},
-	{"int", metaffi_int64_type},
-	{"float", metaffi_float64_type},
-	{"bool", metaffi_bool_type},
-	{"list", metaffi_any_type},
-	{"tuple", metaffi_any_type},
-};
-
+//	[](void* values_to_set, int index, const cdt_metaffi_callable& val_to_set)
+//	{
+//		PyRun_SimpleString(create_lambda_python_code); // make sure "create_lambda" exists
+//		PyObject* main_module = PyImport_AddModule("__main__");  // Get the main module
+//		PyObject* global_dict = PyModule_GetDict(main_module);  // Get the global dictionary
+//
+//		// Get the create_lambda function
+//		PyObject* pyFunc = PyDict_GetItemString(global_dict, "create_lambda");
+//
+//		if(!pyFunc || !PyCallable_Check(pyFunc))
+//		{
+//			throw std::runtime_error("failed to create or import create_lambda python function");
+//		}
+//
+//		// Convert the void* to PyObject*
+//		PyObject* py_pxcall = PyLong_FromVoidPtr(((void**)val_to_set.val)[0]);
+//		PyObject* py_pcontext = PyLong_FromVoidPtr(((void**)val_to_set.val)[1]);
+//
+//		// Convert the metaffi_type arrays to PyTuple*
+//		PyObject* py_param_types = PyTuple_New(val_to_set.params_types_length);
+//		for (int i = 0; i < val_to_set.params_types_length; i++) {
+//			PyTuple_SetItem(py_param_types, i, PyLong_FromUnsignedLongLong(val_to_set.parameters_types[i]));
+//		}
+//
+//		PyObject* py_retval_types = PyTuple_New(val_to_set.retval_types_length);
+//		for (int i = 0; i < val_to_set.retval_types_length; i++) {
+//			PyTuple_SetItem(py_retval_types, i, PyLong_FromUnsignedLongLong(val_to_set.retval_types[i]));
+//		}
+//
+//		PyObject* argsTuple = PyTuple_New(4);  // Create a tuple to hold the arguments
+//
+//		PyTuple_SetItem(argsTuple, 0, py_pxcall);
+//		PyTuple_SetItem(argsTuple, 1, py_pcontext);
+//		PyTuple_SetItem(argsTuple, 2, py_param_types);
+//		PyTuple_SetItem(argsTuple, 3, py_retval_types);
+//
+//		// Call the Python function
+//		PyObject* result = PyObject_CallObject(pyFunc, argsTuple);
+//		Py_DECREF(argsTuple);
+//
+//		std::string err = check_python_error();
+//		if(!err.empty())
+//		{
+//			throw std::runtime_error(err);
+//		}
+//
+//		PyTuple_SetItem((PyObject*)values_to_set, index, result); // set lambda in return values tuple
+//	}
 //--------------------------------------------------------------------
+
 cdts_python3::cdts_python3(cdt* cdts, metaffi_size cdts_length): cdts(cdts, cdts_length)
 {
 }
 //--------------------------------------------------------------------
-cdt* cdts_python3::get_cdts()
+py_tuple cdts_python3::to_py_tuple()
 {
-	return this->cdts.get_cdts();
-}
-//--------------------------------------------------------------------
-PyObject* cdts_python3::parse()
-{
-	PyObject* res = PyTuple_New((Py_ssize_t)this->cdts.get_cdts_length());
-	this->cdts.parse(res, parse_callback);
+	int cdts_length = this->cdts.get_cdts_length();
+	
+	py_tuple res((Py_ssize_t)cdts_length);
+	
+	for(int i=0 ; i<cdts_length ; i++)
+	{
+		cdt* cur_cdt = cdts[i];
+		
+		switch(cur_cdt->type)
+		{
+			case metaffi_float32_type:
+				res.set_item(i, (PyObject*)py_float(cur_cdt->cdt_val.metaffi_float32_val.val));
+				break;
+				
+			case metaffi_float32_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_float32, py_float>(cur_cdt->cdt_val.metaffi_float32_array_val.vals,
+				                                                 cur_cdt->cdt_val.metaffi_float32_array_val.dimensions_lengths,
+				                                                 cur_cdt->cdt_val.metaffi_float32_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_float64_type:
+				res.set_item(i, (PyObject*)py_float(cur_cdt->cdt_val.metaffi_float64_val.val));
+				break;
+				
+			case metaffi_float64_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_float64, py_float>(cur_cdt->cdt_val.metaffi_float64_array_val.vals,
+				                                                 cur_cdt->cdt_val.metaffi_float64_array_val.dimensions_lengths,
+				                                                 cur_cdt->cdt_val.metaffi_float64_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_int8_type:
+				res.set_item(i, (PyObject*)py_int((int64_t)cur_cdt->cdt_val.metaffi_int8_val.val));
+				break;
+				
+			case metaffi_int8_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_int8, py_int>(cur_cdt->cdt_val.metaffi_int8_array_val.vals,
+				                                            cur_cdt->cdt_val.metaffi_int8_array_val.dimensions_lengths,
+				                                            cur_cdt->cdt_val.metaffi_int8_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_uint8_type:
+				res.set_item(i, (PyObject*)py_int((uint64_t)cur_cdt->cdt_val.metaffi_uint8_val.val));
+				break;
+				
+			case metaffi_uint8_array_type:
+			{
+				if(cur_cdt->cdt_val.metaffi_uint8_array_val.dimensions == 1)
+				{
+					py_bytes b((const char*)cur_cdt->cdt_val.metaffi_uint8_array_val.vals, (Py_ssize_t)cur_cdt->cdt_val.metaffi_uint8_array_val.dimensions_lengths[0]);
+					res.set_item(i, b.detach());
+				}
+				else
+				{
+					py_list lst;
+					lst.add_bytes_array(cur_cdt->cdt_val.metaffi_uint8_array_val.vals,
+					                    cur_cdt->cdt_val.metaffi_uint8_array_val.dimensions_lengths,
+					                    cur_cdt->cdt_val.metaffi_uint8_array_val.dimensions);
+					res.set_item(i, lst.detach());
+				}
+			}break;
+			
+			case metaffi_int16_type:
+				res.set_item(i, (PyObject*)py_int((int64_t)cur_cdt->cdt_val.metaffi_int16_val.val));
+				break;
+				
+			case metaffi_int16_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_int16, py_int>(cur_cdt->cdt_val.metaffi_int16_array_val.vals,
+				                                             cur_cdt->cdt_val.metaffi_int16_array_val.dimensions_lengths,
+				                                             cur_cdt->cdt_val.metaffi_int16_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_uint16_type:
+				res.set_item(i, (PyObject*)py_int((uint64_t)cur_cdt->cdt_val.metaffi_uint16_val.val));
+				break;
+				
+			case metaffi_uint16_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_uint16, py_int>(cur_cdt->cdt_val.metaffi_uint16_array_val.vals,
+				                                              cur_cdt->cdt_val.metaffi_uint16_array_val.dimensions_lengths,
+				                                              cur_cdt->cdt_val.metaffi_uint16_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_int32_type:
+				res.set_item(i, (PyObject*)py_int((int64_t)cur_cdt->cdt_val.metaffi_int32_val.val));
+				break;
+				
+			case metaffi_int32_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_int32, py_int>(cur_cdt->cdt_val.metaffi_int32_array_val.vals,
+				                                             cur_cdt->cdt_val.metaffi_int32_array_val.dimensions_lengths,
+				                                             cur_cdt->cdt_val.metaffi_int32_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_uint32_type:
+				res.set_item(i, (PyObject*)py_int((uint64_t)cur_cdt->cdt_val.metaffi_uint32_val.val));
+				break;
+				
+			case metaffi_uint32_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_uint32, py_int>(cur_cdt->cdt_val.metaffi_uint32_array_val.vals,
+				                                              cur_cdt->cdt_val.metaffi_uint32_array_val.dimensions_lengths,
+				                                              cur_cdt->cdt_val.metaffi_uint32_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_int64_type:
+				res.set_item(i, (PyObject*)py_int((int64_t)cur_cdt->cdt_val.metaffi_int64_val.val));
+				break;
+				
+			case metaffi_int64_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_int64, py_int>(cur_cdt->cdt_val.metaffi_int64_array_val.vals,
+				                                             cur_cdt->cdt_val.metaffi_int64_array_val.dimensions_lengths,
+				                                             cur_cdt->cdt_val.metaffi_int64_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_uint64_type:
+				res.set_item(i, (PyObject*)py_int((uint64_t)cur_cdt->cdt_val.metaffi_uint64_val.val));
+				break;
+				
+			case metaffi_uint64_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_uint64, py_int>(cur_cdt->cdt_val.metaffi_uint64_array_val.vals,
+				                                              cur_cdt->cdt_val.metaffi_uint64_array_val.dimensions_lengths,
+				                                              cur_cdt->cdt_val.metaffi_uint64_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_bool_type:
+				res.set_item(i, (PyObject*)py_bool(cur_cdt->cdt_val.metaffi_bool_val.val));
+				break;
+				
+			case metaffi_bool_array_type:
+			{
+				py_list lst;
+				lst.add_numeric_array<metaffi_bool, py_bool>(cur_cdt->cdt_val.metaffi_bool_array_val.vals,
+				                                             cur_cdt->cdt_val.metaffi_bool_array_val.dimensions_lengths,
+				                                             cur_cdt->cdt_val.metaffi_bool_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_string8_type:
+			{
+				res.set_item(i, py_str(reinterpret_cast<const char*>(cur_cdt->cdt_val.metaffi_string8_val.val), (int64_t)cur_cdt->cdt_val.metaffi_string8_val.length).detach());
+			}break;
+			
+			case metaffi_string8_array_type:
+			{
+				py_list lst;
+				lst.add_string_array<metaffi_string8, py_str>(cur_cdt->cdt_val.metaffi_string8_array_val.vals,
+				                                              cur_cdt->cdt_val.metaffi_string8_array_val.vals_sizes,
+				                                              cur_cdt->cdt_val.metaffi_string8_array_val.dimensions_lengths,
+															  cur_cdt->cdt_val.metaffi_string8_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_string16_type:
+				res.set_item(i, (PyObject*)py_str(reinterpret_cast<const char16_t*>(cur_cdt->cdt_val.metaffi_string16_val.val), (int64_t)cur_cdt->cdt_val.metaffi_string16_val.length).detach());
+				break;
+				
+			case metaffi_string16_array_type:
+			{
+				py_list lst;
+				lst.add_string_array<metaffi_string16, py_str>(cur_cdt->cdt_val.metaffi_string16_array_val.vals,
+				                                               cur_cdt->cdt_val.metaffi_string16_array_val.vals_sizes,
+				                                               cur_cdt->cdt_val.metaffi_string16_array_val.dimensions_lengths,
+				                                               cur_cdt->cdt_val.metaffi_string16_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_string32_type:
+				res.set_item(i, (PyObject*)py_str(reinterpret_cast<const char32_t*>(cur_cdt->cdt_val.metaffi_string32_val.val), (int64_t)cur_cdt->cdt_val.metaffi_string32_val.length).detach());
+				break;
+				
+			case metaffi_string32_array_type:
+			{
+				py_list lst;
+				lst.add_string_array<metaffi_string32, py_str>(cur_cdt->cdt_val.metaffi_string32_array_val.vals,
+				                                               cur_cdt->cdt_val.metaffi_string32_array_val.vals_sizes,
+				                                               cur_cdt->cdt_val.metaffi_string32_array_val.dimensions_lengths,
+				                                               cur_cdt->cdt_val.metaffi_string32_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+				
+			case metaffi_handle_type:
+			{
+				res.set_item(i, py_metaffi_handle::extract_pyobject_from_handle(&cur_cdt->cdt_val.metaffi_handle_val));
+			}break;
+			
+			case metaffi_handle_array_type:
+			{
+				py_list lst;
+				lst.add_handle_array(cur_cdt->cdt_val.metaffi_handle_array_val.vals,
+				                     cur_cdt->cdt_val.metaffi_handle_array_val.dimensions_lengths,
+				                     cur_cdt->cdt_val.metaffi_handle_array_val.dimensions);
+				res.set_item(i, lst.detach());
+			}break;
+			
+			default:
+				std::stringstream ss;
+				ss << "Unknown type " << cur_cdt->type << " at index " << i;
+				throw std::runtime_error(ss.str());
+		}
+	}
+	
 	return res;
 }
 //--------------------------------------------------------------------
-thread_local metaffi_type_info g_param_types[50];
-void cdts_python3::build(PyObject* tuple, PyObject* tuple_types, int starting_index)
+void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expected_types, int expected_types_length)
 {
-
-#ifdef _DEBUG
-	if (!PyTuple_Check(tuple))
+	py_tuple pyobjs = expected_types_length <= 1 ? py_tuple(&pyobject_or_tuple, 1) : py_tuple(pyobject_or_tuple);
+	pyobjs.inc_ref(); // prevent py_tuple from releasing the object
+	
+	if(pyobjs.length() != expected_types_length)
 	{
-		throw std::runtime_error("data is not in a tuple type");
-	}
-
-	if ((PyTuple_Size(tuple)-starting_index) != PyTuple_Size(tuple_types))
-	{
-		throw std::runtime_error("metaffi_types list has a different size of parameters list");
-	}
-#endif
-
-	// convert tuple types to metaffi_types[]
-	Py_ssize_t types_length = PyTuple_Size(tuple_types);
-	metaffi_type_infos_ptr types = types_length > 50 ? new metaffi_type_info[types_length] : g_param_types;
-	for(Py_ssize_t i = 0 ; i < types_length ; i++)
-	{
-		PyObject* pytype = PyTuple_GetItem(tuple_types, i);
-		types[i].type = (metaffi_types)PyLong_AsLong(pytype);
-		types[i].alias = nullptr;
-		types[i].alias_length = 0;
-
-		if(types[i].type == metaffi_any_type) // if any, replace with actual type
-		{
-			PyObject* obj = PyTuple_GetItem(tuple, i+starting_index);
-			types[i].type = get_metaffi_type(obj);
-		}
+		throw std::runtime_error("tuple and tuple_types have different lengths");
 	}
 	
-	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
-	
-	if(types_length > 50){
-		delete types;
-	}
-}
-//--------------------------------------------------------------------
-void cdts_python3::build(PyObject* tuple, metaffi_type_infos_ptr types, uint8_t types_length, int starting_index)
-{
-	this->cdts.build(types, types_length, tuple, starting_index, build_callback);
-}
-//--------------------------------------------------------------------
-metaffi_types cdts_python3::get_metaffi_type(PyObject* obj)
-{
-	auto mtype = pytypes_to_metaffi_types.find(obj->ob_type->tp_name);
-	if(mtype == pytypes_to_metaffi_types.end())
+	for(int i = 0 ; i < expected_types_length ; i++)
 	{
-		return metaffi_handle_type;
+		metaffi_type_info& type = expected_types[i];
+		cdts[i]->type = expected_types[i].type;
+		
+		if(type.type == metaffi_any_type)
+		{
+			type = py_object(pyobjs[i]).get_type_info();
+			cdts[i]->type = type.type;
+		}
+		
+		switch(type.type)
+		{
+			case metaffi_float32_type:
+				cdts[i]->cdt_val.metaffi_float32_val.val = (metaffi_float32)py_float(pyobjs[i]);
+				break;
+				
+			case metaffi_float32_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_float32_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_float32, py_float>(&cdts[i]->cdt_val.metaffi_float32_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_float32_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_float64_type:
+				cdts[i]->cdt_val.metaffi_float64_val.val = (metaffi_float64)py_float(pyobjs[i]);
+				break;
+				
+			case metaffi_float64_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_float64_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_float64, py_float>(&cdts[i]->cdt_val.metaffi_float64_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_float64_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_int8_type:
+				cdts[i]->cdt_val.metaffi_int8_val.val = (metaffi_int8)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_int8_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_int8_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_int8, py_int>(&cdts[i]->cdt_val.metaffi_int8_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_int8_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_uint8_type:
+				cdts[i]->cdt_val.metaffi_uint8_val.val = (metaffi_uint8)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_uint8_array_type:
+			{
+				if(type.dimensions == 1 && py_bytes::check(pyobjs[i]))
+				{
+					py_bytes b(pyobjs[i]);
+					
+					cdts[i]->cdt_val.metaffi_uint8_array_val.dimensions = 1;
+					cdts[i]->cdt_val.metaffi_uint8_array_val.vals = (uint8_t*)b;
+					cdts[i]->cdt_val.metaffi_uint8_array_val.dimensions_lengths = new metaffi_size[1];
+					cdts[i]->cdt_val.metaffi_uint8_array_val.dimensions_lengths[0] = b.size();
+				}
+				else
+				{
+					py_list lst(pyobjs[i]);
+					cdts[i]->cdt_val.metaffi_uint8_array_val.dimensions = type.dimensions;
+					lst.get_bytes_array(
+							&cdts[i]->cdt_val.metaffi_uint8_array_val.vals,
+							&cdts[i]->cdt_val.metaffi_uint8_array_val.dimensions_lengths,
+					                                               type.dimensions);
+				}
+			}break;
+			
+			case metaffi_int16_type:
+				cdts[i]->cdt_val.metaffi_int16_val.val = (metaffi_int16)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_int16_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_int16_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_int16, py_int>(&cdts[i]->cdt_val.metaffi_int16_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_int16_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_uint16_type:
+				cdts[i]->cdt_val.metaffi_uint16_val.val = (metaffi_uint16)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_uint16_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_uint16_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_uint16, py_int>(&cdts[i]->cdt_val.metaffi_uint16_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_uint16_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_int32_type:
+				cdts[i]->cdt_val.metaffi_int32_val.val = (metaffi_int32)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_int32_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_int32_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_int32, py_int>(&cdts[i]->cdt_val.metaffi_int32_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_int32_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_uint32_type:
+				cdts[i]->cdt_val.metaffi_uint32_val.val = (metaffi_uint32)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_uint32_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_uint32_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_uint32, py_int>(&cdts[i]->cdt_val.metaffi_uint32_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_uint32_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_int64_type:
+				cdts[i]->cdt_val.metaffi_int64_val.val = (metaffi_int64)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_int64_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_int64_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_int64, py_int>(&cdts[i]->cdt_val.metaffi_int64_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_int64_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+			
+			case metaffi_uint64_type:
+				cdts[i]->cdt_val.metaffi_uint64_val.val = (metaffi_uint64)py_int(pyobjs[i]);
+				break;
+				
+			case metaffi_uint64_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_uint64_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_uint64, py_int>(&cdts[i]->cdt_val.metaffi_uint64_array_val.vals,
+				                                                 &cdts[i]->cdt_val.metaffi_uint64_array_val.dimensions_lengths,
+				                                                 type.dimensions);
+			}break;
+				
+			case metaffi_bool_type:
+				cdts[i]->cdt_val.metaffi_bool_val.val = (metaffi_bool)py_bool(pyobjs[i]);
+				break;
+				
+			case metaffi_bool_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_bool_array_val.dimensions = type.dimensions;
+				lst.get_numeric_array<metaffi_bool, py_bool>(&cdts[i]->cdt_val.metaffi_bool_array_val.vals,
+				                                             &cdts[i]->cdt_val.metaffi_bool_array_val.dimensions_lengths,
+				                                             type.dimensions);
+			}break;
+				
+			case metaffi_string8_type:
+			{
+				py_str str(pyobjs[i]);
+				std::string string = str.to_utf8();
+				cdts[i]->cdt_val.metaffi_string8_val.val = new metaffi_char8[string.size()];
+				cdts[i]->cdt_val.metaffi_string8_val.length = string.size();
+				std::copy(string.begin(), string.end(), cdts[i]->cdt_val.metaffi_string8_val.val);
+			}break;
+			
+			case metaffi_string8_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_string8_array_val.dimensions = type.dimensions;
+				lst.get_string_array<metaffi_string8, py_str, char>(&cdts[i]->cdt_val.metaffi_string8_array_val.vals,
+				                                                    &cdts[i]->cdt_val.metaffi_string8_array_val.vals_sizes,
+				                                                    &cdts[i]->cdt_val.metaffi_string8_array_val.dimensions_lengths,
+				                                                    type.dimensions);
+			}break;
+			
+			case metaffi_string16_type:
+			{
+				py_str str(pyobjs[i]);
+				std::u16string string = str.to_utf16();
+				cdts[i]->cdt_val.metaffi_string16_val.val = new metaffi_char16[string.size()];
+				cdts[i]->cdt_val.metaffi_string16_val.length = string.size();
+				std::copy(string.begin(), string.end(), cdts[i]->cdt_val.metaffi_string16_val.val);
+			}break;
+			
+			case metaffi_string16_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_string16_array_val.dimensions = type.dimensions;
+				lst.get_string_array<metaffi_string16, py_str, char16_t>(&cdts[i]->cdt_val.metaffi_string16_array_val.vals,
+				                                                    &cdts[i]->cdt_val.metaffi_string16_array_val.vals_sizes,
+				                                                    &cdts[i]->cdt_val.metaffi_string16_array_val.dimensions_lengths,
+				                                                    type.dimensions);
+			}break;
+			
+			case metaffi_string32_type:
+			{
+				py_str str(pyobjs[i]);
+				std::u32string string = str.to_utf32();
+				cdts[i]->cdt_val.metaffi_string32_val.val = new metaffi_char32[string.size()];
+				cdts[i]->cdt_val.metaffi_string32_val.length = string.size();
+				std::copy(string.begin(), string.end(), cdts[i]->cdt_val.metaffi_string32_val.val);
+			}break;
+			
+			case metaffi_string32_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_string32_array_val.dimensions = type.dimensions;
+				lst.get_string_array<metaffi_string32, py_str, char32_t>(&cdts[i]->cdt_val.metaffi_string32_array_val.vals,
+				                                                    &cdts[i]->cdt_val.metaffi_string32_array_val.vals_sizes,
+				                                                    &cdts[i]->cdt_val.metaffi_string32_array_val.dimensions_lengths,
+				                                                    type.dimensions);
+			}break;
+			
+			case metaffi_handle_type:
+			{
+				if(pyobjs[i] == Py_None)
+				{
+					cdts.set_null_handle(i);
+				}
+				else if(py_metaffi_handle::check(pyobjs[i]))
+				{
+					cdt_metaffi_handle h = (cdt_metaffi_handle)py_metaffi_handle(pyobjs[i]);
+					cdts.set(i, h);
+				}
+				else // different object - wrap in metaffi_handle
+				{
+					py_object obj(pyobjs[i]);
+					cdts[i]->cdt_val.metaffi_handle_val = { obj.detach(), PYTHON311_RUNTIME_ID, nullptr};
+				}
+			}break;
+			
+			case metaffi_handle_array_type:
+			{
+				py_list lst(pyobjs[i]);
+				cdts[i]->cdt_val.metaffi_handle_array_val.dimensions = type.dimensions;
+				lst.get_handle_array(&cdts[i]->cdt_val.metaffi_handle_array_val.vals,
+				                     &cdts[i]->cdt_val.metaffi_handle_array_val.dimensions_lengths,
+				                     type.dimensions);
+			}break;
+			
+			default:
+			{
+				std::stringstream ss;
+				ss << "Unknown type " << type.type << " at index " << i;
+				throw std::runtime_error(ss.str());
+			}break;
+		}
 	}
-	else if(mtype->second == metaffi_array_type)
-	{
-		// find "array of which type"?
-		if(PyList_Check(obj))
-		{
-			PyObject* elem = PyList_GetItem(obj, 0);
-			metaffi_type elemtype = get_metaffi_type(elem);
-			return (metaffi_types)(metaffi_array_type | elemtype);
-		}
-		else if(PyTuple_Check(obj))
-		{
-			PyObject* elem = PyTuple_GetItem(obj, 0);
-			metaffi_type elemtype = get_metaffi_type(elem);
-			return (metaffi_types)(metaffi_array_type | elemtype);
-		}
-		else
-		{
-			return metaffi_array_type;
-		}
-	}
-	
-	return mtype->second;
 }
 //--------------------------------------------------------------------

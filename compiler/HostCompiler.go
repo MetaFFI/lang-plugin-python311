@@ -128,7 +128,7 @@ func (this *HostCompiler) parseForeignStubs() (string, error) {
 
 	tmp, err := template.New("Python HostFunctionStubsTemplate").Funcs(templatesFuncMap).Parse(HostFunctionStubsTemplate)
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse Python HostFunctionStubsTemplate: %v", err)
+		return "", fmt.Errorf("Failed to to_py_tuple Python HostFunctionStubsTemplate: %v", err)
 	}
 
 	buf := strings.Builder{}

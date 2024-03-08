@@ -81,7 +81,7 @@ func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.ID
 	if err != nil{ return nil, true, err }
 
 
-	// parse AST and build IDLDefinition
+	// to_py_tuple AST and to_cdts IDLDefinition
 
 	
 	module := IDL.NewModuleDefinition(this.idl.IDLSource)
