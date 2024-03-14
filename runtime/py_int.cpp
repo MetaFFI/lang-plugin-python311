@@ -86,6 +86,16 @@ py_int::py_int(PyObject* obj)
 	instance = obj;
 }
 
+py_int::py_int(void* obj)
+{
+	instance = PyLong_FromVoidPtr(obj);
+	if (!instance)
+	{
+		std::stringstream ss;
+		throw std::runtime_error(check_python_error());
+	}
+}
+
 py_int::py_int(py_int&& other) noexcept
 {
 	instance = other.instance;

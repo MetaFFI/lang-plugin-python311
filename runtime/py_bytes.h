@@ -16,6 +16,7 @@ public:
 	static bool check(PyObject* obj);
 	
 public:
+	py_bytes() = default;
 	explicit py_bytes(const char* val, Py_ssize_t size);
 	explicit py_bytes(PyObject* obj);
 	py_bytes(py_bytes&& other) noexcept;
@@ -23,6 +24,7 @@ public:
 	
 	[[nodiscard]] Py_ssize_t size() const;
 	
+	uint8_t operator[](int i) const;
 	explicit operator const uint8_t*() const;
 	explicit operator uint8_t*() const;
 };

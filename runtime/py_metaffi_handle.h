@@ -15,7 +15,7 @@ class py_metaffi_handle : public py_object
 {
 public:
 	static bool check(PyObject* obj);
-	static PyObject* extract_pyobject_from_handle(const cdt_metaffi_handle* cdt_handle);
+	static py_object extract_pyobject_from_handle(const cdt_metaffi_handle& cdt_handle);
 	
 public:
 	explicit py_metaffi_handle(PyObject* obj);

@@ -7,12 +7,12 @@
 #include <cstdio>
 #include "runtime_id.h"
 
-PyObject* py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_handle* cdt_handle)
+py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_handle& cdt_handle)
 {
-	if(cdt_handle->runtime_id == PYTHON311_RUNTIME_ID)
+	if(cdt_handle.runtime_id == PYTHON311_RUNTIME_ID)
 	{
-		Py_XINCREF((PyObject*)cdt_handle->val);
-		return (PyObject*)cdt_handle->val;
+		Py_XINCREF((PyObject*)cdt_handle.val);
+		return py_object((PyObject*)cdt_handle.val);
 	}
 	else
 	{
@@ -25,14 +25,14 @@ PyObject* py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 			metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "__main__");
 		}
 		
-		PyObject* instance = PyObject_CallMethod(metaffi_handle_mod, "metaffi_handle", "KK", cdt_handle->val, cdt_handle->runtime_id);
+		PyObject* instance = PyObject_CallMethod(metaffi_handle_mod, "metaffi_handle", "KK", cdt_handle.val, cdt_handle.runtime_id);
 		
 		if(instance == nullptr)
 		{
 			throw std::runtime_error("Failed to create pythonic metaffi_handle object\n");
 		}
 		
-		return instance;
+		return py_object(instance);
 	}
 }
 

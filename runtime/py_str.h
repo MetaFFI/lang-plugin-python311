@@ -20,9 +20,9 @@ public:
 public:
 	py_str();
 	explicit py_str(PyObject* obj);
-	explicit py_str(const char* s, uint64_t length);
-	explicit py_str(const char32_t* s, uint64_t length);
-	explicit py_str(const char16_t* s, uint64_t length);
+	explicit py_str(const char* s);
+	explicit py_str(const char32_t* s);
+	explicit py_str(const char16_t* s);
 	py_str(py_str&& other) noexcept ;
 	py_str& operator=(const py_str& other);
 	[[nodiscard]] Py_ssize_t length() const;

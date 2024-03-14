@@ -9,9 +9,9 @@
 #include "runtime_id.h"
 #include "py_bytes.h"
 
-py_list::py_list()
+py_list::py_list(Py_ssize_t size /*= 0*/)
 {
-	instance = PyList_New(0);
+	instance = PyList_New(size);
 	if (!instance)
 	{
 		throw std::runtime_error(check_python_error());
@@ -50,7 +50,7 @@ py_list& py_list::operator=(const py_list& other)
 
 PyObject* py_list::operator[](int index)
 {
-	PyObject * item = PyList_GetItem(instance, index);
+	PyObject* item = PyList_GetItem(instance, index);
 	if (!item)
 	{
 		throw std::runtime_error(check_python_error());
@@ -63,42 +63,12 @@ Py_ssize_t py_list::length() const
 	return PyList_Size(instance);
 }
 
-void py_list::add_handle_array(const cdt_metaffi_handle* arr, const metaffi_size* lengths, metaffi_size dimensions)
+void py_list::append(PyObject* obj)
 {
-	if (dimensions == 1)
+	int res = PyList_Append(instance, obj);
+	if (res == -1)
 	{
-		for (int i = 0; i < lengths[0]; ++i)
-		{
-			PyList_Append(instance, py_metaffi_handle::extract_pyobject_from_handle(&arr[i]));
-		}
-	}
-	else
-	{
-		for (int i = 0; i < lengths[0]; ++i)
-		{
-			py_list sublist;
-			add_handle_array(arr + i * lengths[1], lengths + 1, dimensions - 1);
-			PyList_Append(instance, (PyObject*)sublist);
-		}
-	}
-}
-
-void py_list::add_bytes_array(metaffi_uint8* bytes, metaffi_size* bytes_lengths, metaffi_size len)
-{
-	if (len == 1)
-	{
-		py_bytes val((const char*)bytes, (Py_ssize_t)bytes_lengths[0]);
-		PyList_Append(instance, val.detach());
-	}
-	else
-	{
-		for(int j = 0; j < bytes_lengths[0]; j++)
-		{
-			py_list sublist;
-			sublist.add_bytes_array(bytes, bytes_lengths + 1, len - 1);
-			PyList_Append(instance, (PyObject*)sublist);
-			bytes += bytes_lengths[j];
-		}
+		throw std::runtime_error(check_python_error());
 	}
 }
 
@@ -166,89 +136,26 @@ void py_list::get_dimensions_and_type(int& out_dimensions, std::string& out_comm
 	}
 }
 
-void py_list::get_handle_array(cdt_metaffi_handle** out_arr, metaffi_size** out_lengths, metaffi_size dimensions, metaffi_size* current_length /*= nullptr*/, cdt_metaffi_handle* current_arr /*= nullptr*/)
+py_list& py_list::operator=(PyObject* other)
 {
-	if (dimensions == 1)
+	if (instance == other)
 	{
-		*out_lengths = current_length ? current_length : new metaffi_size[1];
-		(*out_lengths)[0] = PyList_Size(instance);
-		*out_arr = current_arr ? current_arr : new cdt_metaffi_handle[(*out_lengths)[0]];
-		
-		for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
-		{
-			PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
-			
-			py_object obj(item);
-			obj.inc_ref();
-			(*out_arr)[i] = { item, PYTHON311_RUNTIME_ID, nullptr};
-		}
+		return *this;
 	}
-	else
-	{
-		*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
-		(*out_lengths)[0] = PyList_Size(instance);
-		*out_arr = current_arr ? current_arr : new cdt_metaffi_handle[(*out_lengths)[0]];
-		
-		for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
-		{
-			PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
-			if (!PyList_Check(item))
-			{
-				std::stringstream ss;
-				ss << "Object is not a list. It is " << item->ob_type->tp_name;
-				throw std::runtime_error(ss.str());
-			}
-			
-			py_list sublist(item);
-			sublist.get_handle_array(out_arr, out_lengths, dimensions - 1, *out_lengths + 1, *out_arr + i * (*out_lengths)[1]);
-		}
-	}
+	
+	instance = other;
+	Py_XINCREF(instance);
+	return *this;
 }
 
-
-void py_list::get_bytes_array(metaffi_uint8** out_arr, metaffi_size** out_lengths, metaffi_size dimensions, metaffi_size* current_length /*= nullptr*/, metaffi_uint8* current_arr /*= nullptr*/)
+bool py_list::check(PyObject* obj)
 {
-	if (dimensions == 1)
-	{
-		*out_lengths = current_length ? current_length : new metaffi_size[1];
-		(*out_lengths)[0] = PyBytes_Size(instance);
-		*out_arr = (uint8_t*)py_bytes(instance);
-	}
-	else
-	{
-		*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
-		(*out_lengths)[0] = PyList_Size(instance);
-		*out_arr = current_arr ? current_arr : new metaffi_uint8[(*out_lengths)[0]];
-		
-		for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
-		{
-			PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
-			if(dimensions == 2)
-			{
-				if(!PyBytes_Check(item))
-				{
-					std::stringstream ss;
-					ss << "Object is not a bytes. It is " << item->ob_type->tp_name;
-					throw std::runtime_error(ss.str());
-				}
-				
-				py_bytes bytes(item);
-				((uint8_t**)(*out_arr))[i] = (uint8_t*)bytes;
-				(*out_lengths)[i] = bytes.size();
-			}
-			else
-			{
-				if (!PyList_Check(item))
-				{
-					std::stringstream ss;
-					ss << "Object is not a list. It is " << item->ob_type->tp_name;
-					throw std::runtime_error(ss.str());
-				}
-				
-				py_list sublist(item);
-				sublist.get_bytes_array(out_arr, out_lengths, dimensions - 1, *out_lengths + 1, *out_arr + i * (*out_lengths)[1]);
-			}
-		}
-	}
+	return PyList_Check(obj);
+}
+
+py_list::py_list(py_list& other) noexcept
+{
+	instance = other.instance;
+	Py_XINCREF(instance);
 }
 

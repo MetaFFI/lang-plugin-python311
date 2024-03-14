@@ -3,26 +3,30 @@
 #include "host_cdts_converter.h"
 #include "utils.h"
 
-PyObject* call_xcall(void* pxcall, void* pcontext, PyObject* tuple_param_metaffi_types, PyObject* tuple_retval_metaffi_types, PyObject* args)
+PyObject* call_xcall(void* pxcall, void* pcontext, metaffi_type_info* param_metaffi_types, uint64_t params_count, metaffi_type_info* retval_metaffi_types, uint64_t retval_count, PyObject* args)
 {
 	pyscope();
 
-	if (PyTuple_Size(tuple_param_metaffi_types) > 0 || PyTuple_Size(tuple_retval_metaffi_types) > 0)
+	if (params_count > 0 || retval_count > 0)
 	{
-		cdts* pcdts = convert_host_params_to_cdts(args, tuple_param_metaffi_types, PyTuple_Size(tuple_retval_metaffi_types));
+		cdts* pcdts = convert_host_params_to_cdts(args, param_metaffi_types, params_count, retval_count);
+		if(pcdts == nullptr)
+		{
+			return Py_None;
+		}
 
 		char* out_err = nullptr;
 		uint64_t out_err_len = 0;
 
 		((void(*)(void*,cdts*,char**,uint64_t*))pxcall)(pcontext, pcdts, &out_err, &out_err_len);
 
-		if (out_err_len > 0)
+		if(out_err_len > 0)
 		{
 			PyErr_SetString(PyExc_ValueError, std::string(out_err, out_err_len).c_str());
 			return Py_None;
 		}
 
-		if (PyTuple_Size(tuple_retval_metaffi_types) == 0) {
+		if(retval_count == 0) {
 			return Py_None;
 		}
 

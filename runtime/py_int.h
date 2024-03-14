@@ -27,6 +27,7 @@ public:
 	explicit py_int(uint32_t val);
 	explicit py_int(uint64_t val);
 	explicit py_int(PyObject* obj);
+	explicit py_int(void* obj);
 	py_int(py_int&& other) noexcept ;
 	py_int& operator=(const py_int& other);
 	

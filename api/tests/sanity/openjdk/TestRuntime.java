@@ -1,6 +1,12 @@
 package sanity;
 
-import java.util.function.Function;
+class SomeClass
+{
+	public void print()
+	{
+		System.out.println("Hello from inner class");
+	}
+}
 
 public class TestRuntime
 {
@@ -38,9 +44,30 @@ public class TestRuntime
 		Thread.sleep(seconds * 1000);
 	}
 
-	public static void callCallback(metaffi.Caller fadd)
+	public static SomeClass[] getSomeClasses()
 	{
-		var res = fadd.call(1L, 2L);
-		System.out.println(((Object[])res)[0]);
+		return new SomeClass[]{new SomeClass(), new SomeClass(), new SomeClass()};
+	}
+
+	public static void expectThreeSomeClasses(SomeClass[] arr)
+	{
+		if(arr.length != 3)
+			throw new IllegalArgumentException("Array length is not 3");
+	}
+
+	public static void expectThreeBuffers(byte[][] buffers)
+	{
+		if(buffers.length != 3)
+			throw new IllegalArgumentException("Buffers length is not 3");
+	}
+
+	public static byte[][] getThreeBuffers()
+	{
+		byte[][] buffers = new byte[3][];
+		for(int i = 0; i < 3; i++)
+		{
+			buffers[i] = new byte[]{1, 2, 3};
+		}
+		return buffers;
 	}
 }

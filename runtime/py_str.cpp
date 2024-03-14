@@ -3,6 +3,7 @@
 #endif
 
 #include "py_str.h"
+#include <string>
 
 py_str::py_str()
 {
@@ -46,27 +47,31 @@ Py_ssize_t py_str::length() const
 	return PyUnicode_GetLength(instance);
 }
 
-py_str::py_str(const char* s, uint64_t length)
+py_str::py_str(const char* s)
 {
-	instance = PyUnicode_FromStringAndSize(reinterpret_cast<const char*>(s), (Py_ssize_t)length);
+	instance = PyUnicode_FromString(reinterpret_cast<const char*>(s));
 	if(!instance)
 	{
 		throw std::runtime_error(check_python_error());
 	}
 }
 
-py_str::py_str(const char32_t* s, uint64_t length)
+py_str::py_str(const char32_t* s)
 {
-	instance = PyUnicode_FromKindAndData(PyUnicode_2BYTE_KIND, s, (Py_ssize_t)length);
-	if(!instance)
-	{
-		throw std::runtime_error(check_python_error());
-	}
-}
-
-py_str::py_str(const char16_t* s, uint64_t length)
-{
+	uint64_t length = std::char_traits<char32_t>::length(s);
+	
 	instance = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, s, (Py_ssize_t)length);
+	if(!instance)
+	{
+		throw std::runtime_error(check_python_error());
+	}
+}
+
+py_str::py_str(const char16_t* s)
+{
+	uint64_t length = std::char_traits<char16_t>::length(s);
+	
+	instance = PyUnicode_FromKindAndData(PyUnicode_2BYTE_KIND, s, (Py_ssize_t)length);
 	if(!instance)
 	{
 		throw std::runtime_error(check_python_error());

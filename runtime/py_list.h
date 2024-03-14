@@ -14,12 +14,18 @@
 class py_list : public py_object
 {
 public:
-	py_list();
+	static bool check(PyObject* obj);
+	
+public:
+	explicit py_list(Py_ssize_t size = 0);
 	explicit py_list(PyObject* obj);
+	py_list(py_list& other) noexcept;
 	py_list(py_list&& other) noexcept;
 	py_list& operator=(const py_list& other);
+	py_list& operator=(PyObject* other);
 	PyObject* operator[](int index);
 	
+	void append(PyObject* obj);
 	[[nodiscard]] Py_ssize_t length() const;
 	void get_dimensions_and_type(int& out_dimensions, std::string& out_common_type);
 	
@@ -78,9 +84,10 @@ public:
 	{
 		if (dimensions == 1)
 		{
-			*out_lengths = current_length ? current_length : new metaffi_size[1];
-			(*out_lengths)[0] = PyList_Size(instance);
-			*out_arr = current_arr ? current_arr : new ctype_t[(*out_lengths)[0]];
+			Py_ssize_t size = PyList_Size(instance);
+			*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
+			(*out_lengths)[0] = size;
+			*out_arr = new ctype_t[size];
 			
 			for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
 			{
@@ -121,11 +128,13 @@ public:
 	{
 		if(dimensions == 1)
 		{
-			*out_lengths = current_length ? current_length : new metaffi_size[1];
-			(*out_lengths)[0] = PyList_Size(instance);
-			*out_arr = current_arr ? current_arr : new ctype_t[(*out_lengths)[0]];
+			Py_ssize_t size = PyList_Size(instance);
+			*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
+			(*out_lengths)[0] = size;
+			*out_arr = new ctype_t[size];
+			*out_arr_lengths = new metaffi_size[size];
 			
-			for(metaffi_size i = 0; i < (*out_lengths)[0]; i++)
+			for(metaffi_size i = 0; i < size; i++)
 			{
 				PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
 				if(!py_type_t::check(item))
@@ -162,7 +171,7 @@ public:
 	}
 	
 	void get_handle_array(cdt_metaffi_handle** out_arr, metaffi_size** out_lengths, metaffi_size dimensions, metaffi_size* current_length = nullptr, cdt_metaffi_handle* current_arr = nullptr);
-	void get_bytes_array(metaffi_uint8** out_arr, metaffi_size** out_lengths, metaffi_size dimensions, metaffi_size* current_length = nullptr, metaffi_uint8* current_arr = nullptr);
+	void get_bytes_array(metaffi_uint8*** out_arr, metaffi_size** out_lengths, metaffi_size dimensions);
 	
 	//--------------------------------------------------------------------
 	

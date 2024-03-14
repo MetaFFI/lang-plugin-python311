@@ -5,13 +5,12 @@
 #ifdef _DEBUG
 #undef _DEBUG
 #include <Python.h>
-#include "py_tuple.h"
-
 #define _DEBUG
 #else
 #include <Python.h>
 #endif
 
+#include "py_tuple.h"
 
 
 #define build_constructor_param(type) \
@@ -23,7 +22,7 @@
 	set_##type##_array(std::move(set_##type##_array))
 
 
-extern "C" const char* create_lambda_python_code;
+
 
 class cdts_python3
 {

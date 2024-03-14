@@ -62,3 +62,8 @@ Py_ssize_t py_bytes::size() const
 {
 	return PyBytes_Size(instance);
 }
+
+uint8_t py_bytes::operator[](int i) const
+{
+	return PyBytes_AsString(instance)[i];
+}

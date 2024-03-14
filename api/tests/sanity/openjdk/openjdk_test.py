@@ -77,7 +77,7 @@ class TestSanity(unittest.TestCase):
 			pass
 	
 	def test_join_strings(self):
-		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_array_type)]
+		params_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_array_type, dims=1)]
 		ret_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		
 		joinStrings = test_runtime_module.load('class=sanity.TestRuntime,callable=joinStrings', params_type, ret_type)
@@ -164,18 +164,18 @@ class TestSanity(unittest.TestCase):
 	
 	
 	def test_callback(self):
-		
+
 		def add(x: int, y: int) -> int:
 			print('in python add from java - {}+{}'.format(x, y), file=sys.stderr)
 			return x+y
-		
+
 		# make "add_callback" metaffi callable
 		metaffi_callable = metaffi.metaffi_module.make_metaffi_callable(add)
-		
+
 		# load call_callback_add from Java
 		param_type = [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_callable_type)]
 		testMapNameGetter = test_runtime_module.load('class=sanity.TestRuntime,callable=callCallback', param_type, None)
-		
+
 		# call call_callback_add passing add_callback
 		testMapNameGetter(metaffi_callable)
 		

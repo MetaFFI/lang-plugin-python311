@@ -89,14 +89,9 @@ class MetaFFIModule:
 		
 		context = pxcall_and_context_array.contents[1]
 		
-		param_types_without_alias = []
-		for t in params_metaffi_types:
-			param_types_without_alias.append(t.type)
-		retval_types_without_alias = []
-		for t in retval_metaffi_types:
-			retval_types_without_alias.append(t.type)
 		
-		func_lambda: Callable[..., ...] = lambda *args: metaffi.xllr_wrapper.xllr_python3.call_xcall(pxcall, context, tuple(param_types_without_alias), tuple(retval_types_without_alias), None if not args else args)
+		
+		func_lambda: Callable[..., ...] = lambda *args: metaffi.xllr_wrapper.xllr_python3.call_xcall(pxcall, context, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types), None if not args else args)
 		
 		return func_lambda
 		

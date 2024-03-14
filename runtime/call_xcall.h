@@ -12,5 +12,5 @@
 
 extern "C"
 {
-    PyObject* call_xcall(void* pxcall, void* pcontext, PyObject* tuple_param_metaffi_types, PyObject* tuple_retval_metaffi_types, PyObject* args);
+    PyObject* call_xcall(void* pxcall, void* pcontext, metaffi_type_info* param_metaffi_types, uint64_t params_count, metaffi_type_info* retval_metaffi_types, uint64_t retval_count, PyObject* args);
 }
