@@ -915,6 +915,10 @@ void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expec
 						get_get_1d_handle_array_callback());
 			}break;
 			
+			case metaffi_callable_type:
+				throw std::runtime_error("Callable type is not implemented yet");
+				break;
+			
 			default:
 			{
 				std::stringstream ss;
