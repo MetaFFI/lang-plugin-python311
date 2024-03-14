@@ -19,59 +19,9 @@
 using namespace metaffi::runtime;
 std::once_flag load_capi_flag;
 
-
-//	[](void* values_to_set, int index, const cdt_metaffi_callable& val_to_set)
-//	{
-//		PyRun_SimpleString(create_lambda_python_code); // make sure "create_lambda" exists
-//		PyObject* main_module = PyImport_AddModule("__main__");  // Get the main module
-//		PyObject* global_dict = PyModule_GetDict(main_module);  // Get the global dictionary
-//
-//		// Get the create_lambda function
-//		PyObject* pyFunc = PyDict_GetItemString(global_dict, "create_lambda");
-//
-//		if(!pyFunc || !PyCallable_Check(pyFunc))
-//		{
-//			throw std::runtime_error("failed to create or import create_lambda python function");
-//		}
-//
-//		// Convert the void* to PyObject*
-//		PyObject* py_pxcall = PyLong_FromVoidPtr(((void**)val_to_set.val)[0]);
-//		PyObject* py_pcontext = PyLong_FromVoidPtr(((void**)val_to_set.val)[1]);
-//
-//		// Convert the metaffi_type arrays to PyTuple*
-//		PyObject* py_param_types = PyTuple_New(val_to_set.params_types_length);
-//		for (int i = 0; i < val_to_set.params_types_length; i++) {
-//			PyTuple_SetItem(py_param_types, i, PyLong_FromUnsignedLongLong(val_to_set.parameters_types[i]));
-//		}
-//
-//		PyObject* py_retval_types = PyTuple_New(val_to_set.retval_types_length);
-//		for (int i = 0; i < val_to_set.retval_types_length; i++) {
-//			PyTuple_SetItem(py_retval_types, i, PyLong_FromUnsignedLongLong(val_to_set.retval_types[i]));
-//		}
-//
-//		PyObject* argsTuple = PyTuple_New(4);  // Create a tuple to hold the arguments
-//
-//		PyTuple_SetItem(argsTuple, 0, py_pxcall);
-//		PyTuple_SetItem(argsTuple, 1, py_pcontext);
-//		PyTuple_SetItem(argsTuple, 2, py_param_types);
-//		PyTuple_SetItem(argsTuple, 3, py_retval_types);
-//
-//		// Call the Python function
-//		PyObject* result = PyObject_CallObject(pyFunc, argsTuple);
-//		Py_DECREF(argsTuple);
-//
-//		std::string err = check_python_error();
-//		if(!err.empty())
-//		{
-//			throw std::runtime_error(err);
-//		}
-//
-//		PyTuple_SetItem((PyObject*)values_to_set, index, result); // set lambda in return values tuple
-//	}
-
 auto get_on_array_callback()
 {
-	return [](metaffi_size* index, metaffi_size index_size, metaffi_size array_length, void* other_array)
+	return [](metaffi_size* index, metaffi_size index_size, metaffi_size current_dimension, metaffi_size array_length, void* other_array)
 	{
 		// create the array in the given indices
 		py_list lst = *(py_list*)other_array;
@@ -126,7 +76,7 @@ auto get_on_1d_handle_array_callback()
 
 auto get_on_bytes_array_callback()
 {
-	return [](metaffi_size* index, metaffi_size index_size, metaffi_size array_length, void* other_array)
+	return [](metaffi_size* index, metaffi_size index_size, metaffi_size current_dimension, metaffi_size array_length, void* other_array)
 	{
 		// create the array in the given indices
 		py_list lst = *(py_list*)other_array;
@@ -559,6 +509,12 @@ py_tuple cdts_python3::to_py_tuple()
 				res.set_item(i, lst.detach());
 			}break;
 			
+			case metaffi_char8_type:
+			{
+				metaffi_char8 c[] = {cur_cdt->cdt_val.metaffi_char8_val, 0};
+				res.set_item(i, py_str(c).detach());
+			}break;
+			
 			case metaffi_string8_type:
 			{
 				res.set_item(i, py_str(cur_cdt->cdt_val.metaffi_string8_val).detach());
@@ -576,6 +532,12 @@ py_tuple cdts_python3::to_py_tuple()
 				res.set_item(i, lst.detach());
 			}break;
 			
+			case metaffi_char16_type:
+			{
+				metaffi_char16 c[] = {cur_cdt->cdt_val.metaffi_char16_val, 0};
+				res.set_item(i, py_str(c).detach());
+			}break;
+			
 			case metaffi_string16_type:
 				res.set_item(i, (PyObject*)py_str(cur_cdt->cdt_val.metaffi_string16_val).detach());
 				break;
@@ -590,6 +552,12 @@ py_tuple cdts_python3::to_py_tuple()
 						get_on_1d_array_callback<metaffi_string16, py_str>()
 				);
 				res.set_item(i, lst.detach());
+			}break;
+			
+			case metaffi_char32_type:
+			{
+				metaffi_char32 c[] = {cur_cdt->cdt_val.metaffi_char32_val, 0};
+				res.set_item(i, py_str(c).detach());
 			}break;
 			
 			case metaffi_string32_type:
