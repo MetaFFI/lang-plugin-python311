@@ -61,14 +61,6 @@ TEST_CASE( "CDTS Python3 Test", "[cdtspython3]" )
 		cdt.cdt_val.metaffi_uint8_array_val.arr[2].vals[2] = 8;
 		cdt.cdt_val.metaffi_uint8_array_val.arr[2].vals[3] = 9;
 		
-		uint8_t arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-		int x = PyGILState_Check();
-		PyObject* test0 = PyBytes_FromStringAndSize((char*)arr, 9);
-		int y = PyGILState_Check();
-		PyObject* test5 = PyBytes_FromStringAndSize((char*)arr, 9);
-		int z = PyGILState_Check();
-		PyObject* test = PyBytes_FromStringAndSize((char*)arr, 9);
-		
 		cdts_python3 cdts_py(&cdt, 1);
 		py_tuple t = cdts_py.to_py_tuple();
 		py_list lst(t[0]);
