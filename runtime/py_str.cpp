@@ -47,7 +47,7 @@ Py_ssize_t py_str::length() const
 	return PyUnicode_GetLength(instance);
 }
 
-py_str::py_str(const char* s)
+py_str::py_str(const char8_t* s)
 {
 	instance = PyUnicode_FromString(reinterpret_cast<const char*>(s));
 	if(!instance)

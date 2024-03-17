@@ -160,8 +160,8 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		metaffi::runtime::cdts_wrapper wrapper_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
 		REQUIRE(wrapper_ret[0]->type == metaffi_string8_type);
 
-		std::string returned(wrapper_ret[0]->cdt_val.metaffi_string8_val);
-		REQUIRE(returned == "one,two,three");
+		std::u8string returned(wrapper_ret[0]->cdt_val.metaffi_string8_val);
+		REQUIRE(returned == u8"one,two,three");
 
 		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
 			free(cdts_param_ret);
@@ -226,7 +226,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		wrapper[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
 		wrapper[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON311_RUNTIME_ID;
 		wrapper[1]->type = metaffi_string8_type;
-		wrapper[1]->cdt_val.metaffi_string8_val = (char*)"key\0";
+		wrapper[1]->cdt_val.metaffi_string8_val = (char8_t*)u8"key\0";
 		wrapper[2]->type = metaffi_int64_type;
 		wrapper[2]->cdt_val.metaffi_int64_val = 42;
 
@@ -262,7 +262,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		wrapper_contains_params[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
 		wrapper_contains_params[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON311_RUNTIME_ID;
 		wrapper_contains_params[1]->type = metaffi_string8_type;
-		wrapper_contains_params[1]->cdt_val.metaffi_string8_val = (char*)"key\0";
+		wrapper_contains_params[1]->cdt_val.metaffi_string8_val = (char8_t*)u8"key\0";
 
 		long_err_len = 0;
 		((void(*)(void*,cdts*,char**,uint64_t*))p_testmap_contains[0])(p_testmap_contains[1], (cdts*)cdts_param_ret, &err, &long_err_len);
@@ -300,7 +300,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		wrapper_get_params[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
 		wrapper_get_params[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON311_RUNTIME_ID;
 		wrapper_get_params[1]->type = metaffi_string8_type;
-		wrapper_get_params[1]->cdt_val.metaffi_string8_val = (char*)"key\0";
+		wrapper_get_params[1]->cdt_val.metaffi_string8_val = (char8_t*)u8"key\0";
 
 		long_err_len = 0;
 		((void(*)(void*,cdts*,char**,uint64_t*))p_testmap_get[0])(p_testmap_get[1], (cdts*)cdts_param_ret, &err, &long_err_len);
@@ -366,7 +366,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		REQUIRE(p_testmap_set[0] != nullptr);
 		REQUIRE(p_testmap_set[1] != nullptr);
 
-		auto insert = [](void** p_testmap_set, metaffi_handle hthis, const std::string& key, std::vector<int>* val, int runtime_id)
+		auto insert = [](void** p_testmap_set, metaffi_handle hthis, const std::u8string& key, std::vector<int>* val, int runtime_id)
 		{
 			cdts* cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(3, 0);
 			metaffi::runtime::cdts_wrapper wrapper(cdts_param_ret[0].pcdt, cdts_param_ret[0].len);
@@ -384,8 +384,8 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 
 		std::vector<int> vec_to_insert = {1,2,3};
 		std::vector<int> vec_to_insert2 = {11,12,13};
-		insert(p_testmap_set, testmap_instance, std::string("key1"), &vec_to_insert, 733);
-		insert(p_testmap_set, testmap_instance, std::string("key2"), &vec_to_insert2, 733);
+		insert(p_testmap_set, testmap_instance, std::u8string(u8"key1"), &vec_to_insert, 733);
+		insert(p_testmap_set, testmap_instance, std::u8string(u8"key2"), &vec_to_insert2, 733);
 
 		if(cdts_param_ret[0].len + cdts_param_ret[1].len > cdts_cache_size){
 			free(cdts_param_ret);
@@ -410,7 +410,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(2, 1);
 		metaffi::runtime::cdts_wrapper wrapper_contains_params(cdts_param_ret[0].pcdt, cdts_param_ret[0].len);
 		wrapper_contains_params.set(0, {testmap_instance, PYTHON311_RUNTIME_ID, nullptr});
-		wrapper_contains_params.set(1, std::string("key1"));
+		wrapper_contains_params.set(1, std::u8string(u8"key1"));
 
 		long_err_len = 0;
 		((void(*)(void*,cdts*,char**,uint64_t*))p_testmap_contains[0])(p_testmap_contains[1], (cdts*)cdts_param_ret, &err, &long_err_len);
@@ -441,7 +441,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		REQUIRE(p_testmap_get[0] != nullptr);
 		REQUIRE(p_testmap_get[1] != nullptr);
 
-		auto get = [&p_testmap_get](metaffi_handle hthis, const std::string& key) -> std::vector<int>
+		auto get = [&p_testmap_get](metaffi_handle hthis, const std::u8string& key) -> std::vector<int>
 		{
 			cdts* cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(2, 1);
 			metaffi::runtime::cdts_wrapper wrapper_get_params(cdts_param_ret[0].pcdt, cdts_param_ret[0].len, false);
@@ -449,7 +449,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 			wrapper_get_params[0]->cdt_val.metaffi_handle_val.val = hthis;
 			wrapper_get_params[0]->cdt_val.metaffi_handle_val.runtime_id = PYTHON311_RUNTIME_ID;
 			wrapper_get_params[1]->type = metaffi_string8_type;
-			wrapper_get_params[1]->cdt_val.metaffi_string8_val = (char*)key.c_str();
+			wrapper_get_params[1]->cdt_val.metaffi_string8_val = (char8_t*)key.c_str();
 
 			uint64_t long_err_len = 0;
 			char* err = nullptr;
@@ -464,12 +464,12 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 			return *vector_pulled;
 		};
 
-		std::vector<int> inner_vec1 = get(testmap_instance, std::string("key1"));
+		std::vector<int> inner_vec1 = get(testmap_instance, std::u8string(u8"key1"));
 		REQUIRE(inner_vec1[0] == 1);
 		REQUIRE(inner_vec1[1] == 2);
 		REQUIRE(inner_vec1[2] == 3);
 
-		std::vector<int> inner_vec2 = get(testmap_instance, std::string("key2"));
+		std::vector<int> inner_vec2 = get(testmap_instance, std::u8string(u8"key2"));
 		REQUIRE(inner_vec2[0] == 11);
 		REQUIRE(inner_vec2[1] == 12);
 		REQUIRE(inner_vec2[2] == 13);
@@ -563,7 +563,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 
 		metaffi::runtime::cdts_wrapper wrapper_get_ret(cdts_param_ret[1].pcdt, cdts_param_ret[1].len, false);
 		REQUIRE(wrapper_get_ret[0]->type == metaffi_string8_type);
-		REQUIRE(std::string(wrapper_get_ret[0]->cdt_val.metaffi_string8_val) == "name1");
+		REQUIRE(std::u8string(wrapper_get_ret[0]->cdt_val.metaffi_string8_val) == u8"name1");
 
 		// set name to "name is my name"
 
@@ -572,7 +572,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 		wrapper_set_params[0]->type = metaffi_handle_type;
 		wrapper_set_params[0]->cdt_val.metaffi_handle_val.val = testmap_instance;
 		wrapper_set_params[1]->type = metaffi_string8_type;
-		wrapper_set_params[1]->cdt_val.metaffi_string8_val = (char*)"name is my name\0";
+		wrapper_set_params[1]->cdt_val.metaffi_string8_val = (char8_t*)u8"name is my name\0";
 
 		long_err_len = 0;
 		((void(*)(void*,cdts*,char**,uint64_t*))pset_name[0])(pset_name[1], (cdts*)cdts_param_ret, &err, &long_err_len);
@@ -592,7 +592,7 @@ TEST_CASE( "python3 runtime api", "[python3runtime]" )
 
 		metaffi::runtime::cdts_wrapper last_get_wrapper(last_get_params[1].pcdt, last_get_params[1].len, false);
 		REQUIRE(wrapper_get_ret[0]->type == metaffi_string8_type);
-		REQUIRE(std::string(wrapper_get_ret[0]->cdt_val.metaffi_string8_val) == "name is my name");
+		REQUIRE(std::u8string(wrapper_get_ret[0]->cdt_val.metaffi_string8_val) == u8"name is my name");
 	}
 
 	SECTION("runtime_test_target.wait_a_bit")

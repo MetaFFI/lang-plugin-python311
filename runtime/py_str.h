@@ -20,7 +20,7 @@ public:
 public:
 	py_str();
 	explicit py_str(PyObject* obj);
-	explicit py_str(const char* s);
+	explicit py_str(const char8_t* s);
 	explicit py_str(const char32_t* s);
 	explicit py_str(const char16_t* s);
 	py_str(py_str&& other) noexcept ;
