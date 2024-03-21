@@ -5,6 +5,7 @@ import os
 import platform
 import metaffi.xllr_wrapper
 
+
 class _PyCdtsConverter:
 	def __init__(self):
 		if platform.system() == 'Windows':
@@ -21,8 +22,7 @@ class _PyCdtsConverter:
 		self.xllr_python3.convert_host_return_values_from_cdts.argtypes = [ctypes.c_void_p, ctypes.c_uint64]
 		self.xllr_python3.convert_host_return_values_from_cdts.restype = py_object
 	
-	def convert_host_params_to_cdts(self, params_names: py_object, params_types: py_object,
-														return_values_size: int) -> ctypes.c_void_p:
+	def convert_host_params_to_cdts(self, params_names: py_object, params_types: py_object, return_values_size: int) -> ctypes.c_void_p:
 		res = self.xllr_python3.convert_host_params_to_cdts(params_names, params_types, return_values_size)
 		return res
 	

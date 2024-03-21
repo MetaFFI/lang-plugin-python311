@@ -3,7 +3,6 @@ import metaffi.xllr_wrapper
 from metaffi.metaffi_types import *
 import metaffi.metaffi_runtime
 
-
 XCallParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
 XCallNoParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
 XCallParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
@@ -14,7 +13,6 @@ exec(create_lambda_python_code)
 
 
 def make_metaffi_callable(f: Callable) -> Callable:
-	
 	params_metaffi_types, retval_metaffi_types = metaffi.metaffi_types.get_callable_types(f)
 	
 	params_type = ctypes.c_uint64 * len(params_metaffi_types)
@@ -49,18 +47,19 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	setattr(res, 'retval_metaffi_types', retval_metaffi_types)
 	return res
 
+
 class MetaFFIModule:
 	def __init__(self, runtime: metaffi.metaffi_runtime.MetaFFIRuntime, xllr: metaffi.xllr_wrapper._XllrWrapper, module_path: str):
 		self.runtime = runtime
 		self.xllr = xllr
 		self.module_path = module_path
 	
-	def load(self, function_path: str, params_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info],
-			retval_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info]) -> Callable[..., Tuple[Any, ...]]:
+	def load(self, function_path: str, params_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info] | None,
+			retval_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info] | None) -> Callable[..., Tuple[Any, ...]]:
 		
 		if params_metaffi_types is None:
 			params_metaffi_types = []
-			
+		
 		if retval_metaffi_types is None:
 			retval_metaffi_types = []
 		
@@ -72,7 +71,7 @@ class MetaFFIModule:
 		retval_array = RetvalArray(*retval_metaffi_types)
 		
 		# Call xllr.load_function
-		pxcall_and_context = self.xllr.load_function('xllr.'+self.runtime.runtime_plugin, self.module_path, function_path, params_array, retval_array, len(params_metaffi_types), len(retval_metaffi_types))
+		pxcall_and_context = self.xllr.load_function('xllr.' + self.runtime.runtime_plugin, self.module_path, function_path, params_array, retval_array, len(params_metaffi_types), len(retval_metaffi_types))
 		
 		pxcall_and_context_array = ctypes.cast(pxcall_and_context, ctypes.POINTER(ctypes.c_void_p * 2))
 		
@@ -86,14 +85,8 @@ class MetaFFIModule:
 		else:
 			pxcall = XCallNoParamsNoRetType(pxcall_and_context_array.contents[0])
 		
-		
 		context = pxcall_and_context_array.contents[1]
-		
-		
 		
 		func_lambda: Callable[..., ...] = lambda *args: metaffi.xllr_wrapper.xllr_python3.call_xcall(pxcall, context, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types), None if not args else args)
 		
 		return func_lambda
-		
-		
-		

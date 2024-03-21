@@ -15,8 +15,10 @@ def init():
 
 
 def fini():
-	global runtime
-	runtime.release_runtime_plugin()
+	# TODO
+	# global runtime
+	# runtime.release_runtime_plugin()
+	pass
 
 
 class GoMCache:
@@ -30,30 +32,30 @@ class GoMCache:
 			raise Exception(f'Unsupported platform {platform.system()}')
 		
 		# get INFINITY to use in "set method"
-		infinity_getter = module.load('global=TTL_FOREVER,getter', None, [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)])
+		infinity_getter = module.load('global=TTL_FOREVER,getter', None, [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)])
 		self.infinity = infinity_getter()[0]
 		
 		# load constructor
-		new_gomcache = module.load('callable=New', None, [metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)])
+		new_gomcache = module.load('callable=New', None, [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)])
 		self.instance = new_gomcache()[0]
 		
 		# load methods
 		self.plen = module.load('callable=CacheDriver.Len,instance_required',
-			[metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)],
-			[metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_array_type)])
+			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)],
+			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_array_type)])
 		
 		self.pset = module.load('callable=CacheDriver.Set,instance_required',
-			[metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-			metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type),
-			metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type),
-			metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)],
-			[metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)])
+			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+			metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type),
+			metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type),
+			metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)],
+			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)])
 		
 		self.pget = module.load('callable=CacheDriver.Get,instance_required',
-			[metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
-			metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)],
-			[metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type),
-			metaffi.metaffi_types.new_metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_bool_type)])
+			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
+			metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)],
+			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type),
+			metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_bool_type)])
 		
 	def __len__(self):
 		return self.plen(self.instance)[0]
@@ -93,5 +95,5 @@ class GoMCacheTest(unittest.TestCase):
 			self.fail('did not find the key myinteger after settings it')
 		
 		if val != 101:
-			self.fail("val expected to be 101, while it is" + str(val))
+			self.fail("val expected to be 101, while it is " + str(val))
 		

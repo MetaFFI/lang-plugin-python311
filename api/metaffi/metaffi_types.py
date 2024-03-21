@@ -59,6 +59,22 @@ class metaffi_type_info(ctypes.Structure):
 	            ("alias", ctypes.c_char_p),
 	            ("alias_length", ctypes.c_uint64),
 	            ("dimensions", ctypes.c_int32)]
+	
+	def __init__(self, metaffi_type: MetaFFITypes = MetaFFITypes.metaffi_null_type, alias: str = None, dims: int = 0):
+		super().__init__()
+		
+		# Set the type
+		self.type = ctypes.c_uint64(metaffi_type.value)
+		self.dimensions = dims
+		
+		# If alias is not None, set the alias and alias_length
+		if alias is not None:
+			self.alias = ctypes.c_char_p(alias.encode('utf-8'))
+			self.alias_length = ctypes.c_uint64(len(alias))
+		else:
+			# If alias is None, set the alias to NULL and alias_length to 0
+			self.alias = None
+			self.alias_length = ctypes.c_uint64(0)
 
 
 # Define the pointer type for metaffi_type_info
@@ -72,7 +88,7 @@ pytype_to_metaffi_type_dict = {
 	'list': MetaFFITypes.metaffi_any_type.value,
 	'tuple': MetaFFITypes.metaffi_any_type.value,
 	'Tuple': MetaFFITypes.metaffi_any_type.value
-	}
+}
 
 
 def pytype_to_metaffi_type(t: type):
@@ -82,26 +98,6 @@ def pytype_to_metaffi_type(t: type):
 		return pytype_to_metaffi_type_dict[t.__name__]
 	
 	return MetaFFITypes.metaffi_handle_type.value
-
-
-def new_metaffi_type_info(metaffi_type: MetaFFITypes, alias: str = None, dims: int = 0) -> metaffi_type_info:
-	# Create a new metaffi_type_info instance
-	new_type = metaffi_type_info()
-	
-	# Set the type
-	new_type.type = ctypes.c_uint64(metaffi_type.value)
-	new_type.dimensions = dims
-	
-	# If alias is not None, set the alias and alias_length
-	if alias is not None:
-		new_type.alias = ctypes.c_char_p(alias.encode('utf-8'))
-		new_type.alias_length = ctypes.c_uint64(len(alias))
-	else:
-		# If alias is None, set the alias to NULL and alias_length to 0
-		new_type.alias = None
-		new_type.alias_length = ctypes.c_uint64(0)
-	
-	return new_type
 
 
 def get_callable_types(callable: Callable) -> Tuple[tuple[int], tuple[int]]:
@@ -125,4 +121,3 @@ def get_callable_types(callable: Callable) -> Tuple[tuple[int], tuple[int]]:
 			param_metaffi_types.append(pytype_to_metaffi_type(ctypes.py_object))
 	
 	return tuple(param_metaffi_types), tuple(return_metaffi_types)
-
