@@ -575,7 +575,11 @@ py_tuple cdts_python3::to_py_tuple()
 				);
 				res.set_item(i, lst.detach());
 			}break;
-				
+			
+			case metaffi_null_type:
+				res.set_item(i, Py_None);
+				break;
+			
 			case metaffi_handle_type:
 			{
 				res.set_item(i, py_metaffi_handle::extract_pyobject_from_handle(cur_cdt->cdt_val.metaffi_handle_val).detach());
@@ -628,6 +632,11 @@ void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expec
 		{
 			type = py_object(pyobjs[i]).get_type_info();
 			cdts[i]->type = type.type;
+		}
+		
+		if(type.type & metaffi_array_type && type.dimensions == 0)
+		{
+			throw std::runtime_error("Array type must have dimensions");
 		}
 		
 		switch(type.type)
@@ -853,6 +862,10 @@ void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expec
 						get_get_array_callback(),
 						get_get_1d_string32_array_callback());
 			}break;
+			
+			case metaffi_null_type:
+				cdts.set_null_handle(i);
+				break;
 			
 			case metaffi_handle_type:
 			{

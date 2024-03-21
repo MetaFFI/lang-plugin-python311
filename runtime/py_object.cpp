@@ -9,7 +9,10 @@
 
 py_object::py_object(PyObject* obj)
 {
-	Py_XINCREF(instance);
+	if(!Py_IsNone(obj))
+	{
+		Py_XINCREF(instance);
+	}
 	instance = obj;
 }
 
@@ -22,7 +25,10 @@ py_object::py_object(py_object&& other) noexcept
 py_object& py_object::operator=(const py_object& other)
 {
 	instance = other.instance;
-	Py_XINCREF(instance);
+	if(!Py_IsNone(instance))
+	{
+		Py_XINCREF(instance);
+	}
 	return *this;
 }
 
@@ -38,17 +44,23 @@ const char* py_object::get_type() const
 
 void py_object::inc_ref()
 {
-	Py_XINCREF(instance);
+	if(!Py_IsNone(instance))
+	{
+		Py_XINCREF(instance);
+	}
 }
 
 void py_object::dec_ref()
 {
-	Py_XDECREF(instance);
+	if(!Py_IsNone(instance))
+	{
+		Py_XINCREF(instance);
+	}
 }
 
 py_object::~py_object()
 {
-	if(instance != nullptr){
+	if(instance != nullptr && !Py_IsNone(instance)){
 		Py_XDECREF(instance);
 	}
 }

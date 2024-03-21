@@ -9,6 +9,11 @@
 
 py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_handle& cdt_handle)
 {
+	if(cdt_handle.val == nullptr)
+	{
+		return py_object(Py_None);
+	}
+	
 	if(cdt_handle.runtime_id == PYTHON311_RUNTIME_ID)
 	{
 		Py_XINCREF((PyObject*)cdt_handle.val);
