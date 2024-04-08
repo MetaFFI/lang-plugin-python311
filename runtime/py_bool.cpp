@@ -5,7 +5,7 @@
 #include "py_bool.h"
 
 
-py_bool::py_bool(bool val)
+py_bool::py_bool(bool val) : py_object()
 {
 	instance = PyBool_FromLong(val);
 	if (!instance)
@@ -14,19 +14,16 @@ py_bool::py_bool(bool val)
 	}
 }
 
-py_bool::py_bool(PyObject* obj)
+py_bool::py_bool(PyObject* obj) : py_object(obj)
 {
 	if (!PyBool_Check(obj))
 	{
 		throw std::runtime_error("Object is not a bool");
 	}
-	instance = obj;
 }
 
-py_bool::py_bool(py_bool&& other) noexcept
+py_bool::py_bool(py_bool&& other) noexcept : py_object(std::move(other))
 {
-	instance = other.instance;
-	other.instance = nullptr;
 }
 
 py_bool& py_bool::operator=(const py_bool& other)

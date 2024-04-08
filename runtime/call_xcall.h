@@ -1,5 +1,5 @@
 #pragma once
-#include <runtime/cdt_structs.h>
+#include <runtime/cdt.h>
 
 // In order not to require python debug library
 #ifdef _DEBUG

@@ -9,11 +9,11 @@
 
 py_object::py_object(PyObject* obj)
 {
-	if(!Py_IsNone(obj))
+	instance = obj;
+	if(!Py_IsNone(instance))
 	{
 		Py_XINCREF(instance);
 	}
-	instance = obj;
 }
 
 py_object::py_object(py_object&& other) noexcept
@@ -24,6 +24,11 @@ py_object::py_object(py_object&& other) noexcept
 
 py_object& py_object::operator=(const py_object& other)
 {
+	if(instance == other.instance)
+	{
+		return *this;
+	}
+	
 	instance = other.instance;
 	if(!Py_IsNone(instance))
 	{
@@ -65,104 +70,6 @@ py_object::~py_object()
 	}
 }
 
-std::unordered_map<std::string, metaffi_types> pytypes_to_metaffi_types =
-{
-	{"str", metaffi_string8_type},
-	{"int", metaffi_int64_type},
-	{"float", metaffi_float64_type},
-	{"bool", metaffi_bool_type},
-	{"list", metaffi_array_type},
-	{"NoneType", metaffi_null_type},
-	
-};
-
-metaffi_type_info py_object::get_type_info() const
-{
-	metaffi_type_info info;
-	std::string pytype = std::move(get_type());
-	
-	auto mtype = pytypes_to_metaffi_types.find(pytype);
-	if(mtype == pytypes_to_metaffi_types.end())
-	{
-		info.type = metaffi_handle_type;
-		return info;
-	}
-	
-	switch(mtype->second)
-	{
-		case metaffi_string8_type:
-		{
-			info.type = metaffi_string8_type;
-			return info;
-		}break;
-		
-		case metaffi_bool_type:
-		{
-			info.type = metaffi_bool_type;
-			return info;
-		}break;
-		
-		case metaffi_int64_type:
-		{
-			info.type = metaffi_int64_type;
-			return info;
-		}break;
-		
-		case metaffi_float64_type:
-		{
-			info.type = metaffi_float64_type;
-			return info;
-		}break;
-		
-		case metaffi_null_type:
-		{
-			info.type = metaffi_null_type;
-			return info;
-		}break;
-		
-		case metaffi_array_type:
-		{
-			py_list list(instance);
-			
-			int dimensions = 0;
-			std::string common_type;
-			list.get_dimensions_and_type(dimensions, common_type);
-			
-			// not compatible with C-array, therefore pass it as a single dimension array
-			// and inner lists will be handled as a single element of type metaffi_handle
-			if(dimensions == -1)
-			{
-				dimensions = 1;
-			}
-			
-			if(common_type.empty()) // no common type, pass as array of metaffi_handles
-			{
-				info.type = metaffi_handle_array_type;
-				info.dimensions = dimensions;
-			}
-			else
-			{
-				auto common_py_type = pytypes_to_metaffi_types.find(common_type);
-				if(common_py_type == pytypes_to_metaffi_types.end())
-				{
-					info.type = metaffi_handle_array_type;
-					info.dimensions = dimensions;
-				}
-				else
-				{
-					info.type = common_py_type->second | metaffi_array_type;
-					info.dimensions = dimensions;
-				}
-			}
-		}break;
-		
-		default:
-			throw std::runtime_error("should get here. if not found in pytypes_to_metaffi_types, method should return before switch statement.");
-	}
-	
-	return info;
-}
-
 PyObject* py_object::get_attribute(const char* name) const
 {
 	return PyObject_GetAttrString(instance, name);
@@ -178,4 +85,46 @@ PyObject* py_object::detach()
 	PyObject* res = instance;
 	instance = nullptr;
 	return res;
+}
+
+const char* py_object::get_object_type(PyObject* obj)
+{
+	return obj->ob_type->tp_name;
+}
+
+std::unordered_map<std::string, metaffi_types> pytypes_to_metaffi_types =
+{
+    {"str", metaffi_string8_type},
+    {"int", metaffi_int64_type},
+    {"float", metaffi_float64_type},
+    {"bool", metaffi_bool_type},
+    {"list", metaffi_array_type},
+    {"tuple", metaffi_array_type},
+    {"NoneType", metaffi_null_type},
+    {"bytes", metaffi_uint8_array_type}
+};
+
+metaffi_type py_object::get_metaffi_type(PyObject* obj)
+{
+	const char* pytype = get_object_type(obj);
+	
+	auto mtype = pytypes_to_metaffi_types.find(pytype);
+	if(mtype == pytypes_to_metaffi_types.end())
+	{
+		return metaffi_handle_type;
+	}
+	
+	if(mtype->second == metaffi_string8_type ||
+	   mtype->second == metaffi_bool_type ||
+	   mtype->second == metaffi_int64_type ||
+	   mtype->second == metaffi_float64_type ||
+	   mtype->second == metaffi_null_type ||
+	   mtype->second & metaffi_array_type)
+	{
+		return mtype->second;
+	}
+	else
+	{
+		throw std::runtime_error("shouldn't get here. Is there a type missing in the if statement?");
+	}
 }

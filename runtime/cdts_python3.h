@@ -27,10 +27,10 @@
 class cdts_python3
 {
 private:
-	metaffi::runtime::cdts_wrapper cdts;
+	cdts& pcdts;
 	
 public:
-	explicit cdts_python3(cdt* cdts, metaffi_size cdts_length);
+	explicit cdts_python3(cdts& pcdts);
 	
 	/**
 	 * @brief Parses CDTS and returns PyTuple. Method assumes CDTS is filled!

@@ -5,7 +5,7 @@
 #include "py_int.h"
 
 
-py_int::py_int(int8_t val)
+py_int::py_int(int8_t val) : py_object()
 {
 	instance = PyLong_FromLongLong(val);
 	if (!instance)
@@ -14,7 +14,7 @@ py_int::py_int(int8_t val)
 	}
 }
 
-py_int::py_int(int16_t val)
+py_int::py_int(int16_t val) : py_object()
 {
 	instance = PyLong_FromLongLong(val);
 	if (!instance)
@@ -23,7 +23,7 @@ py_int::py_int(int16_t val)
 	}
 }
 
-py_int::py_int(int32_t val)
+py_int::py_int(int32_t val) : py_object()
 {
 	instance = PyLong_FromLongLong(val);
 	if (!instance)
@@ -32,7 +32,7 @@ py_int::py_int(int32_t val)
 	}
 }
 
-py_int::py_int(int64_t val)
+py_int::py_int(int64_t val) : py_object()
 {
 	instance = PyLong_FromLongLong(val);
 	if (!instance)
@@ -41,7 +41,7 @@ py_int::py_int(int64_t val)
 	}
 }
 
-py_int::py_int(uint8_t val)
+py_int::py_int(uint8_t val) : py_object()
 {
 	instance = PyLong_FromUnsignedLongLong(val);
 	if (!instance)
@@ -50,7 +50,7 @@ py_int::py_int(uint8_t val)
 	}
 }
 
-py_int::py_int(uint16_t val)
+py_int::py_int(uint16_t val) : py_object()
 {
 	instance = PyLong_FromUnsignedLongLong(val);
 	if (!instance)
@@ -59,7 +59,7 @@ py_int::py_int(uint16_t val)
 	}
 }
 
-py_int::py_int(uint32_t val)
+py_int::py_int(uint32_t val) : py_object()
 {
 	instance = PyLong_FromUnsignedLongLong(val);
 	if (!instance)
@@ -68,7 +68,7 @@ py_int::py_int(uint32_t val)
 	}
 }
 
-py_int::py_int(uint64_t val)
+py_int::py_int(uint64_t val) : py_object()
 {
 	instance = PyLong_FromUnsignedLongLong(val);
 	if (!instance)
@@ -77,7 +77,7 @@ py_int::py_int(uint64_t val)
 	}
 }
 
-py_int::py_int(PyObject* obj)
+py_int::py_int(PyObject* obj) : py_object()
 {
 	if (!PyLong_Check(obj))
 	{
@@ -86,7 +86,7 @@ py_int::py_int(PyObject* obj)
 	instance = obj;
 }
 
-py_int::py_int(void* obj)
+py_int::py_int(void* obj) : py_object()
 {
 	instance = PyLong_FromVoidPtr(obj);
 	if (!instance)

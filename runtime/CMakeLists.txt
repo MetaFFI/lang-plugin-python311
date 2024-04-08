@@ -29,8 +29,8 @@ install_target(${target_name} .)
 
 
 # unitests
-add_executable(python_api_test "python_api_test.cpp" ${utils_srcs} ${runtime_srcs})
-target_link_libraries(python_api_test PRIVATE Catch2::Catch2 ${target_name} Boost::filesystem Python3::Python)
+add_executable(python_api_test "python_runtime_test.cpp" ${utils_srcs} ${runtime_srcs})
+target_link_libraries(python_api_test PRIVATE doctest::doctest ${target_name} Boost::filesystem Python3::Python)
 target_include_directories(python_api_test PRIVATE ${METAFFI_SDK})
 if(NOT WIN32)
 	add_custom_command(TARGET python_api_test POST_BUILD COMMAND patchelf --set-rpath "$ORIGIN:$ORIGIN/lib:$ENV{METAFFI_HOME}:${Boost_LIBRARY_DIRS}" $<TARGET_FILE:python_api_test>)
@@ -38,12 +38,3 @@ endif()
 
 add_test(NAME "Python3 Runtime API" COMMAND python_api_test)
 
-
-add_executable(cdts_python3_test "cdts_python3_test.cpp" ${utils_srcs} ${runtime_srcs})
-target_link_libraries(cdts_python3_test PRIVATE Catch2::Catch2 ${target_name} Boost::filesystem Python3::Python)
-target_include_directories(cdts_python3_test PRIVATE ${METAFFI_SDK})
-if(NOT WIN32)
-	add_custom_command(TARGET cdts_python3_test POST_BUILD COMMAND patchelf --set-rpath "$ORIGIN:$ORIGIN/lib:$ENV{METAFFI_HOME}:${Boost_LIBRARY_DIRS}" $<TARGET_FILE:python_api_test>)
-endif()
-
-add_test(NAME "Python3 CDTS" COMMAND cdts_python3_test)

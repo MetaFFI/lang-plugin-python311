@@ -20,18 +20,20 @@ public:
 public:
 	py_str();
 	explicit py_str(PyObject* obj);
+	explicit py_str(metaffi_char8 c);
+	explicit py_str(metaffi_char16 c);
+	explicit py_str(metaffi_char32 c);
 	explicit py_str(const char8_t* s);
 	explicit py_str(const char32_t* s);
 	explicit py_str(const char16_t* s);
 	py_str(py_str&& other) noexcept ;
 	py_str& operator=(const py_str& other);
 	[[nodiscard]] Py_ssize_t length() const;
-	[[nodiscard]] std::string to_utf8() const;
-	[[nodiscard]] std::basic_string<char16_t> to_utf16() const;
-	[[nodiscard]] std::basic_string<char32_t> to_utf32() const;
+	[[nodiscard]] metaffi_string8 to_utf8() const;
+	[[nodiscard]] metaffi_string16 to_utf16() const;
+	[[nodiscard]] metaffi_string32 to_utf32() const;
 	
-	explicit operator std::string() const;
-	explicit operator std::basic_string<char16_t>() const;
-	explicit operator std::basic_string<char32_t>() const;
-	
+	explicit operator std::u8string() const;
+	explicit operator std::u16string() const;
+	explicit operator std::u32string() const;
 };

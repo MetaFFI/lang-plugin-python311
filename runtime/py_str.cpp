@@ -1,11 +1,13 @@
 #ifdef _WIN32
+
 #include <corecrt.h> // <-- required as a python bug workaround (https://github.com/microsoft/onnxruntime/issues/9735)
+
 #endif
 
 #include "py_str.h"
 #include <string>
 
-py_str::py_str()
+py_str::py_str() : py_object()
 {
 	instance = PyUnicode_FromString("");
 	if(!instance)
@@ -14,19 +16,16 @@ py_str::py_str()
 	}
 }
 
-py_str::py_str(PyObject* obj)
+py_str::py_str(PyObject* obj) : py_object(obj)
 {
 	if(!PyUnicode_Check(obj))
 	{
 		throw std::runtime_error("Object is not a unicode string");
 	}
-	instance = obj;
 }
 
-py_str::py_str(py_str&& other) noexcept
+py_str::py_str(py_str&& other) noexcept : py_object(std::move(other))
 {
-	instance = other.instance;
-	other.instance = nullptr;
 }
 
 py_str& py_str::operator=(const py_str& other)
@@ -60,7 +59,7 @@ py_str::py_str(const char32_t* s)
 {
 	uint64_t length = std::char_traits<char32_t>::length(s);
 	
-	instance = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, s, (Py_ssize_t)length);
+	instance = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, s, (Py_ssize_t) length);
 	if(!instance)
 	{
 		throw std::runtime_error(check_python_error());
@@ -71,16 +70,16 @@ py_str::py_str(const char16_t* s)
 {
 	uint64_t length = std::char_traits<char16_t>::length(s);
 	
-	instance = PyUnicode_FromKindAndData(PyUnicode_2BYTE_KIND, s, (Py_ssize_t)length);
+	instance = PyUnicode_FromKindAndData(PyUnicode_2BYTE_KIND, s, (Py_ssize_t) length);
 	if(!instance)
 	{
 		throw std::runtime_error(check_python_error());
 	}
 }
 
-std::string py_str::to_utf8() const
+metaffi_string8 py_str::to_utf8() const
 {
-	PyObject * utf8 = PyUnicode_AsUTF8String(instance);
+	PyObject* utf8 = PyUnicode_AsUTF8String(instance);
 	if(!utf8)
 	{
 		throw std::runtime_error(check_python_error());
@@ -88,48 +87,82 @@ std::string py_str::to_utf8() const
 	char* s;
 	Py_ssize_t len;
 	PyBytes_AsStringAndSize(utf8, &s, &len);
-	return std::string(s, len);
+	
+	// Allocate memory for the metaffi_string8
+	metaffi_string8 result = (metaffi_string8)malloc(len + 1);
+	if(!result)
+	{
+		throw std::runtime_error("Failed to allocate memory for metaffi_string8");
+	}
+
+	// Copy the string to the allocated memory
+	memcpy(result, s, len);
+	result[len] = '\0'; // Null-terminate the string
+
+	return result;
 }
 
-std::basic_string<char16_t> py_str::to_utf16() const
+metaffi_string16 py_str::to_utf16() const
 {
-	PyObject * bytes = PyUnicode_AsUTF16String(instance);
+	PyObject* bytes = PyUnicode_AsUTF16String(instance);
 	if(!bytes)
 	{
 		throw std::runtime_error(check_python_error());
 	}
 	char* s = PyBytes_AsString(bytes);
 	Py_ssize_t size = PyBytes_Size(bytes);
-	std::basic_string<char16_t> result(reinterpret_cast<char16_t*>(s), size / 2);
+	
+	// Allocate memory for the metaffi_string16
+	metaffi_string16 result = (metaffi_string16)malloc(size + 1);
+	if(!result)
+	{
+		throw std::runtime_error("Failed to allocate memory for metaffi_string16");
+	}
+
+	// Copy the string to the allocated memory
+	memcpy(result, s, size);
+	result[size / 2] = '\0'; // Null-terminate the string
+
 	Py_DECREF(bytes);
 	return result;
 }
 
-std::basic_string<char32_t> py_str::to_utf32() const
+metaffi_string32 py_str::to_utf32() const
 {
-	PyObject * bytes = PyUnicode_AsUTF32String(instance);
+	PyObject* bytes = PyUnicode_AsUTF32String(instance);
 	if(!bytes)
 	{
 		throw std::runtime_error(check_python_error());
 	}
 	char* s = PyBytes_AsString(bytes);
 	Py_ssize_t size = PyBytes_Size(bytes);
-	std::basic_string<char32_t> result(reinterpret_cast<char32_t*>(s), size / 4);
+	
+	// Allocate memory for the metaffi_string32
+	metaffi_string32 result = (metaffi_string32)malloc(size + 1);
+	if(!result)
+	{
+		throw std::runtime_error("Failed to allocate memory for metaffi_string32");
+	}
+
+	// Copy the string to the allocated memory
+	memcpy(result, s, size);
+	result[size / 4] = '\0'; // Null-terminate the string
+
 	Py_DECREF(bytes);
 	return result;
 }
 
-py_str::operator std::string() const
+py_str::operator std::u8string() const
 {
 	return std::move(to_utf8());
 }
 
-py_str::operator std::basic_string<char16_t>() const
+py_str::operator std::u16string() const
 {
 	return std::move(to_utf16());
 }
 
-py_str::operator std::basic_string<char32_t>() const
+py_str::operator std::u32string() const
 {
 	return std::move(to_utf32());
 }
@@ -137,4 +170,31 @@ py_str::operator std::basic_string<char32_t>() const
 bool py_str::check(PyObject* obj)
 {
 	return PyUnicode_Check(obj);
+}
+
+py_str::py_str(const metaffi_char8 c)
+{
+	instance = PyUnicode_FromStringAndSize(reinterpret_cast<const char*>(c.c), metaffi_char8::num_of_bytes(c.c));
+	if(!instance)
+	{
+		throw std::runtime_error(check_python_error());
+	}
+}
+
+py_str::py_str(const metaffi_char16 c)
+{
+	instance = PyUnicode_FromKindAndData(PyUnicode_2BYTE_KIND, reinterpret_cast<const char*>(c.c), metaffi_char16::num_of_bytes(c.c));
+	if(!instance)
+	{
+		throw std::runtime_error(check_python_error());
+	}
+}
+
+py_str::py_str(const metaffi_char32 c)
+{
+	instance = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, reinterpret_cast<const char*>(c.c), sizeof(char32_t));
+	if(!instance)
+	{
+		throw std::runtime_error(check_python_error());
+	}
 }

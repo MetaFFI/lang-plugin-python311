@@ -78,7 +78,7 @@ class metaffi_type_info(ctypes.Structure):
 
 
 # Define the pointer type for metaffi_type_info
-metaffi_type_infos_ptr = ctypes.POINTER(metaffi_type_info)
+metaffi_type_info* = ctypes.POINTER(metaffi_type_info)
 
 pytype_to_metaffi_type_dict = {
 	'str': MetaFFITypes.metaffi_string8_type.value,

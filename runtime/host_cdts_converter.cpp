@@ -1,7 +1,6 @@
 #include "host_cdts_converter.h"
 #include "cdts_python3.h"
 #include "utils.h"
-#include <runtime/cdt_capi_loader.h>
 
 //--------------------------------------------------------------------
 [[maybe_unused]] cdts* convert_host_params_to_cdts(PyObject* params, metaffi_type_info* param_metaffi_types, int params_count, metaffi_size return_values_size)
@@ -24,7 +23,9 @@
 
 		// get the data from the local objects
 		cdts* cdts_buf = xllr_alloc_cdts_buffer(PyTuple_Size(params), return_values_size);
-		cdts_python3 pycdts(cdts_buf[0].pcdt, cdts_buf[0].len );
+		cdts& cdts_params = cdts_buf[0];
+		
+		cdts_python3 pycdts(cdts_params);
 
 		pycdts.to_cdts(params, param_metaffi_types, params_count);
 
@@ -45,7 +46,8 @@
 	try
 	{
 		pyscope();
-		cdts_python3 cdts(pcdts[index].pcdt, pcdts[index].len);
+		cdts& retvals = pcdts[index];
+		cdts_python3 cdts(retvals);
 		PyObject* o = cdts.to_py_tuple().detach();
 
 		return o;

@@ -5,7 +5,7 @@
 #include "py_float.h"
 #include "utils.h"
 
-py_float::py_float(float val)
+py_float::py_float(float val) : py_object()
 {
 	instance = PyFloat_FromDouble(static_cast<double>(val));
 	if (!instance)
@@ -14,7 +14,7 @@ py_float::py_float(float val)
 	}
 }
 
-py_float::py_float(double val)
+py_float::py_float(double val) : py_object()
 {
 	instance = PyFloat_FromDouble(val);
 	if (!instance)
@@ -23,7 +23,7 @@ py_float::py_float(double val)
 	}
 }
 
-py_float::py_float(PyObject* obj)
+py_float::py_float(PyObject* obj) : py_object(obj)
 {
 	if (!PyFloat_Check(obj))
 	{
@@ -32,10 +32,8 @@ py_float::py_float(PyObject* obj)
 	instance = obj;
 }
 
-py_float::py_float(py_float&& other) noexcept
+py_float::py_float(py_float&& other) noexcept : py_object(std::move(other))
 {
-	instance = other.instance;
-	other.instance = nullptr;
 }
 
 py_float& py_float::operator=(const py_float& other)

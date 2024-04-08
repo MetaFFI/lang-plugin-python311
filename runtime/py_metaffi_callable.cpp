@@ -56,7 +56,7 @@ if 'create_lambda' not in globals():
 
 PyObject* py_metaffi_callable::create_lambda = nullptr;
 
-py_metaffi_callable::py_metaffi_callable()
+py_metaffi_callable::py_metaffi_callable() : py_object()
 {
 	// initialize
 	if(!create_lambda)
@@ -127,10 +127,8 @@ py_metaffi_callable::py_metaffi_callable(const cdt_metaffi_callable& cdt_callabl
 	instance = lambda_to_mffi_callable;
 }
 
-py_metaffi_callable::py_metaffi_callable(py_metaffi_callable&& other) noexcept
+py_metaffi_callable::py_metaffi_callable(py_metaffi_callable&& other) noexcept : py_object(std::move(other))
 {
-	instance = other.instance;
-	other.instance = nullptr;
 }
 
 py_metaffi_callable& py_metaffi_callable::operator=(const py_metaffi_callable& other)

@@ -28,7 +28,8 @@ def run_script(script_path, is_unittest=False):
 	print(f'{Fore.CYAN}Running script: {script_path}{Fore.RESET}')
 	
 	# Determine the command to run the script
-	command = ['python', '-m', 'unittest', script_path] if is_unittest else ['python', script_path]
+	python_command = 'python' if platform.system() == 'Windows' else 'python3'
+	command = [python_command, '-m', 'unittest', script_path] if is_unittest else [python_command, script_path]
 	
 	# Get the directory of the script file
 	script_dir = os.path.dirname(os.path.abspath(script_path))

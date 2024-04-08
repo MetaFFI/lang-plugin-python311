@@ -8,7 +8,7 @@
 #endif
 #include <runtime/metaffi_primitives.h>
 #include "py_object.h"
-#include <runtime/cdt_structs.h>
+#include <runtime/cdt.h>
 
 extern "C" const char* create_lambda_python_code;
 
@@ -26,6 +26,7 @@ private:
 public:
 	explicit py_metaffi_callable(const cdt_metaffi_callable& cdt_callable);
 	py_metaffi_callable(py_metaffi_callable&& other) noexcept;
+	explicit py_metaffi_callable(PyObject* obj);
 	py_metaffi_callable& operator=(const py_metaffi_callable& other);
 	
 };

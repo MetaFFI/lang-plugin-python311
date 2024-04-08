@@ -200,7 +200,7 @@ void free_runtime(char** err, uint32_t* err_len)
 //	printf("+++ DONE freeing!\n");
 }
 //--------------------------------------------------------------------
-void** load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, metaffi_type_infos_ptr param_types, metaffi_type_infos_ptr ret_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+void** load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, metaffi_type_info* param_types, metaffi_type_info* ret_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
 {
 	if(!Py_IsInitialized())
 	{
@@ -346,7 +346,7 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 	return result;
 }
 //--------------------------------------------------------------------
-void** make_callable(void* py_callable_as_py_object, metaffi_type_infos_ptr params_types, metaffi_type_infos_ptr retvals_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+void** make_callable(void* py_callable_as_py_object, metaffi_type_info* params_types, metaffi_type_info* retvals_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
 {
 	python3_context* ctxt = new python3_context(); // should be deleted only when the function is released
 	if(params_types){
@@ -479,7 +479,7 @@ void pyxcall_params_ret(
 		pyscope();
 	
 		// convert CDT to Python3
-		cdts_python3 params_cdts(params_ret[0].pcdt, params_ret[0].len);
+		cdts_python3 params_cdts(params_ret[0]);
 		py_tuple params = params_cdts.to_py_tuple();
 		
 		
@@ -545,7 +545,7 @@ void pyxcall_params_ret(
 		}
 
 		// return values;
-		cdts_python3 return_cdts(params_ret[1].pcdt, params_ret[1].len);
+		cdts_python3 return_cdts(params_ret[1]);
 		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 		
 	}
@@ -617,7 +617,7 @@ void pyxcall_no_params_ret(
 		}
 		
 		// return value;
-		cdts_python3 return_cdts(return_values[1].pcdt, return_values[1].len);
+		cdts_python3 return_cdts(return_values[1]);
 		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 		
 	}
@@ -646,7 +646,7 @@ void pyxcall_params_no_ret(
 		pyscope();
 		
 		// convert CDT to Python3
-		cdts_python3 params_cdts(parameters[0].pcdt, parameters[0].len);
+		cdts_python3 params_cdts(parameters[0]);
 		py_tuple params = params_cdts.to_py_tuple();
 		
 		// if parameter is of type "metaffi_positional_args" - pass internal tuple as "positional args"

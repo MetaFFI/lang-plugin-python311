@@ -41,7 +41,7 @@ py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 	}
 }
 
-py_metaffi_handle::py_metaffi_handle(PyObject* obj)
+py_metaffi_handle::py_metaffi_handle(PyObject* obj) : py_object(obj)
 {
 	if(!check(obj))
 	{
@@ -52,10 +52,8 @@ py_metaffi_handle::py_metaffi_handle(PyObject* obj)
 	Py_INCREF(instance);
 }
 
-py_metaffi_handle::py_metaffi_handle(py_metaffi_handle&& other) noexcept
+py_metaffi_handle::py_metaffi_handle(py_metaffi_handle&& other) noexcept : py_object(std::move(other))
 {
-	instance = other.instance;
-	other.instance = nullptr;
 }
 
 py_metaffi_handle& py_metaffi_handle::operator=(const py_metaffi_handle& other)

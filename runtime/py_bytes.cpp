@@ -5,7 +5,7 @@
 #include "py_bytes.h"
 #include "utils.h"
 
-py_bytes::py_bytes(const char* val, Py_ssize_t size)
+py_bytes::py_bytes(const char* val, Py_ssize_t size) : py_object()
 {
 	instance = PyBytes_FromStringAndSize(val, size);
 	if (!instance)
@@ -14,19 +14,17 @@ py_bytes::py_bytes(const char* val, Py_ssize_t size)
 	}
 }
 
-py_bytes::py_bytes(PyObject* obj)
+py_bytes::py_bytes(PyObject* obj) : py_object(obj)
 {
 	if (!PyBytes_Check(obj))
 	{
 		throw std::runtime_error("Object is not a bytes");
 	}
-	instance = obj;
+	
 }
 
-py_bytes::py_bytes(py_bytes&& other) noexcept
+py_bytes::py_bytes(py_bytes&& other) noexcept : py_object(std::move(other))
 {
-instance = other.instance;
-other.instance = nullptr;
 }
 
 py_bytes& py_bytes::operator=(const py_bytes& other)

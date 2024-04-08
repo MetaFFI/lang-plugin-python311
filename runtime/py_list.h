@@ -15,6 +15,7 @@ class py_list : public py_object
 {
 public:
 	static bool check(PyObject* obj);
+	static void get_metadata(PyObject* obj, bool& out_is_1d_array, bool& out_is_fixed_dimension, Py_ssize_t& out_size, metaffi_type& out_common_type);
 	
 public:
 	explicit py_list(Py_ssize_t size = 0);
@@ -27,7 +28,6 @@ public:
 	
 	void append(PyObject* obj);
 	[[nodiscard]] Py_ssize_t length() const;
-	void get_dimensions_and_type(int& out_dimensions, std::string& out_common_type);
 	
 	//--------------------------------------------------------------------
 	
