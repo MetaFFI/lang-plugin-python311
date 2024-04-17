@@ -816,7 +816,7 @@ void construct_cdt_array(const metaffi_size* index, metaffi_size index_length, c
 
 metaffi_size on_get_root_elements_count(void* context)
 {
-	return static_cast<py_tuple*>(context)->length();
+	return static_cast<py_tuple*>(context)->size();
 }
 
 metaffi_type_info on_get_type_info(const metaffi_size* index, metaffi_size index_size, void* context)
@@ -1070,7 +1070,7 @@ void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expec
 	                                                                                  : py_tuple(pyobject_or_tuple);
 	pyobjs.inc_ref();// TODO: (is it correct?) prevent py_tuple from releasing the object
 
-	if(pyobjs.length() != expected_types_length)
+	if(pyobjs.size() != expected_types_length)
 	{
 		throw std::runtime_error("tuple and tuple_types have different lengths");
 	}

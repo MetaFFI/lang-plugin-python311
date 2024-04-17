@@ -14,6 +14,7 @@ class py_tuple : public py_object
 public:
 	static bool check(PyObject* obj);
 	static void get_metadata(PyObject* obj, bool& out_is_1d_array, bool& out_is_fixed_dimension, Py_ssize_t& out_size, metaffi_type& out_common_type);
+	static Py_ssize_t get_size(PyObject* obj);
 	
 public:
 	explicit py_tuple(Py_ssize_t size);
@@ -23,10 +24,9 @@ public:
 	py_tuple(py_tuple&& other) noexcept; // Move constructor
 	py_tuple& operator=(const py_tuple& other); // Copy assignment operator
 	py_tuple& operator=(py_tuple&& other) noexcept; // Move assignment operator
-	
+	Py_ssize_t size() const; // Returns the size of the tuple
 	void set_item(Py_ssize_t index, PyObject* value); // Sets the item at the given index
 	
 	PyObject* operator[](int index) const;
-	[[nodiscard]] Py_ssize_t length() const; // Returns the length of the tuple
 	
 };

@@ -79,7 +79,7 @@ PyObject* py_tuple::operator[](int index) const
 	return PyTuple_GetItem(instance, index);
 }
 
-Py_ssize_t py_tuple::length() const
+Py_ssize_t py_tuple::size() const
 {
 	return PyTuple_Size(instance);
 }
@@ -160,4 +160,9 @@ void py_tuple::get_metadata(PyObject* obj, bool& out_is_1d_array, bool& out_is_f
 	{
 		out_is_1d_array = true;
 	}
+}
+
+Py_ssize_t py_tuple::get_size(PyObject* obj)
+{
+	return PyTuple_Size(obj);
 }
