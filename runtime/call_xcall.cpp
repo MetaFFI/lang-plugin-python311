@@ -18,12 +18,53 @@ PyObject* call_xcall(void* pxcall, void* pcontext, PyObject* param_metaffi_types
 	for(int i=0 ; i<params_count ; i++)
 	{
 		PyObject* item = param_metaffi_types_tuple[i];
-		if(!PyLong_Check(item))
+		if(strcmp(item->ob_type->tp_name, "metaffi_type_info") == 0)
 		{
-			PyErr_SetString(PyExc_ValueError, "param_metaffi_types must be a tuple of integers");
+			// Get the fields of the metaffi_type_info instance
+			PyObject* type = PyObject_GetAttrString(item, "type");
+			PyObject* alias = PyObject_GetAttrString(item, "alias");
+			PyObject* dimensions = PyObject_GetAttrString(item, "fixed_dimensions");
+		
+			// Convert the fields to C types
+			uint64_t type_c = PyLong_AsUnsignedLongLong(type);
+			char* alias_c = Py_IsNone(alias) ? nullptr : (char*)PyUnicode_AsUTF8(alias);
+			int64_t dimensions_c = PyLong_AsLong(dimensions);
+		
+			if(PyErr_Occurred())
+			{
+				return Py_None;
+			}
+			
+			// Create a metaffi_type_info struct and populate it with the field values
+			metaffi_type_info info;
+			info.type = type_c;
+			info.alias = alias_c;
+			info.is_free_alias = alias_c != nullptr ? 1 : 0;
+			info.fixed_dimensions = dimensions_c;
+		
+			param_metaffi_types_vec[i] = std::move(info);
+		
+			// Decrement the reference counts of the field objects
+			Py_DECREF(type);
+			Py_DECREF(alias);
+			Py_DECREF(dimensions);
+			
+		}
+		else if(PyLong_Check(item))
+		{
+			uint64_t type_c = PyLong_AsUnsignedLongLong(item);
+			metaffi_type_info info;
+			info.type = type_c;
+			info.alias = nullptr;
+			info.is_free_alias = 0;
+			info.fixed_dimensions = 0;
+			param_metaffi_types_vec[i] = std::move(info);
+		}
+		else
+		{
+			PyErr_SetString(PyExc_ValueError, "expected metaffi_type_info");
 			return Py_None;
 		}
-		param_metaffi_types_vec[i] = (metaffi_type_info)PyLong_AsLong(item);
 	}
 	
 	if (params_count > 0 || retval_count > 0)

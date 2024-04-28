@@ -41,7 +41,7 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	
 	context = pxcall_and_context_array.contents[1]
 	
-	res = create_lambda(pxcall, context, params_array, retvals_array)
+	res = create_lambda(pxcall, context, params_metaffi_types, retval_metaffi_types)
 	setattr(res, 'pxcall_and_context', ctypes.addressof(pxcall_and_context_array.contents))
 	setattr(res, 'params_metaffi_types', params_metaffi_types)
 	setattr(res, 'retval_metaffi_types', retval_metaffi_types)
@@ -54,14 +54,14 @@ class MetaFFIModule:
 		self.xllr = xllr
 		self.module_path = module_path
 	
-	def load(self, function_path: str, params_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info] | None,
-			retval_metaffi_types: List[metaffi.metaffi_types.metaffi_type_info] | None) -> Callable[..., Tuple[Any, ...]]:
+	def load(self, function_path: str, params_metaffi_types: Tuple[metaffi.metaffi_types.metaffi_type_info] | None,
+			retval_metaffi_types: Tuple[metaffi.metaffi_types.metaffi_type_info] | None) -> Callable[..., Tuple[Any, ...]]:
 		
 		if params_metaffi_types is None:
-			params_metaffi_types = []
+			params_metaffi_types = tuple()
 		
 		if retval_metaffi_types is None:
-			retval_metaffi_types = []
+			retval_metaffi_types = tuple()
 		
 		# Create ctypes arrays for params_metaffi_types and retval_metaffi_types
 		ParamsArray = metaffi.metaffi_types.metaffi_type_info * len(params_metaffi_types)
@@ -69,6 +69,13 @@ class MetaFFIModule:
 		
 		RetvalArray = metaffi.metaffi_types.metaffi_type_info * len(retval_metaffi_types)
 		retval_array = RetvalArray(*retval_metaffi_types)
+		
+		# capsule the metaffi_type_info objects to access them in call_xcall
+		if not isinstance(params_metaffi_types, tuple):
+			params_metaffi_types = tuple(params_metaffi_types)
+		
+		if not isinstance(retval_metaffi_types, tuple):
+			retval_metaffi_types = tuple(retval_metaffi_types)
 		
 		# Call xllr.load_function
 		pxcall_and_context = self.xllr.load_function('xllr.' + self.runtime.runtime_plugin, self.module_path, function_path, params_array, retval_array, len(params_metaffi_types), len(retval_metaffi_types))
@@ -87,6 +94,6 @@ class MetaFFIModule:
 		
 		context = pxcall_and_context_array.contents[1]
 		
-		func_lambda: Callable[..., ...] = lambda *args: metaffi.xllr_wrapper.xllr_python3.call_xcall(pxcall, context, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types), None if not args else args)
+		func_lambda: Callable[..., ...] = lambda *args: metaffi.xllr_wrapper.xllr_python3.call_xcall(pxcall, context, params_metaffi_types, retval_metaffi_types, None if not args else args)
 		
 		return func_lambda

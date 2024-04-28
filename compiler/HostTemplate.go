@@ -53,7 +53,7 @@ def load_xllr_and_python_plugin():
 		xllr_handle = cdll.LoadLibrary(get_filename_to_load('xllr'))
 
 	if python_plugin_handle == None:
-		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
+		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python311'))
 
 		err = pointer((c_char * 1)(0))
 		err_len = (c_ulonglong)(0)

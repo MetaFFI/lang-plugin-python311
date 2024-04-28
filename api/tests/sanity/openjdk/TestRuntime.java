@@ -41,7 +41,6 @@ public class TestRuntime
 	public static void waitABit(int seconds) throws InterruptedException
 	{
 		System.out.printf("Sleeping for %d seconds\n", seconds);
-		Thread.sleep(seconds * 1000);
 	}
 
 	public static SomeClass[] getSomeClasses()

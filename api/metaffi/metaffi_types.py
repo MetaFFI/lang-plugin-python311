@@ -57,28 +57,28 @@ class MetaFFITypes(IntFlag):
 class metaffi_type_info(ctypes.Structure):
 	_fields_ = [("type", ctypes.c_uint64),  # metaffi_type is defined as uint64_t
 	            ("alias", ctypes.c_char_p),
-	            ("alias_length", ctypes.c_uint64),
-	            ("dimensions", ctypes.c_int32)]
+	            ("is_free_alias", ctypes.c_bool),
+	            ("fixed_dimensions", ctypes.c_int64)]
 	
 	def __init__(self, metaffi_type: MetaFFITypes = MetaFFITypes.metaffi_null_type, alias: str = None, dims: int = 0):
 		super().__init__()
 		
 		# Set the type
 		self.type = ctypes.c_uint64(metaffi_type.value)
-		self.dimensions = dims
+		self.fixed_dimensions = dims
 		
 		# If alias is not None, set the alias and alias_length
 		if alias is not None:
 			self.alias = ctypes.c_char_p(alias.encode('utf-8'))
-			self.alias_length = ctypes.c_uint64(len(alias))
+			self.is_free_alias = True
 		else:
 			# If alias is None, set the alias to NULL and alias_length to 0
 			self.alias = None
-			self.alias_length = ctypes.c_uint64(0)
+			self.is_free_alias = False
 
 
 # Define the pointer type for metaffi_type_info
-metaffi_type_info* = ctypes.POINTER(metaffi_type_info)
+metaffi_type_info_p = ctypes.POINTER(metaffi_type_info)
 
 pytype_to_metaffi_type_dict = {
 	'str': MetaFFITypes.metaffi_string8_type.value,

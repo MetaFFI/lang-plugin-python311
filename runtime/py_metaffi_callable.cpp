@@ -41,6 +41,18 @@ if 'create_lambda' not in globals():
 	XCallNoParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64))
 
 	def create_lambda(pxcall, context, param_types_without_alias, retval_types_without_alias):
+		if param_types_without_alias is None:
+			param_types_without_alias = tuple()
+
+		if retval_types_without_alias is None:
+			retval_types_without_alias = tuple()
+
+		if not isinstance(param_types_without_alias, tuple):
+			param_types_without_alias = tuple(param_types_without_alias)
+
+		if not isinstance(retval_types_without_alias, tuple):
+			retval_types_without_alias = tuple(retval_types_without_alias)
+
 		if len(param_types_without_alias) > 0 and len(retval_types_without_alias) > 0:
 			pxcall = XCallParamsRetType(pxcall)
 		elif len(param_types_without_alias) > 0 and len(retval_types_without_alias) == 0:

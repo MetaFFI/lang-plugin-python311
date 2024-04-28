@@ -24,8 +24,8 @@ if platform.system() == 'Windows':
 	os.add_dll_directory(os.getenv('METAFFI_HOME')+'\\bin\\')
 
 xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('xllr.python311'))
-xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64, ctypes.c_void_p, ctypes.c_void_p, py_object]
-xllr_python3.call_xcall.restype = py_object
+xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
+xllr_python3.call_xcall.restype = ctypes.py_object
 
 xllr = cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('xllr'))
 

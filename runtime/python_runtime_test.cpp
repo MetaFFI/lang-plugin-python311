@@ -1195,7 +1195,7 @@ TEST_SUITE("Python Runtime Tests")
 		REQUIRE(long_err_len == 0);
 		
 		params[0] = cdt((metaffi_int64) 4);
-		params[1] = cdt(1, 1, metaffi_uint8_array_type);
+		params[1] = cdt(3, 1, metaffi_uint8_array_type);
 		params[1].cdt_val.array_val.arr[0] = cdt((metaffi_uint8) 1);
 		params[1].cdt_val.array_val.arr[1] = cdt((metaffi_uint8) 2);
 		params[1].cdt_val.array_val.arr[2] = cdt((metaffi_uint8) 3);
