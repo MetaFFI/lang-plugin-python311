@@ -25,21 +25,25 @@
 
 using namespace metaffi::utils;
 
-#define handle_err(err, err_len, desc)   \
-	*err_len = strlen(desc);             \
-	*err = (char*) malloc(*err_len + 1); \
-	strcpy(*err, desc);                  \
-	memset((*err + *err_len), 0, 1);
+#define handle_err(err, desc)              \
+	{                                      \
+		auto err_len = strlen(desc);       \
+		*err = (char*)malloc(err_len + 1); \
+		strcpy(*err, desc);                \
+		memset((*err + err_len), 0, 1);    \
+	}
 
-#define handle_err_str(err, err_len, descstr) \
-	*err_len = descstr.length();              \
-	*err = (char*) malloc(*err_len + 1);      \
-	descstr.copy(*err, *err_len, 0);          \
-	memset((*err + *err_len), 0, 1);
+#define handle_err_str(err, descstr)       \
+	{                                      \
+		auto err_len = descstr.length();   \
+		*err = (char*)malloc(err_len + 1); \
+		descstr.copy(*err, err_len, 0);    \
+		memset((*err + err_len), 0, 1);    \
+	}
 
-#define handle_py_err(err, err_len)          \
+#define handle_py_err(err)                   \
 	std::string pyerr(check_python_error()); \
-	handle_err_str(err, err_len, pyerr);
+	handle_err_str(err, pyerr);
 
 #define TRUE 1
 #define FALSE 0
@@ -48,11 +52,6 @@ std::vector<foreign_function_entrypoint_signature_params_ret_t> params_ret_funct
 std::vector<foreign_function_entrypoint_signature_params_no_ret_t> params_no_ret_functions;
 std::vector<foreign_function_entrypoint_signature_no_params_ret_t> no_params_ret_functions;
 std::vector<foreign_function_entrypoint_signature_no_params_no_ret_t> no_params_no_ret_functions;
-
-void xcall_params_no_ret(void* context, cdts parameters[1], char** out_err, uint64_t* out_err_len);
-void xcall_params_ret(void* context, cdts params_ret[2], char** out_err, uint64_t* out_err_len);
-void xcall_no_params_ret(void* context, cdts return_values[1], char** out_err, uint64_t* out_err_len);
-void xcall_no_params_no_ret(void* context, char** out_err, uint64_t* out_err_len);
 
 enum attribute_action
 {
@@ -133,7 +132,7 @@ void initialize_environment()
 //--------------------------------------------------------------------
 PyThreadState* _save = nullptr;
 bool g_loaded = false;
-void load_runtime(char** err, uint32_t* err_len)
+void load_runtime(char** err)
 {
 	if(g_loaded)
 	{
@@ -159,16 +158,16 @@ void load_runtime(char** err, uint32_t* err_len)
 	PyGILState_Release(gil);
 }
 //--------------------------------------------------------------------
-void free_runtime(char** err, uint32_t* err_len)
+void free_runtime(char** err)
 {
 	//printf("+++ SKIP FREE PYTHON!\n");
-	return;// skip freeing python due to deadlock in PyFinalizeEx
+	//	return;// skip freeing python due to deadlock in PyFinalizeEx
 
 	//	printf("++++ going to free python runtime\n");
-	//	if(!Py_IsInitialized())
-	//	{
-	//		return;
-	//	}
+	if(!Py_IsInitialized())
+	{
+		return;
+	}
 
 	//	printf("++++ before gil ensure\n");
 	//	PyGILState_STATE gstate = PyGILState_Ensure();
@@ -187,39 +186,34 @@ void free_runtime(char** err, uint32_t* err_len)
 	//  PyRun_SimpleString(kill_all_objects.c_str());
 
 	//	printf("++++ before gil ensure\n");
-	//	PyGILState_STATE gstate = PyGILState_Ensure();
+	PyGILState_STATE gstate = PyGILState_Ensure();
 	//
 	//	printf("++++ before FinalizeEx\n");
-	//	int res = Py_FinalizeEx();
+	int res = Py_FinalizeEx();
 	//	printf("++++ after FinalizeEx\n");
-	//	if(res == -1)
-	//	{
-	//		printf("++++ error %s !\n", *err);
-	//		handle_err(err, err_len, "Python finalization has failed!");
-	//	}
-	//
-	//	printf("+++ DONE freeing!\n");
+	if(res == -1)
+	{
+		printf("++++ error %s !\n", *err);
+		handle_err(err, "Python finalization has failed!");
+	}
 }
 //--------------------------------------------------------------------
-void** load_function(const char* module_path, uint32_t module_path_len, const char* function_path, uint32_t function_path_len, metaffi_type_info* param_types, metaffi_type_info* ret_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+xcall* load_entity(const char* module_path, const char* function_path, metaffi_type_info* param_types, int8_t params_count, metaffi_type_info* ret_types, int8_t retval_count, char** err)
 {
 	if(!Py_IsInitialized())
 	{
-		load_runtime(err, err_len);
+		load_runtime(err);
 	}
 
 	pyscope();
 
-	PyObject* iserr = PyErr_Occurred();
-
-	metaffi::utils::function_path_parser fp(std::string(function_path, function_path_len));
-	std::string modpath(module_path, module_path_len);
-	std::filesystem::path p(modpath.c_str());
+	metaffi::utils::function_path_parser fp(function_path);
+	std::filesystem::path p(module_path);
 	std::filesystem::path dir = p.parent_path();
 	std::string dir_str = dir.string();
 
 	// Escape the backslashes in the string
-	PyObject* sysPath = PySys_GetObject((char*) "path");
+	PyObject* sysPath = PySys_GetObject((char*)"path");
 	PyObject* path = PyUnicode_FromString(dir_str.c_str());
 	if(path != nullptr)
 	{
@@ -230,34 +224,16 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 		Py_DECREF(path);
 	}
 
-
-	//	std::string dir_escaped = dir_str;
-	//	for (size_t i = 0; i < dir_escaped.length(); i++)
-	//	{
-	//		if (dir_escaped[i] == '\\')
-	//		{
-	//			dir_escaped.insert(i, "\\");
-	//			i++;
-	//		}
-	//	}
-
-	//	std::stringstream ss;
-	//	ss << "import os" << std::endl;
-	//	ss << "if '"<<dir_escaped<<"' not in sys.path:" << std::endl;
-	//	ss << "\tsys.path.append('"<<dir_escaped<<"')" << std::endl << std::endl;
-	//	PyRun_SimpleString(ss.str().c_str());
-
-
 	PyObject* pymod = PyImport_ImportModuleEx(p.stem().string().c_str(), Py_None, Py_None, Py_None);
 
 	if(!pymod)
 	{
 		// error has occurred
-		handle_py_err(err, err_len);
+		handle_py_err(err);
 		return nullptr;
 	}
 
-	python3_context* ctxt = new python3_context();// should be deleted only when the function is released
+	std::unique_ptr<python3_context> ctxt = std::make_unique<python3_context>();// should be deleted only when the function is released
 	if(param_types)
 	{
 		ctxt->params_types.insert(ctxt->params_types.end(), param_types, param_types + params_count);
@@ -285,14 +261,14 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 			{
 				std::stringstream ss;
 				ss << "failed to find step \"" << step << "\" in the path " << load_symbol;
-				handle_err(err, err_len, ss.str().c_str());
+				handle_err_str(err, ss.str());
 				return nullptr;
 			}
 		}
 
 		if(fp.contains("callable") && !PyCallable_Check(pyobj))
 		{
-			handle_err(err, err_len, "Given callable is not PyCallable");
+			handle_err(err, "Given callable is not PyCallable");
 			return nullptr;
 		}
 
@@ -316,7 +292,7 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 		}
 		else
 		{
-			handle_err(err, err_len, "missing getter or setter attribute in function path");
+			handle_err(err, "missing getter or setter attribute in function path");
 			return nullptr;
 		}
 
@@ -327,30 +303,42 @@ void** load_function(const char* module_path, uint32_t module_path_len, const ch
 
 		if(!ctxt->is_instance_required && !ctxt->find_attribute_holder_and_attribute(pymod))
 		{
-			handle_err(err, err_len, "attribute not found");
+			handle_err(err, "attribute not found");
 			return nullptr;
 		}
 	}
 	else
 	{
-		handle_err(err, err_len, "expecting \"callable\" or \"variable\" in function path");
+		handle_err(err, "expecting \"callable\" or \"variable\" in function path");
 		return nullptr;
 	}
 
-	void* xcall_func = params_count > 0 && retval_count > 0 ? (void*) xcall_params_ret : params_count == 0 && retval_count > 0 ? (void*) xcall_no_params_ret
-	                                                                             : params_count > 0 && retval_count == 0       ? (void*) xcall_params_no_ret
-	                                                                                                                           : (void*) xcall_no_params_no_ret;
+	void* xcall_func = nullptr;
+	if(params_count > 0 && retval_count > 0)
+	{
+		xcall_func = (void*)((void (*)(void* context, cdts params_ret[2], char** out_err)) & xcall_params_ret);
+	}
+	else if(params_count == 0 && retval_count > 0)
+	{
+		xcall_func = (void*)((void (*)(void* context, cdts return_values[1], char** out_err)) & xcall_no_params_ret);
+	}
+	else if(params_count > 0 && retval_count == 0)
+	{
+		xcall_func = (void*)((void (*)(void* context, cdts parameters[1], char** out_err)) & xcall_params_no_ret);
+	}
+	else
+	{
+		xcall_func = (void*)((void (*)(void* context, char** out_err)) & xcall_no_params_no_ret);
+	}
 
-	void** result = (void**) malloc(2 * sizeof(void*));
-	result[0] = xcall_func;
-	result[1] = ctxt;
+	xcall* pxcall = new xcall(xcall_func, ctxt.release());
 
-	return result;
+	return pxcall;
 }
 //--------------------------------------------------------------------
-void** make_callable(void* py_callable_as_py_object, metaffi_type_info* params_types, metaffi_type_info* retvals_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+xcall* make_callable(void* py_callable_as_py_object, metaffi_type_info* params_types, metaffi_type_info* retvals_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
 {
-	python3_context* ctxt = new python3_context();// should be deleted only when the function is released
+	std::unique_ptr<python3_context> ctxt = std::make_unique<python3_context>();// should be deleted only when the function is released
 	if(params_types)
 	{
 		ctxt->params_types.insert(ctxt->params_types.end(), params_types, params_types + params_count);
@@ -363,22 +351,27 @@ void** make_callable(void* py_callable_as_py_object, metaffi_type_info* params_t
 
 	ctxt->is_instance_required = false;
 
-	ctxt->entrypoint = (PyObject*) py_callable_as_py_object;
+	ctxt->entrypoint = (PyObject*)py_callable_as_py_object;
 
-	void* xcall_func = params_count > 0 && retval_count > 0 ? (void*) xcall_params_ret : params_count == 0 && retval_count > 0 ? (void*) xcall_no_params_ret
-	                                                                             : params_count > 0 && retval_count == 0       ? (void*) xcall_params_no_ret
-	                                                                                                                           : (void*) xcall_no_params_no_ret;
-
-	void** result = (void**) malloc(2 * sizeof(void*));
-	result[0] = xcall_func;
-	result[1] = ctxt;
-
-	return result;
+	void* xcall_func = params_count > 0 && retval_count > 0 ? (void*)xcall_params_ret : params_count == 0 && retval_count > 0 ? (void*)xcall_no_params_ret
+	                                                                            : params_count > 0 && retval_count == 0       ? (void*)xcall_params_no_ret
+	                                                                                                                          : (void*)xcall_no_params_no_ret;
+	xcall* pxcall = new xcall(xcall_func, ctxt.release());
+	
+	return pxcall;
 }
 //--------------------------------------------------------------------
-void free_function(void* pff, char** err, uint32_t* err_len)
+void free_xcall(xcall* pxcall, char** err)
 {
-	// TODO: if all functions in a module are freed, module should be freed as well
+	void** pxcall_and_context = pxcall->pxcall_and_context;
+
+	delete ((python3_context*)pxcall_and_context[1]);// delete context
+	pxcall_and_context[1] = nullptr;
+	pxcall_and_context[0] = nullptr;
+
+	delete pxcall;
+	
+	*err = nullptr;
 }
 //--------------------------------------------------------------------
 void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_params_tuple, PyObject*& out_kwargs_dict, bool is_varargs, bool is_kwargs)
@@ -508,7 +501,7 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 void pyxcall_params_ret(
         python3_context* pctxt,
         cdts params_ret[2],
-        char** out_err, uint64_t* out_err_len)
+        char** out_err)
 {
 	try
 	{
@@ -524,7 +517,7 @@ void pyxcall_params_ret(
 		PyObject* out_params = nullptr;
 		PyObject* out_kwargs = nullptr;
 
-		organize_arguments(pctxt->is_instance_required, (PyObject*) params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
+		organize_arguments(pctxt->is_instance_required, (PyObject*)params, out_params, out_kwargs, pctxt->is_varargs, pctxt->is_named_args);
 
 		// call function or set variable
 		PyObject* res = nullptr;
@@ -547,13 +540,13 @@ void pyxcall_params_ret(
 			{
 				if(!pctxt->is_instance_required)
 				{
-					handle_err(out_err, out_err_len, "non-object attribute should have been found");
+					handle_err(out_err, "non-object attribute should have been found");
 					return;
 				}
 
 				if(!pctxt->find_attribute_holder_and_attribute(params[0]))
 				{
-					handle_err(out_err, out_err_len, "attribute not found");
+					handle_err(out_err, "attribute not found");
 					return;
 				}
 			}
@@ -568,7 +561,7 @@ void pyxcall_params_ret(
 			}
 			else
 			{
-				handle_err(out_err, out_err_len, "Unknown foreign object type");
+				handle_err(out_err, "Unknown foreign object type");
 				return;
 			}
 		}
@@ -576,7 +569,7 @@ void pyxcall_params_ret(
 		std::string err_msg = std::move(check_python_error());
 		if(!err_msg.empty())
 		{
-			handle_err_str((char**) out_err, out_err_len, err_msg);
+			handle_err_str((char**)out_err, err_msg);
 			return;
 		}
 
@@ -584,24 +577,25 @@ void pyxcall_params_ret(
 		cdts_python3 return_cdts(params_ret[1]);
 		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 
-	} catch(std::exception& err)
+	}
+	catch(std::exception& err)
 	{
-		*out_err_len = strlen(err.what());
-		*out_err = (char*) calloc(sizeof(char), *out_err_len + 1);
-		strncpy(*out_err, err.what(), *out_err_len);
+		auto err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), err_len + 1);
+		strncpy(*out_err, err.what(), err_len);
 	}
 }
 //--------------------------------------------------------------------
-void xcall_params_ret(void* context, cdts params_ret[2], char** out_err, uint64_t* out_err_len)
+void xcall_params_ret(void* context, cdts params_ret[2], char** out_err)
 {
-	python3_context* pctxt = (python3_context*) context;
-	pyxcall_params_ret(pctxt, params_ret, out_err, out_err_len);
+	python3_context* pctxt = (python3_context*)context;
+	pyxcall_params_ret(pctxt, params_ret, out_err);
 }
 //--------------------------------------------------------------------
 void pyxcall_no_params_ret(
         python3_context* pctxt,
         cdts return_values[1],
-        char** out_err, uint64_t* out_err_len)
+        char** out_err)
 {
 	try
 	{
@@ -617,7 +611,7 @@ void pyxcall_no_params_ret(
 			// load attribute, if not loaded yet
 			if(!pctxt->attribute_path.empty())
 			{
-				handle_err(out_err, out_err_len, "non-object attribute should have been loaded") return;
+				handle_err(out_err, "non-object attribute should have been loaded") return;
 			}
 
 			if(pctxt->foreign_object_type == attribute_action_getter)
@@ -626,7 +620,7 @@ void pyxcall_no_params_ret(
 			}
 			else
 			{
-				handle_err(out_err, out_err_len, "Unexpected attribute action");
+				handle_err(out_err, "Unexpected attribute action");
 				return;
 			}
 		}
@@ -635,7 +629,7 @@ void pyxcall_no_params_ret(
 		std::string err_msg = std::move(check_python_error());
 		if(!err_msg.empty())
 		{
-			handle_err_str((char**) out_err, out_err_len, err_msg);
+			handle_err_str((char**)out_err, err_msg);
 			return;
 		}
 
@@ -645,7 +639,7 @@ void pyxcall_no_params_ret(
 		{
 			std::stringstream ss;
 			ss << "Expected return type. No return type returned";
-			handle_err_str((char**) out_err, out_err_len, ss.str());
+			handle_err_str((char**)out_err, ss.str());
 			return;
 		}
 
@@ -655,22 +649,22 @@ void pyxcall_no_params_ret(
 
 	} catch(std::exception& err)
 	{
-		*out_err_len = strlen(err.what());
-		*out_err = (char*) calloc(sizeof(char), *out_err_len + 1);
-		strncpy(*out_err, err.what(), *out_err_len);
+		auto err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), err_len + 1);
+		strncpy(*out_err, err.what(), err_len);
 	}
 }
 //--------------------------------------------------------------------
-void xcall_no_params_ret(void* context, cdts parameters[1], char** out_err, uint64_t* out_err_len)
+void xcall_no_params_ret(void* context, cdts parameters[1], char** out_err)
 {
-	python3_context* pctxt = (python3_context*) context;
-	pyxcall_no_params_ret(pctxt, parameters, out_err, out_err_len);
+	python3_context* pctxt = (python3_context*)context;
+	pyxcall_no_params_ret(pctxt, parameters, out_err);
 }
 //--------------------------------------------------------------------
 void pyxcall_params_no_ret(
         python3_context* pctxt,
         cdts parameters[1],
-        char** out_err, uint64_t* out_err_len)
+        char** out_err)
 {
 	try
 	{
@@ -682,7 +676,7 @@ void pyxcall_params_no_ret(
 
 		PyObject* out_params = nullptr;
 		PyObject* out_kwargs = nullptr;
-		organize_arguments(pctxt->is_instance_required, (PyObject*) params, out_params, out_kwargs, pctxt->is_varargs,
+		organize_arguments(pctxt->is_instance_required, (PyObject*)params, out_params, out_kwargs, pctxt->is_varargs,
 		                   pctxt->is_named_args);
 
 		// call function
@@ -705,13 +699,13 @@ void pyxcall_params_no_ret(
 			{
 				if(!pctxt->is_instance_required)
 				{
-					handle_err(out_err, out_err_len, "non-object attribute should have been found");
+					handle_err(out_err, "non-object attribute should have been found");
 					return;
 				}
 
 				if(!pctxt->find_attribute_holder_and_attribute(params[0]))
 				{
-					handle_err(out_err, out_err_len, "attribute not found");
+					handle_err(out_err, "attribute not found");
 					return;
 				}
 			}
@@ -723,7 +717,7 @@ void pyxcall_params_no_ret(
 			}
 			else
 			{
-				handle_err(out_err, out_err_len, "Unexpected attribute action");
+				handle_err(out_err, "Unexpected attribute action");
 				return;
 			}
 		}
@@ -731,27 +725,27 @@ void pyxcall_params_no_ret(
 		std::string err_msg = std::move(check_python_error());
 		if(!err_msg.empty())
 		{
-			handle_err_str((char**) out_err, out_err_len, err_msg);
+			handle_err_str((char**)out_err, err_msg);
 			return;
 		}
 
 	} catch(std::exception& err)
 	{
-		*out_err_len = strlen(err.what());
-		*out_err = (char*) calloc(sizeof(char), *out_err_len + 1);
-		strncpy(*out_err, err.what(), *out_err_len);
+		auto err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), err_len + 1);
+		strncpy(*out_err, err.what(), err_len);
 	}
 }
 //--------------------------------------------------------------------
-void xcall_params_no_ret(void* context, cdts return_values[1], char** out_err, uint64_t* out_err_len)
+void xcall_params_no_ret(void* context, cdts return_values[1], char** out_err)
 {
-	python3_context* pctxt = (python3_context*) context;
-	pyxcall_params_no_ret(pctxt, return_values, out_err, out_err_len);
+	python3_context* pctxt = (python3_context*)context;
+	pyxcall_params_no_ret(pctxt, return_values, out_err);
 }
 //--------------------------------------------------------------------
 void pyxcall_no_params_no_ret(
         python3_context* pctxt,
-        char** out_err, uint64_t* out_err_len)
+        char** out_err)
 {
 	try
 	{
@@ -759,7 +753,7 @@ void pyxcall_no_params_no_ret(
 
 		if(!PyCallable_Check(pctxt->entrypoint))
 		{
-			handle_err(out_err, out_err_len, "Expecting callable object");
+			handle_err(out_err, "Expecting callable object");
 			return;
 		}
 
@@ -769,19 +763,19 @@ void pyxcall_no_params_no_ret(
 
 		if(!err_msg.empty())
 		{
-			handle_err_str((char**) out_err, out_err_len, err_msg);
+			handle_err_str((char**)out_err, err_msg);
 		}
 	} catch(std::exception& err)
 	{
-		*out_err_len = strlen(err.what());
-		*out_err = (char*) calloc(sizeof(char), *out_err_len + 1);
-		strncpy(*out_err, err.what(), *out_err_len);
+		auto err_len = strlen(err.what());
+		*out_err = (char*)calloc(sizeof(char), err_len + 1);
+		strncpy(*out_err, err.what(), err_len);
 	}
 }
 //--------------------------------------------------------------------
-void xcall_no_params_no_ret(void* context, char** out_err, uint64_t* out_err_len)
+void xcall_no_params_no_ret(void* context, char** out_err)
 {
-	python3_context* pctxt = (python3_context*) context;
-	pyxcall_no_params_no_ret(pctxt, out_err, out_err_len);
+	python3_context* pctxt = (python3_context*)context;
+	pyxcall_no_params_no_ret(pctxt, out_err);
 }
 //--------------------------------------------------------------------

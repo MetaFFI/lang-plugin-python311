@@ -89,11 +89,7 @@ metaffi_string8 py_str::to_utf8() const
 	PyBytes_AsStringAndSize(utf8, &s, &len);
 	
 	// Allocate memory for the metaffi_string8
-	metaffi_string8 result = (metaffi_string8)malloc(len + 1);
-	if(!result)
-	{
-		throw std::runtime_error("Failed to allocate memory for metaffi_string8");
-	}
+	metaffi_string8 result = new char8_t[len + 1];
 
 	// Copy the string to the allocated memory
 	memcpy(result, s, len);
@@ -113,11 +109,7 @@ metaffi_string16 py_str::to_utf16() const
 	Py_ssize_t size = PyBytes_Size(bytes);
 	
 	// Allocate memory for the metaffi_string16
-	metaffi_string16 result = (metaffi_string16)malloc(size + 1);
-	if(!result)
-	{
-		throw std::runtime_error("Failed to allocate memory for metaffi_string16");
-	}
+	metaffi_string16 result = new char16_t[size + 1];
 
 	// Copy the string to the allocated memory
 	memcpy(result, s, size);
@@ -138,12 +130,8 @@ metaffi_string32 py_str::to_utf32() const
 	Py_ssize_t size = PyBytes_Size(bytes);
 	
 	// Allocate memory for the metaffi_string32
-	metaffi_string32 result = (metaffi_string32)malloc(size + 1);
-	if(!result)
-	{
-		throw std::runtime_error("Failed to allocate memory for metaffi_string32");
-	}
-
+	metaffi_string32 result = new char32_t[size + 1];
+	
 	// Copy the string to the allocated memory
 	memcpy(result, s, size);
 	result[size / 4] = '\0'; // Null-terminate the string

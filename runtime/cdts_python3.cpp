@@ -941,9 +941,10 @@ metaffi_char8 on_construct_char8(const metaffi_size* index, metaffi_size index_s
 	}
 }
 
-metaffi_string8 on_construct_string8(const metaffi_size* index, metaffi_size index_size, void* context)
+metaffi_string8 on_construct_string8(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
+	*is_free_required = 1;
 	return (metaffi_string8) py_str(elem).to_utf8();
 }
 
@@ -974,9 +975,10 @@ metaffi_char16 on_construct_char16(const metaffi_size* index, metaffi_size index
 	}
 }
 
-metaffi_string16 on_construct_string16(const metaffi_size* index, metaffi_size index_size, void* context)
+metaffi_string16 on_construct_string16(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
+	*is_free_required = 1;
 	return (metaffi_string16) py_str(elem).to_utf16();
 }
 
@@ -989,18 +991,20 @@ metaffi_char32 on_construct_char32(const metaffi_size* index, metaffi_size index
 	return c;
 }
 
-metaffi_string32 on_construct_string32(const metaffi_size* index, metaffi_size index_size, void* context)
+metaffi_string32 on_construct_string32(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
+	*is_free_required = 1;
 	return (metaffi_string32) py_str(elem).to_utf32();
 }
 
-cdt_metaffi_handle on_construct_handle(const metaffi_size* index, metaffi_size index_size, void* context)
+cdt_metaffi_handle on_construct_handle(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
+	*is_free_required = 1;
 	if(py_metaffi_handle::check(elem))
 	{
-		return (cdt_metaffi_handle) py_metaffi_handle(elem);
+		return (cdt_metaffi_handle)py_metaffi_handle(elem);
 	}
 	else// different object - wrap in metaffi_handle
 	{
@@ -1009,7 +1013,7 @@ cdt_metaffi_handle on_construct_handle(const metaffi_size* index, metaffi_size i
 	}
 }
 
-cdt_metaffi_callable on_construct_callable(const metaffi_size* index, metaffi_size index_size, void* context)
+cdt_metaffi_callable on_construct_callable(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	// TODO: implement
 	throw std::runtime_error("cannot export callable from Python3.11 - yet");
