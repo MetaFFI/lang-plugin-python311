@@ -30,11 +30,12 @@ py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 			metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "__main__");
 		}
 		
-		PyObject* instance = PyObject_CallMethod(metaffi_handle_mod, "metaffi_handle", "OKO", cdt_handle.val, cdt_handle.runtime_id, cdt_handle.release);
+		PyObject* instance = PyObject_CallMethod(metaffi_handle_mod, "metaffi_handle", "KKK", cdt_handle.val, cdt_handle.runtime_id, cdt_handle.release);
 		
 		if(instance == nullptr)
 		{
-			throw std::runtime_error("Failed to create pythonic metaffi_handle object\n");
+			std::string err = check_python_error();
+			throw std::runtime_error("Failed to create pythonic metaffi_handle object: "+err+"\n");
 		}
 		
 		return py_object(instance);

@@ -107,18 +107,29 @@ void set_entrypoint(const char* entrypoint_name, void* pfunction)
 	foreign_entities[entrypoint_name] = pfunction;
 }
 //--------------------------------------------------------------------
+
+const char* metaffi_handle_class_code = R"(
+import ctypes
+
+ReleaserFuncType = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
+
+class metaffi_handle:
+	def __init__(self, h, runtime_id, releaser):
+		self.handle = h
+		self.runtime_id = runtime_id
+		self.releaser = ctypes.cast(releaser, ReleaserFuncType)
+		
+	def __del__(self):
+		if self.releaser:
+			self.releaser(ctypes.c_void_p(self.handle))
+		
+)";
+
 void initialize_environment()
 {
+	PyRun_SimpleString(metaffi_handle_class_code);
+	
 	std::string curpath(boost::filesystem::current_path().string());
-	std::stringstream ss;
-	ss << "import sys" << std::endl;
-	ss << "class metaffi_handle:" << std::endl;
-	ss << "\tdef __init__(self, h, runtime_id):" << std::endl;
-	ss << "\t\tself.handle = h" << std::endl
-	   << std::endl;
-	ss << "\t\tself.runtime_id = runtime_id" << std::endl
-	   << std::endl;
-	PyRun_SimpleString(ss.str().c_str());
 
 	PyObject* sys_path = PySys_GetObject("path");
 	PyList_Append(sys_path, PyUnicode_FromString(curpath.c_str()));
