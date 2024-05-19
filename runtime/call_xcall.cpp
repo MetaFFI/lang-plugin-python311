@@ -4,9 +4,16 @@
 #include "utils.h"
 #include <stdexcept>
 
-PyObject* call_xcall(void* pxcall, void* pcontext, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
+
+PyObject* call_xcall(xcall* pxcall, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
 {
 	pyscope();
+	
+	if(pxcall == nullptr)
+	{
+		PyErr_SetString(PyExc_ValueError, "xcall is null");
+		return Py_None;
+	}
 
 	Py_ssize_t retval_count = py_tuple::get_size(retval_metaffi_types);
 	
@@ -76,13 +83,12 @@ PyObject* call_xcall(void* pxcall, void* pcontext, PyObject* param_metaffi_types
 		}
 
 		char* out_err = nullptr;
-		uint64_t out_err_len = 0;
+		(*pxcall)(pcdts, &out_err);
 
-		((void(*)(void*,cdts*,char**,uint64_t*))pxcall)(pcontext, pcdts, &out_err, &out_err_len);
-
-		if(out_err_len > 0)
+		if(out_err)
 		{
-			PyErr_SetString(PyExc_ValueError, std::string(out_err, out_err_len).c_str());
+			PyErr_SetString(PyExc_ValueError, out_err);
+			xllr_free_string(out_err);
 			return Py_None;
 		}
 
@@ -95,11 +101,11 @@ PyObject* call_xcall(void* pxcall, void* pcontext, PyObject* param_metaffi_types
 	else
 	{
 		char* out_err = nullptr;
-		uint64_t out_err_len = 0;
-		((void(*)(void*,char**,uint64_t*))pxcall)(pcontext, &out_err, &out_err_len);
-		if (out_err_len > 0)
+		(*pxcall)(&out_err);
+		if (out_err)
 		{
-			PyErr_SetString(PyExc_ValueError, std::string(out_err, out_err_len).c_str());
+			PyErr_SetString(PyExc_ValueError, out_err);
+			xllr_free_string(out_err);
 			return Py_None;
 		}
 

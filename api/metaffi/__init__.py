@@ -1,17 +1,15 @@
 """Python MetaFFI API"""
 
-__version__ = "0.0.24"
+__version__ = "0.0.25"
 
-__all__ = ['metaffi', 'metaffi_types', 'metaffi_runtime', 'metaffi_module', 'metaffi_handle', 'metaffi_types', 'xllr_wrapper', 'pycdts_converter']
+__all__ = ['metaffi', 'metaffi_types', 'metaffi_runtime', 'metaffi_module', 'metaffi_handle', 'metaffi_types', 'xllr_wrapper', 'pycdts_converter', 'metaffi_type_info', 'MetaFFITypes']
 
-import metaffi.metaffi_types
-import metaffi.metaffi_runtime
-import metaffi.metaffi_module
-import metaffi.metaffi_handle
-import metaffi.metaffi_types
-import metaffi.xllr_wrapper
-import metaffi.pycdts_converter
-
-
-
-
+import metaffi
+from . import metaffi_types
+from . import metaffi_runtime
+from . import metaffi_module
+from .metaffi_handle import metaffi_handle
+from . import xllr_wrapper
+from . import pycdts_converter
+from .metaffi_types import metaffi_type_info
+from .metaffi_types import MetaFFITypes

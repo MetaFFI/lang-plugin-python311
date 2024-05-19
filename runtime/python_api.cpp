@@ -28,17 +28,13 @@ using namespace metaffi::utils;
 #define handle_err(err, desc)              \
 	{                                      \
 		auto err_len = strlen(desc);       \
-		*err = (char*)malloc(err_len + 1); \
-		strcpy(*err, desc);                \
-		memset((*err + err_len), 0, 1);    \
+		*err = (char*)xllr_alloc_string(desc, err_len);\
 	}
 
 #define handle_err_str(err, descstr)       \
 	{                                      \
 		auto err_len = descstr.length();   \
-		*err = (char*)malloc(err_len + 1); \
-		descstr.copy(*err, err_len, 0);    \
-		memset((*err + err_len), 0, 1);    \
+		*err = xllr_alloc_string(descstr.c_str(), err_len);\
 	}
 
 #define handle_py_err(err)                   \
@@ -336,7 +332,7 @@ xcall* load_entity(const char* module_path, const char* function_path, metaffi_t
 	return pxcall;
 }
 //--------------------------------------------------------------------
-xcall* make_callable(void* py_callable_as_py_object, metaffi_type_info* params_types, metaffi_type_info* retvals_types, uint8_t params_count, uint8_t retval_count, char** err, uint32_t* err_len)
+xcall* make_callable(void* py_callable_as_py_object, metaffi_type_info* params_types, int8_t params_count, metaffi_type_info* retvals_types, int8_t retval_count, char** err)
 {
 	std::unique_ptr<python3_context> ctxt = std::make_unique<python3_context>();// should be deleted only when the function is released
 	if(params_types)

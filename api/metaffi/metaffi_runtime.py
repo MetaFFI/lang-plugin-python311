@@ -1,4 +1,5 @@
-from metaffi.xllr_wrapper import *
+from . import xllr_wrapper
+
 
 class MetaFFIRuntime:
 	def __init__(self, runtime_plugin: str):
@@ -11,5 +12,5 @@ class MetaFFIRuntime:
 		xllr_wrapper.free_runtime_plugin('xllr.' + self.runtime_plugin)
 	
 	def load_module(self, module_path: str):
-		import metaffi.metaffi_module
-		return metaffi.metaffi_module.MetaFFIModule(self, xllr_wrapper, module_path)
+		from . import metaffi_module
+		return metaffi_module.MetaFFIModule(self, module_path)
