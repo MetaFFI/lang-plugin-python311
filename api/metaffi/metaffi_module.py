@@ -48,9 +48,10 @@ def make_metaffi_callable(f: Callable) -> Callable:
 
 
 class MetaFFIEntity:
-	def __init__(self, pxcall: ctypes.c_void_p, wrapping_lambda: Callable[..., Tuple[Any, ...]]):
+	def __init__(self, runtime_name: str, pxcall: ctypes.c_void_p, wrapping_lambda: Callable[..., Tuple[Any, ...]]):
 		self.calling_lambda = wrapping_lambda
 		self.pxcall = pxcall
+		self.runtime_name = runtime_name
 		
 	def __call__(self, *args):
 		result = self.calling_lambda(*args)
@@ -60,7 +61,7 @@ class MetaFFIEntity:
 			return result
 	
 	def __del__(self):
-		xllr_wrapper.free_xcall('xllr.python311', self.pxcall)
+		xllr_wrapper.free_xcall(self.runtime_name, self.pxcall)
 		
 
 class MetaFFIModule:
@@ -102,4 +103,4 @@ class MetaFFIModule:
 		
 		func_lambda: Callable[..., ...] = lambda *args: xllr_wrapper.xllr_python3.call_xcall(xcall, params_metaffi_types, retval_metaffi_types, None if not args else args)
 		
-		return MetaFFIEntity(xcall, func_lambda)
+		return MetaFFIEntity('xllr.' + self.runtime.runtime_plugin, xcall, func_lambda)
