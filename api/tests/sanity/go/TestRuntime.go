@@ -29,7 +29,7 @@ func JoinStrings(arrs []string) string{
 
 const FiveSeconds = time.Second*5
 func WaitABit(d time.Duration) error{
-	time.Sleep(d)
+	fmt.Printf("Waiting for %v\n", d)
 	return nil
 }
 

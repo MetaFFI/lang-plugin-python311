@@ -2,6 +2,7 @@ import platform
 import os
 import subprocess
 import shlex
+import sys
 
 
 def run_command(command: str):
@@ -35,7 +36,9 @@ def main():
 	run_command('go get github.com/OrlovEvgeny/go-mcache@v0.0.0-20200121124330-1a8195b34f3a')
 	
 	gopath = run_command("go env GOPATH")
+	print(f'{os.getcwd()} -> compile', file=sys.stderr)
 	run_command(f'metaffi -c --idl github.com/OrlovEvgeny/go-mcache@v0.0.0-20200121124330-1a8195b34f3a/mcache.go -g')
+	print(f'{os.getcwd()} <- compile', file=sys.stderr)
 
 
 if __name__ == '__main__':

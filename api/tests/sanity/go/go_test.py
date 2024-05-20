@@ -32,7 +32,9 @@ def init():
 
 def fini():
 	global runtime
+	print('-> sanity fini', file=sys.stderr)
 	runtime.release_runtime_plugin()
+	print('<- sanity fini', file=sys.stderr)
 
 
 def assert_objects_not_loaded_of_type(tc: unittest.TestCase, type_name: str):
@@ -74,7 +76,7 @@ class TestSanity(unittest.TestCase):
 	
 	def test_returns_an_error(self):
 		
-		returns_an_error: metaffi.MetaFFIEntity = None
+		returns_an_error: metaffi.MetaFFIEntity
 		
 		try:
 			returns_an_error = test_runtime_module.load_entity('callable=ReturnsAnError', None, None)
@@ -82,6 +84,9 @@ class TestSanity(unittest.TestCase):
 			self.fail('Test should have failed')
 		except:
 			pass
+		
+		del returns_an_error
+		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_div_integers(self):
 		params_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type),
@@ -91,14 +96,16 @@ class TestSanity(unittest.TestCase):
 		div_integers = test_runtime_module.load_entity('callable=DivIntegers', params_type, ret_type)
 		
 		res = div_integers(1, 2)
-		if res[0] != 0.5:
-			self.fail('Expected 0.5, got: ' + str(res[0]))
+		self.assertEqual(res, 0.5, 'Expected 0.5, got: ' + str(res))
 		
 		try:
 			div_integers(1, 0)
 			self.fail('Expected an error - divisor is 0')
 		except:
 			pass
+		
+		del div_integers
+		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_join_strings(self):
 		params_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_array_type, dims=1)]
@@ -107,8 +114,10 @@ class TestSanity(unittest.TestCase):
 		joinStrings = test_runtime_module.load_entity('callable=JoinStrings', params_type, ret_type)
 		
 		res = joinStrings(['one', 'two', 'three'])
-		if res[0] != 'one,two,three':
-			self.fail('Expected one,two,three, got: ' + str(res[0]))
+		self.assertEqual(res, 'one,two,three', 'Expected one,two,three, got: ' + str(res))
+			
+		del joinStrings
+		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_wait_a_bit(self):
 		ret_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
@@ -116,16 +125,17 @@ class TestSanity(unittest.TestCase):
 		getFiveSeconds = test_runtime_module.load_entity('global=FiveSeconds,getter', None, ret_type)
 		
 		fiveSeconds = getFiveSeconds()
-		if fiveSeconds[0] != 5000000000:
-			self.fail('Expected 5000000000, got: {}'.format(fiveSeconds[0]))
-		
-		fiveSeconds = fiveSeconds[0]
+		self.assertEqual(fiveSeconds, 5000000000, 'Expected 5000000000, got: {}'.format(fiveSeconds))
 		
 		params_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
 		
 		waitABit = test_runtime_module.load_entity('callable=WaitABit', params_type, None)
 		
 		waitABit(fiveSeconds)
+		
+		del getFiveSeconds
+		del waitABit
+		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_test_map(self):
 		# load functions
@@ -157,33 +167,36 @@ class TestSanity(unittest.TestCase):
 		testMapNameGetter = test_runtime_module.load_entity('field=TestMap.Name,instance_required,getter', param_type, ret_type)
 		
 		map = newTestMap()
-		map = map[0]
 		
 		testMapSet(map, 'x', 250)
 		
 		res = testMapContains(map, 'x')
-		if not res[0]:
-			self.fail('Map should contain x')
+		self.assertTrue(res, 'Map should contain x')
 		
 		res = testMapGet(map, 'x')
-		if res[0] != 250:
-			self.fail('x should be 250')
+		self.assertEqual(res, 250, 'x should be 250')
 		
 		deq = collections.deque()
 		deq.append(600)
 		testMapSet(map, 'z', deq)
 		
 		mapped_deq = testMapGet(map, 'z')
-		mapped_deq = mapped_deq[0]
+		self.assertIsInstance(mapped_deq, collections.deque, 'z should be a deque')
 		val = mapped_deq.pop()
-		if val != 600:
-			self.fail('mapped_deq should contain 600')
+		self.assertEqual(val, 600, 'mapped_deq should contain 600')
 		
 		testMapNameSetter(map, 'MyName')
 		
 		name = testMapNameGetter(map)
-		if name[0] != 'MyName':
-			self.fail('Expected name is MyName. Received: ' + name[0])
+		self.assertEqual(name, 'MyName', 'Expected name is MyName. Received: ' + name)
+		
+		del newTestMap
+		del testMapSet
+		del testMapGet
+		del testMapContains
+		del testMapNameSetter
+		del testMapNameGetter
+		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_test_map_with_cpp_object(self):
 		pass

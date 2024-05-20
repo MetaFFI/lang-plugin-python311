@@ -2,6 +2,7 @@ import platform
 import os
 import subprocess
 import shlex
+import sys
 
 
 def run_command(command: str):
@@ -28,9 +29,7 @@ def run_command(command: str):
 
 
 def main():
-	
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
-	
 	run_command(f'metaffi -c --idl TestRuntime.go -g')
 
 
