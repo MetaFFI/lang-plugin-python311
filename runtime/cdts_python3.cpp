@@ -710,27 +710,27 @@ metaffi_string32 on_construct_string32(const metaffi_size* index, metaffi_size i
 	return (metaffi_string32) py_str(elem).to_utf32();
 }
 
-void object_releaser(void* obj)
+void object_releaser(cdt_metaffi_handle* obj)
 {
-	Py_DECREF((PyObject*)obj);
+	Py_DECREF((PyObject*)obj->handle);
 }
 
-cdt_metaffi_handle on_construct_handle(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+cdt_metaffi_handle* on_construct_handle(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	*is_free_required = 1;
 	if(py_metaffi_handle::check(elem))
 	{
-		return (cdt_metaffi_handle)py_metaffi_handle(elem);
+		return py_metaffi_handle(elem).as_cdt_metaffi_handle();
 	}
 	else// different object - wrap in metaffi_handle
 	{
 		Py_INCREF(elem);
-		return cdt_metaffi_handle{elem, PYTHON311_RUNTIME_ID, (void*)object_releaser };
+		return new cdt_metaffi_handle{elem, PYTHON311_RUNTIME_ID, object_releaser };
 	}
 }
 
-cdt_metaffi_callable on_construct_callable(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+cdt_metaffi_callable* on_construct_callable(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	// TODO: implement
 	throw std::runtime_error("cannot export callable from Python3.11 - yet");

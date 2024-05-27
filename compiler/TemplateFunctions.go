@@ -245,7 +245,7 @@ func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDef
 // --------------------------------------------------------------------
 func getMetaFFIType(elem *IDL.ArgDefinition, isObjectField bool) string {
 
-	var val uint64
+	var handle uint64
 	var found bool
 
 	if elem.Type == IDL.ANY {
@@ -264,13 +264,13 @@ func getMetaFFIType(elem *IDL.ArgDefinition, isObjectField bool) string {
 		elem.Type = IDL.MetaFFIType(string(elem.Type) + "_array")
 	}
 
-	val, found = IDL.TypeStringToTypeEnum[elem.Type]
+	handle, found = IDL.TypeStringToTypeEnum[elem.Type]
 
 	if !found {
 		panic(fmt.Sprintf("Requested type is not supported: %v. Name: %v", elem.Type, elem.Name))
 	}
 
-	return fmt.Sprintf("%v", val)
+	return fmt.Sprintf("%v", handle)
 }
 
 // --------------------------------------------------------------------

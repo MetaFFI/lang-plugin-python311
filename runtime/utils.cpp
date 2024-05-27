@@ -25,11 +25,11 @@ std::string check_python_error()
 	PyErr_NormalizeException(&excType, &excValue, &excTraceback);
 
 	PyObject* str_exc_type = PyObject_Repr(excType);
-	PyObject* pyStr_exc_type = PyUnicode_AsEncodedString(str_exc_type, "utf-8", "Error ~");
+	PyObject* pyStr_exc_type = PyUnicode_AsEncodedString(str_exc_type, "utf-8", "strict");
 	message = PyBytes_AS_STRING(pyStr_exc_type);
 
 	PyObject* str_exc_value = PyObject_Repr(excValue);
-	PyObject* pyStr_exc_value = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "Error ~");
+	PyObject* pyStr_exc_value = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "strict");
 	message += ": " + std::string(PyBytes_AS_STRING(pyStr_exc_value));
 
 	if (excTraceback != nullptr)
@@ -39,7 +39,7 @@ std::string check_python_error()
 		PyObject* pyth_func = PyObject_GetAttrString(pyth_module, "format_tb");
 		PyObject* pyth_val = PyObject_CallFunctionObjArgs(pyth_func, excTraceback, NULL);
 		PyObject* pyth_str = PyUnicode_Join(PyUnicode_FromString(""), pyth_val);
-		PyObject* pyStr = PyUnicode_AsEncodedString(pyth_str, "utf-8", "Error ~");
+		PyObject* pyStr = PyUnicode_AsEncodedString(pyth_str, "utf-8", "strict");
 		message += "\n";
 		message += PyBytes_AS_STRING(pyStr);
 	}

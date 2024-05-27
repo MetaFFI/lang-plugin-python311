@@ -1,8 +1,6 @@
 
 #------------------------------- Python3 Language Support - Runtime Plugin ------------------------------------------
 
-add_boost(filesystem)
-add_python3()
 
 set(target_name "xllr.python311")
 
@@ -12,10 +10,9 @@ get_sdk_utils_sources(utils_srcs)
 get_sdk_runtime_sources(runtime_srcs)
 
 add_library(${target_name} SHARED ${${target_name}_sources} ${utils_srcs} ${runtime_srcs})
-target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} ${METAFFI_SDK})
+target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_LIST_DIR} ${Boost_INCLUDE_DIRS} ${METAFFI_SDK} ${Python3_INCLUDE_DIRS})
 set_target_properties(${target_name} PROPERTIES PREFIX "" POSITION_INDEPENDENT_CODE ON LINK_FLAGS "-Wl,-Bsymbolic")
-target_link_libraries(${target_name} PRIVATE Boost::filesystem Python3::Python)
-link_to_dl_for_non_windows(${target_name})
+target_link_libraries(${target_name} PRIVATE ${CMAKE_DL_LIBS} Boost::filesystem ${Python3_LIBRARY_RELEASE})
 
 set_target_properties( ${target_name}
 		PROPERTIES
@@ -25,15 +22,19 @@ set_target_properties( ${target_name}
 		)
 
 # install
+install(CODE "message(STATUS \"Installing xllr.python3 to ${CMAKE_BINARY_DIR}\")")
 install_target(${target_name} .)
 
+# in the install, copy the generated file to METAFFI_HOME environment variable directory
+# make sure to fix the backslashes in METAFFI_HOME environment variables to forward slashes
+copy_file_from_project_binary_to_metaffi_home(${target_name} ${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 # unitests
 add_executable(python_api_test "python_runtime_test.cpp" ${utils_srcs} ${runtime_srcs})
-target_link_libraries(python_api_test PRIVATE doctest::doctest ${target_name} Boost::filesystem Python3::Python)
-target_include_directories(python_api_test PRIVATE ${METAFFI_SDK})
+target_link_libraries(python_api_test PRIVATE doctest::doctest ${target_name} Boost::filesystem ${Python3_LIBRARY_RELEASE})
+target_include_directories(python_api_test PRIVATE ${METAFFI_SDK} ${Python3_INCLUDE_DIRS})
 if(NOT WIN32)
-	add_custom_command(TARGET python_api_test POST_BUILD COMMAND patchelf --set-rpath "$ORIGIN:$ORIGIN/lib:$ENV{METAFFI_HOME}:${Boost_LIBRARY_DIRS}" $<TARGET_FILE:python_api_test>)
+	add_custom_command(TARGET python_api_test POST_BUILD COMMAND patchelf --set-rpath "\"$ORIGIN:$ORIGIN/lib:$ENV{METAFFI_HOME}:${Boost_LIBRARY_DIRS}\"" $<TARGET_FILE:python_api_test>)
 endif()
 
 add_test(NAME "Python3 Runtime API" COMMAND python_api_test)

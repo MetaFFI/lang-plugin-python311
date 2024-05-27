@@ -68,11 +68,11 @@ def EntryPoint_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}():
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
 {{GenerateCEntryPoint $f.Setter.GetNameWithOverloadIndex $f.Setter.Parameters $f.Setter.ReturnValues false 0}}
-def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*val):
+def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*handle):
 	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
-	if len(val) != 1:
+	if len(handle) != 1:
 		raise ValueError('received parameter in {{$f.Setter.Name}} expects exactly one parameter')
-	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = val[0]
+	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = handle[0]
 	return (None, ret_val_types)
 
 {{end}}{{/* end setter */}}

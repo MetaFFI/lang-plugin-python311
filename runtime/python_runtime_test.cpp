@@ -82,23 +82,23 @@ TEST_SUITE("CDTS Python3 Test")
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
 		
-		pcdts->arr[0] = cdt(3, 2, metaffi_uint8_type);
+		pcdts->arr[0].set_array(new cdts(3, 2), metaffi_uint8_type);
 		cdt& cdt_array2d = pcdts->arr[0];
-		(*cdt_array2d.cdt_val.array_val)[0] = cdt(2, 1, metaffi_uint8_type);
-		(*cdt_array2d.cdt_val.array_val)[1] = cdt(3, 1, metaffi_uint8_type);
-		(*cdt_array2d.cdt_val.array_val)[2] = cdt(4, 1, metaffi_uint8_type);
+		(*cdt_array2d.cdt_val.array_val)[0].set_new_array(2, 1, metaffi_uint8_type);
+		(*cdt_array2d.cdt_val.array_val)[1].set_new_array(3, 1, metaffi_uint8_type);
+		(*cdt_array2d.cdt_val.array_val)[2].set_new_array(4, 1, metaffi_uint8_type);
 
-		(*cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val)[0] = cdt((metaffi_uint8)1);
-		(*cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val)[1] = cdt((metaffi_uint8)2);
+		(*cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val)[0] = (metaffi_uint8)1;
+		(*cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val)[1] = (metaffi_uint8)2;
 
-		(*cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val)[0] = cdt((metaffi_uint8)3);
-		(*cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val)[1] = cdt((metaffi_uint8)4);
-		(*cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val)[2] = cdt((metaffi_uint8)5);
+		(*cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val)[0] = (metaffi_uint8)3;
+		(*cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val)[1] = (metaffi_uint8)4;
+		(*cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val)[2] = (metaffi_uint8)5;
 
-		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[0] = cdt((metaffi_uint8)6);
-		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[1] = cdt((metaffi_uint8)7);
-		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[2] = cdt((metaffi_uint8)8);
-		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[3] = cdt((metaffi_uint8)9);
+		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[0] = (metaffi_uint8)6;
+		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[1] = (metaffi_uint8)7;
+		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[2] = (metaffi_uint8)8;
+		(*cdt_array2d.cdt_val.array_val->arr[2].cdt_val.array_val)[3] = (metaffi_uint8)9;
 
 		cdts_python3 cdts_py(*pcdts);
 
@@ -133,7 +133,7 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(3, 1, metaffi_uint8_type);
+		pcdts->arr[0].set_new_array(3, 1, metaffi_uint8_type);
 		cdt& cdt_array1d = pcdts->arr[0];
 		cdt_array1d.cdt_val.array_val->arr[0].cdt_val.uint8_val = 1;
 		cdt_array1d.cdt_val.array_val->arr[1].cdt_val.uint8_val = 2;
@@ -160,11 +160,11 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(3, 1, metaffi_float32_type);
+		pcdts->arr[0].set_new_array(3, 1, metaffi_float32_type);
 		cdt& cdt_array1d = pcdts->arr[0];
-		cdt_array1d.cdt_val.array_val->arr[0] = cdt((metaffi_float32)1.0f);
-		cdt_array1d.cdt_val.array_val->arr[1] = cdt((metaffi_float32)2.0f);
-		cdt_array1d.cdt_val.array_val->arr[2] = cdt((metaffi_float32)3.0f);
+		cdt_array1d.cdt_val.array_val->arr[0] = (metaffi_float32)1.0f;
+		cdt_array1d.cdt_val.array_val->arr[1] = (metaffi_float32)2.0f;
+		cdt_array1d.cdt_val.array_val->arr[2] = (metaffi_float32)3.0f;
 
 		cdts_python3 cdts_py(*pcdts);
 		py_tuple t = cdts_py.to_py_tuple();
@@ -186,34 +186,34 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(2, 3, metaffi_float32_type);
+		pcdts->arr[0].set_new_array(2, 3, metaffi_float32_type);
 		cdt& cdt_array3d = pcdts->arr[0];
-		cdt_array3d.cdt_val.array_val->arr[0] = cdt(2, 2, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[1] = cdt(3, 2, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[0].set_new_array(2, 2, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].set_new_array(3, 2, metaffi_float32_type);
 
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt(4, 1, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt(2, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].set_new_array(4, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].set_new_array(2, 1, metaffi_float32_type);
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt(3, 1, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt(2, 1, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2] = cdt(1, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].set_new_array(3, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].set_new_array(2, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2].set_new_array(1, 1, metaffi_float32_type);
 
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt((metaffi_float32)1.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt((metaffi_float32)2.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = cdt((metaffi_float32)3.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[3] = cdt((metaffi_float32)4.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = (metaffi_float32)1.0f;
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = (metaffi_float32)2.0f;
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = (metaffi_float32)3.0f;
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[3] = (metaffi_float32)4.0f;
 
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt((metaffi_float32)5.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt((metaffi_float32)6.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = (metaffi_float32)5.0f;
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = (metaffi_float32)6.0f;
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt((metaffi_float32)7.0f);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt((metaffi_float32)8.0f);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = cdt((metaffi_float32)9.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = (metaffi_float32)7.0f;
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = (metaffi_float32)8.0f;
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = (metaffi_float32)9.0f;
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt((metaffi_float32)10.0f);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt((metaffi_float32)11.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = (metaffi_float32)10.0f;
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = (metaffi_float32)11.0f;
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2].cdt_val.array_val->arr[0] = cdt((metaffi_float32)12.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2].cdt_val.array_val->arr[0] = (metaffi_float32)12.0f;
 
 		cdts_python3 cdts_py(*pcdts);
 		py_tuple t = cdts_py.to_py_tuple();
@@ -260,11 +260,11 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(3, 1, metaffi_uint8_type);
+		pcdts->arr[0].set_new_array(3, 1, metaffi_uint8_type);
 		cdt& cdt_array1d = pcdts->arr[0];
-		cdt_array1d.cdt_val.array_val->arr[0] = cdt((metaffi_uint8)1);
-		cdt_array1d.cdt_val.array_val->arr[1] = cdt((metaffi_uint8)2);
-		cdt_array1d.cdt_val.array_val->arr[2] = cdt((metaffi_uint8)3);
+		cdt_array1d.cdt_val.array_val->arr[0] = (metaffi_uint8)1;
+		cdt_array1d.cdt_val.array_val->arr[1] = (metaffi_uint8)2;
+		cdt_array1d.cdt_val.array_val->arr[2] = (metaffi_uint8)3;
 
 		cdts_python3 cdts_py(*pcdts);
 		py_tuple t = cdts_py.to_py_tuple();
@@ -286,18 +286,18 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(2, 2, metaffi_uint8_type);
+		pcdts->arr[0].set_new_array(2, 2, metaffi_uint8_type);
 		cdt& cdt_array2d = pcdts->arr[0];
-		cdt_array2d.cdt_val.array_val->arr[0] = cdt(3, 1, metaffi_uint8_type);
-		cdt_array2d.cdt_val.array_val->arr[1] = cdt(3, 1, metaffi_uint8_type);
+		cdt_array2d.cdt_val.array_val->arr[0].set_new_array(3, 1, metaffi_uint8_type);
+		cdt_array2d.cdt_val.array_val->arr[1].set_new_array(3, 1, metaffi_uint8_type);
 
-		cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt((metaffi_uint8)1);
-		cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt((metaffi_uint8)2);
-		cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = cdt((metaffi_uint8)3);
+		cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = ((metaffi_uint8)1);
+		cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = ((metaffi_uint8)2);
+		cdt_array2d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = ((metaffi_uint8)3);
 
-		cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt((metaffi_uint8)4);
-		cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt((metaffi_uint8)5);
-		cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2] = cdt((metaffi_uint8)6);
+		cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = ((metaffi_uint8)4);
+		cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = ((metaffi_uint8)5);
+		cdt_array2d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2] = ((metaffi_uint8)6);
 
 		cdts_python3 cdts_py(*pcdts);
 		py_tuple t = cdts_py.to_py_tuple();
@@ -333,11 +333,11 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(3, 1, metaffi_float32_type);
+		pcdts->arr[0].set_new_array(3, 1, metaffi_float32_type);
 		cdt& cdt_array1d = pcdts->arr[0];
-		cdt_array1d.cdt_val.array_val->arr[0] = cdt((metaffi_float32)1.0f);
-		cdt_array1d.cdt_val.array_val->arr[1] = cdt((metaffi_float32)2.0f);
-		cdt_array1d.cdt_val.array_val->arr[2] = cdt((metaffi_float32)3.0f);
+		cdt_array1d.cdt_val.array_val->arr[0] = ((metaffi_float32)1.0f);
+		cdt_array1d.cdt_val.array_val->arr[1] = ((metaffi_float32)2.0f);
+		cdt_array1d.cdt_val.array_val->arr[2] = ((metaffi_float32)3.0f);
 
 		cdts_python3 cdts_py(*pcdts);
 		py_tuple t = cdts_py.to_py_tuple();
@@ -359,34 +359,34 @@ TEST_SUITE("CDTS Python3 Test")
 
 		cdts* pcdts = xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg([&pcdts]() { xllr_free_cdts_buffer(pcdts); });
-		pcdts->arr[0] = cdt(2, 3, metaffi_float32_type);
+		pcdts->arr[0].set_new_array(2, 3, metaffi_float32_type);
 		cdt& cdt_array3d = pcdts->arr[0];
-		cdt_array3d.cdt_val.array_val->arr[0] = cdt(2, 2, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[1] = cdt(3, 2, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[0].set_new_array(2, 2, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].set_new_array(3, 2, metaffi_float32_type);
 
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt(4, 1, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt(2, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].set_new_array(4, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].set_new_array(2, 1, metaffi_float32_type);
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt(3, 1, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt(2, 1, metaffi_float32_type);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2] = cdt(1, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].set_new_array(3, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].set_new_array(2, 1, metaffi_float32_type);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2].set_new_array(1, 1, metaffi_float32_type);
 
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt((metaffi_float32)1.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt((metaffi_float32)2.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = cdt((metaffi_float32)3.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[3] = cdt((metaffi_float32)4.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = ((metaffi_float32)1.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = ((metaffi_float32)2.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = ((metaffi_float32)3.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[3] = ((metaffi_float32)4.0f);
 
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt((metaffi_float32)5.0f);
-		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt((metaffi_float32)6.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = ((metaffi_float32)5.0f);
+		cdt_array3d.cdt_val.array_val->arr[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = ((metaffi_float32)6.0f);
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt((metaffi_float32)7.0f);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt((metaffi_float32)8.0f);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = cdt((metaffi_float32)9.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = ((metaffi_float32)7.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = ((metaffi_float32)8.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[0].cdt_val.array_val->arr[2] = ((metaffi_float32)9.0f);
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt((metaffi_float32)10.0f);
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt((metaffi_float32)11.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = ((metaffi_float32)10.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = ((metaffi_float32)11.0f);
 
-		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2].cdt_val.array_val->arr[0] = cdt((metaffi_float32)12.0f);
+		cdt_array3d.cdt_val.array_val->arr[1].cdt_val.array_val->arr[2].cdt_val.array_val->arr[0] = ((metaffi_float32)12.0f);
 
 		cdts_python3 cdts_py(*pcdts);
 		py_tuple t = cdts_py.to_py_tuple();
@@ -523,8 +523,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts& params = cdts_param_ret[0];
 		cdts& ret = cdts_param_ret[1];
 
-		params[0] = cdt((metaffi_int64)10);
-		params[1] = cdt((metaffi_int64)2);
+		params[0] = ((metaffi_int64)10);
+		params[1] = ((metaffi_int64)2);
 
 		(*pdiv_integers)((cdts*)cdts_param_ret, &err);
 		if(err)
@@ -560,10 +560,10 @@ TEST_SUITE("Python Runtime Tests")
 		cdts& params = cdts_param_ret[0];
 		cdts& ret = cdts_param_ret[1];
 
-		params[0] = cdt(3, 1, metaffi_string8_type);
-		params[0].cdt_val.array_val->arr[0] = cdt((metaffi_string8) "one", true);
-		params[0].cdt_val.array_val->arr[1] = cdt((metaffi_string8) "two", true);
-		params[0].cdt_val.array_val->arr[2] = cdt((metaffi_string8) "three", true);
+		params[0].set_new_array(3, 1, metaffi_string8_type);
+		params[0].cdt_val.array_val->arr[0].set_string((metaffi_string8) "one", true);
+		params[0].cdt_val.array_val->arr[1].set_string((metaffi_string8) "two", true);
+		params[0].cdt_val.array_val->arr[2].set_string((metaffi_string8) "three", true);
 
 		(*join_strings)((cdts*)cdts_param_ret, &err);
 		if(err)
@@ -625,7 +625,7 @@ TEST_SUITE("Python Runtime Tests")
 		metaffi::utils::scope_guard sg2([&] { xllr_free_cdts_buffer(cdts_param_ret); });
 		cdts& params = cdts_param_ret[0];
 
-		params[0] = cdt((metaffi_int64)five);
+		params[0] = ((metaffi_int64)five);
 
 		(*pwait_a_bit)((cdts*)cdts_param_ret, &err);
 		if(err)
@@ -662,10 +662,10 @@ TEST_SUITE("Python Runtime Tests")
 		}
 
 		REQUIRE((ret[0].type == metaffi_handle_type));
-		REQUIRE((ret[0].cdt_val.handle_val.val != nullptr));
-		REQUIRE((ret[0].cdt_val.handle_val.runtime_id == PYTHON311_RUNTIME_ID));
+		REQUIRE((ret[0].cdt_val.handle_val->handle != nullptr));
+		REQUIRE((ret[0].cdt_val.handle_val->runtime_id == PYTHON311_RUNTIME_ID));
 
-		cdt_metaffi_handle testmap_instance = ret[0].cdt_val.handle_val;
+		cdt_metaffi_handle* testmap_instance = ret[0].cdt_val.handle_val;
 
 		// set
 		function_path = "callable=testmap.set,instance_required";
@@ -688,9 +688,9 @@ TEST_SUITE("Python Runtime Tests")
 		metaffi::utils::scope_guard sg2([&] { xllr_free_cdts_buffer(cdts_param_ret4); });
 		cdts& params = cdts_param_ret4[0];
 
-		params[0] = cdt(testmap_instance);
-		params[1] = cdt((metaffi_string8)u8"key", true);
-		params[2] = cdt((metaffi_int64)42);
+		params[0].set_handle(testmap_instance);
+		params[1].set_string((metaffi_string8)u8"key", true);
+		params[2] = (metaffi_int64)42;
 
 		(*p_testmap_set)((cdts*)cdts_param_ret4, &err);
 		if(err)
@@ -720,8 +720,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts& contains_params = cdts_param_ret2[0];
 		cdts& contains_ret = cdts_param_ret2[1];
 
-		contains_params[0] = cdt(testmap_instance);
-		contains_params[1] = cdt((metaffi_string8)u8"key", true);
+		contains_params[0].set_handle(testmap_instance);
+		contains_params[1].set_string((metaffi_string8)u8"key", true);
 
 		(*p_testmap_contains)((cdts*)cdts_param_ret2, &err);
 		if(err)
@@ -754,8 +754,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts& get_params = cdts_param_ret3[0];
 		cdts& get_ret = cdts_param_ret3[1];
 
-		get_params[0] = cdt(testmap_instance);
-		get_params[1] = cdt((metaffi_string8)u8"key", true);
+		get_params[0].set_handle(testmap_instance);
+		get_params[1].set_string((metaffi_string8)u8"key", true);
 
 		(*p_testmap_get)((cdts*)cdts_param_ret3, &err);
 		if(err)
@@ -794,10 +794,11 @@ TEST_SUITE("Python Runtime Tests")
 		
 		cdts& wrapper_ret = cdts_param_ret[1];
 		REQUIRE((wrapper_ret[0].type == metaffi_handle_type));
-		REQUIRE((wrapper_ret[0].cdt_val.handle_val.val != nullptr));
-		REQUIRE((wrapper_ret[0].cdt_val.handle_val.runtime_id == PYTHON311_RUNTIME_ID));
+		REQUIRE((wrapper_ret[0].cdt_val.handle_val->handle != nullptr));
+		REQUIRE((wrapper_ret[0].cdt_val.handle_val->runtime_id == PYTHON311_RUNTIME_ID));
+		REQUIRE((wrapper_ret[0].cdt_val.handle_val->release != nullptr));
 
-		cdt_metaffi_handle testmap_instance = wrapper_ret[0].cdt_val.handle_val;
+		cdt_metaffi_handle* testmap_instance = wrapper_ret[0].cdt_val.handle_val;
 
 		// set
 		function_path = "callable=testmap.set,instance_required";
@@ -816,15 +817,18 @@ TEST_SUITE("Python Runtime Tests")
 			}
 		});
 
-		auto insert = [](xcall* p_testmap_set, const cdt_metaffi_handle& hthis, const std::u8string& key,
-		                 std::vector<int8_t>* val,
-		                 int runtime_id) {
+		auto insert = [](
+              xcall* p_testmap_set, const cdt_metaffi_handle* hthis, const std::u8string& key,
+			std::vector<int8_t>* val,
+			int runtime_id) {
+			
 			cdts* cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(3, 0);
 			metaffi::utils::scope_guard sg([&] { xllr_free_cdts_buffer(cdts_param_ret); });
 			cdts& cdt_params = cdts_param_ret[0];
-			cdt_params[0] = cdt(hthis);
-			cdt_params[1] = cdt((metaffi_string8)key.c_str(), true);
-			cdt_params[2] = cdt({val, (uint64_t)runtime_id, nullptr});
+			cdt_params[0].set_handle(hthis);
+			cdt_params[1].set_string((metaffi_string8)key.c_str(), true);
+			cdt_metaffi_handle* mhandle = new cdt_metaffi_handle{val, (uint64_t)runtime_id, nullptr};
+			cdt_params[2].set_handle(mhandle);
 
 			char* err = nullptr;
 			(*p_testmap_set)((cdts*)cdts_param_ret, &err);
@@ -859,8 +863,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret2 = (cdts*)xllr_alloc_cdts_buffer(2, 1);
 		metaffi::utils::scope_guard sg2([&] { xllr_free_cdts_buffer(cdts_param_ret2); });
 		cdts& params = cdts_param_ret2[0];
-		params[0] = cdt(testmap_instance);
-		params[1] = cdt(u8"key1", true);
+		params[0].set_handle(testmap_instance);
+		params[1].set_string(u8"key1", true);
 
 		(*p_testmap_contains)((cdts*)cdts_param_ret2);
 		if(err)
@@ -889,12 +893,12 @@ TEST_SUITE("Python Runtime Tests")
 			}
 		});
 
-		auto get = [&p_testmap_get](const cdt_metaffi_handle& hthis, const std::u8string& key) -> std::vector<int8_t> {
+		auto get = [&p_testmap_get](const cdt_metaffi_handle* hthis, const std::u8string& key) -> std::vector<int8_t> {
 			cdts* cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(2, 1);
 			metaffi::utils::scope_guard sg([&] { xllr_free_cdts_buffer(cdts_param_ret); });
 			cdts& wrapper_get_params = cdts_param_ret[0];
-			wrapper_get_params[0] = cdt(hthis);
-			wrapper_get_params[1] = cdt((metaffi_string8)key.c_str(), true);
+			wrapper_get_params[0].set_handle(hthis);
+			wrapper_get_params[1].set_string((metaffi_string8)key.c_str(), true);
 
 			char* err = nullptr;
 			(*p_testmap_get)((cdts*)cdts_param_ret, &err);
@@ -905,8 +909,8 @@ TEST_SUITE("Python Runtime Tests")
 
 			cdts& wrapper_get_ret = cdts_param_ret[1];
 			REQUIRE((wrapper_get_ret[0].type == metaffi_handle_type));
-			REQUIRE((wrapper_get_ret[0].cdt_val.handle_val.runtime_id == 733));
-			std::vector<int8_t>* object_pulled = (std::vector<int8_t>*)wrapper_get_ret[0].cdt_val.handle_val.val;
+			REQUIRE((wrapper_get_ret[0].cdt_val.handle_val->runtime_id == 733));
+			std::vector<int8_t>* object_pulled = (std::vector<int8_t>*)wrapper_get_ret[0].cdt_val.handle_val->handle;
 			return *object_pulled;
 		};
 
@@ -976,14 +980,14 @@ TEST_SUITE("Python Runtime Tests")
 		}
 
 		REQUIRE((cdts_param_ret[1].arr[0].type == metaffi_handle_type));
-		REQUIRE((cdts_param_ret[1].arr[0].cdt_val.handle_val.val != nullptr));
+		REQUIRE((cdts_param_ret[1].arr[0].cdt_val.handle_val->handle != nullptr));
 
-		cdt_metaffi_handle testmap_instance = cdts_param_ret[1].arr[0].cdt_val.handle_val;
+		cdt_metaffi_handle* testmap_instance = cdts_param_ret[1].arr[0].cdt_val.handle_val;
 
 		// Get name
 		cdts* cdts_param_ret2 = (cdts*)xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg2([&cdts_param_ret2]() { xllr_free_cdts_buffer(cdts_param_ret2); });
-		cdts_param_ret2[0].arr[0] = cdt(testmap_instance);
+		cdts_param_ret2[0].arr[0].set_handle(testmap_instance);
 
 		(*pget_name)((cdts*)cdts_param_ret2, &err);
 		// Check for errors
@@ -998,8 +1002,8 @@ TEST_SUITE("Python Runtime Tests")
 		// Set name to "name is my name"
 		cdts* cdts_param_ret3 = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg3([&cdts_param_ret3]() { xllr_free_cdts_buffer(cdts_param_ret3); });
-		cdts_param_ret3[0].arr[0] = cdt(testmap_instance);
-		cdts_param_ret3[0].arr[1] = cdt(u8"name is my name", true);
+		cdts_param_ret3[0].arr[0].set_handle(testmap_instance);
+		cdts_param_ret3[0].arr[1].set_string(u8"name is my name", true);
 
 		(*pset_name)((cdts*)cdts_param_ret3, &err);
 		// Check for errors
@@ -1011,7 +1015,7 @@ TEST_SUITE("Python Runtime Tests")
 		// Get name again and make sure it is "name is my name"
 		cdts* last_get_params = (cdts*)xllr_alloc_cdts_buffer(1, 1);
 		metaffi::utils::scope_guard sg4([&last_get_params]() { xllr_free_cdts_buffer(last_get_params); });
-		last_get_params[0].arr[0] = cdt(testmap_instance);
+		last_get_params[0].arr[0].set_handle(testmap_instance);
 
 		(*pget_name)((cdts*)last_get_params, &err);
 		// Check for errors
@@ -1080,11 +1084,11 @@ TEST_SUITE("Python Runtime Tests")
 
 		REQUIRE(((res[0].type == metaffi_handle_array_type)));
 		REQUIRE(((res[0].cdt_val.array_val->length == 3)));
-		REQUIRE((res[0].cdt_val.array_val->arr[0].cdt_val.handle_val.val != nullptr));
-		REQUIRE((res[0].cdt_val.array_val->arr[1].cdt_val.handle_val.val != nullptr));
-		REQUIRE((res[0].cdt_val.array_val->arr[2].cdt_val.handle_val.val != nullptr));
+		REQUIRE((res[0].cdt_val.array_val->arr[0].cdt_val.handle_val->handle != nullptr));
+		REQUIRE((res[0].cdt_val.array_val->arr[1].cdt_val.handle_val->handle != nullptr));
+		REQUIRE((res[0].cdt_val.array_val->arr[2].cdt_val.handle_val->handle != nullptr));
 
-		std::vector<cdt_metaffi_handle> some_classes = {res[0].cdt_val.array_val->arr[0].cdt_val.handle_val,
+		std::vector<cdt_metaffi_handle*> some_classes = {res[0].cdt_val.array_val->arr[0].cdt_val.handle_val,
 		                                                res[0].cdt_val.array_val->arr[1].cdt_val.handle_val,
 		                                                res[0].cdt_val.array_val->arr[2].cdt_val.handle_val};
 
@@ -1092,7 +1096,7 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret3 = (cdts*)xllr_alloc_cdts_buffer(1, 0);
 		metaffi::utils::scope_guard sg2([&cdts_param_ret3]() { xllr_free_cdts_buffer(cdts_param_ret3); });
 		cdts& print_params = cdts_param_ret3[0];
-		print_params[0] = cdt(some_classes[0]);
+		print_params[0].set_handle(some_classes[0]);
 
 		(*pSomeClassPrint)((cdts*)cdts_param_ret3, &err);
 		if(err)
@@ -1100,14 +1104,14 @@ TEST_SUITE("Python Runtime Tests")
 			FAIL(std::string(err));
 		}
 
-		print_params[0] = cdt(some_classes[1]);
+		print_params[0].set_handle(some_classes[1]);
 		(*pSomeClassPrint)((cdts*)cdts_param_ret3, &err);
 		if(err)
 		{
 			FAIL(std::string(err));
 		}
 
-		print_params[0] = cdt(some_classes[2]);
+		print_params[0].set_handle(some_classes[2]);
 		(*pSomeClassPrint)((cdts*)cdts_param_ret3, &err);
 		if(err)
 		{
@@ -1117,10 +1121,10 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret2 = (cdts*)xllr_alloc_cdts_buffer(1, 0);
 		metaffi::utils::scope_guard sg3([&cdts_param_ret2]() { xllr_free_cdts_buffer(cdts_param_ret2); });
 		cdts& params = cdts_param_ret2[0];
-		params[0] = cdt(3, 1, metaffi_handle_type);
-		params[0].cdt_val.array_val->arr[0] = cdt(some_classes[0]);
-		params[0].cdt_val.array_val->arr[1] = cdt(some_classes[1]);
-		params[0].cdt_val.array_val->arr[2] = cdt(some_classes[2]);
+		params[0].set_new_array(3, 1, metaffi_handle_type);
+		params[0].cdt_val.array_val->arr[0].set_handle(some_classes[0]);
+		params[0].cdt_val.array_val->arr[1].set_handle(some_classes[1]);
+		params[0].cdt_val.array_val->arr[2].set_handle(some_classes[2]);
 
 		(*pexpectThreeSomeClasses)((cdts*)cdts_param_ret2, &err);
 		if(err)
@@ -1161,21 +1165,21 @@ TEST_SUITE("Python Runtime Tests")
 		metaffi::utils::scope_guard sg([&cdts_param_ret]() { xllr_free_cdts_buffer(cdts_param_ret); });
 		cdts& params = cdts_param_ret[0];
 		cdts& ret = cdts_param_ret[1];
-		params[0] = cdt(3, 2, metaffi_uint8_array_type);
-		params[0].cdt_val.array_val->arr[0] = cdt(2, 1, metaffi_uint8_array_type);
-		params[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = cdt((metaffi_uint8)1);
-		params[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = cdt((metaffi_uint8)2);
+		params[0].set_new_array(3, 2, metaffi_uint8_array_type);
+		params[0].cdt_val.array_val->arr[0].set_new_array(2, 1, metaffi_uint8_array_type);
+		params[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[0] = ((metaffi_uint8)1);
+		params[0].cdt_val.array_val->arr[0].cdt_val.array_val->arr[1] = ((metaffi_uint8)2);
 
-		params[0].cdt_val.array_val->arr[1] = cdt(3, 1, metaffi_uint8_array_type);
-		params[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = cdt((metaffi_uint8)3);
-		params[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = cdt((metaffi_uint8)4);
-		params[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[2] = cdt((metaffi_uint8)5);
+		params[0].cdt_val.array_val->arr[1].set_new_array(3, 1, metaffi_uint8_array_type);
+		params[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[0] = ((metaffi_uint8)3);
+		params[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[1] = ((metaffi_uint8)4);
+		params[0].cdt_val.array_val->arr[1].cdt_val.array_val->arr[2] = ((metaffi_uint8)5);
 
-		params[0].cdt_val.array_val->arr[2] = cdt(4, 1, metaffi_uint8_array_type);
-		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[0] = cdt((metaffi_uint8)6);
-		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[1] = cdt((metaffi_uint8)7);
-		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[2] = cdt((metaffi_uint8)8);
-		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[3] = cdt((metaffi_uint8)9);
+		params[0].cdt_val.array_val->arr[2].set_new_array(4, 1, metaffi_uint8_array_type);
+		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[0] = ((metaffi_uint8)6);
+		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[1] = ((metaffi_uint8)7);
+		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[2] = ((metaffi_uint8)8);
+		params[0].cdt_val.array_val->arr[2].cdt_val.array_val->arr[3] = ((metaffi_uint8)9);
 
 		(*pexpectThreeBuffers)((cdts*)cdts_param_ret, &err);
 
@@ -1235,7 +1239,7 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* setter_ret = (cdts*)xllr_alloc_cdts_buffer(1, 0);
 		metaffi::utils::scope_guard sg([&setter_ret]() { xllr_free_cdts_buffer(setter_ret); });
 		cdts& params = setter_ret[0];
-		params[0] = cdt((metaffi_int64)10);
+		params[0] = ((metaffi_int64)10);
 
 		(*pfive_seconds_setter)((cdts*)setter_ret, &err);
 		if(err)
@@ -1336,8 +1340,8 @@ TEST_SUITE("Python Runtime Tests")
 		REQUIRE((ret[0].cdt_val.array_val->arr[4].cdt_val.array_val->arr[0].cdt_val.uint8_val == 1));
 		REQUIRE((ret[0].cdt_val.array_val->arr[4].cdt_val.array_val->arr[1].cdt_val.uint8_val == 2));
 		REQUIRE((ret[0].cdt_val.array_val->arr[4].cdt_val.array_val->arr[2].cdt_val.uint8_val == 3));
-		REQUIRE((ret[0].cdt_val.array_val->arr[5].cdt_val.handle_val.val != nullptr));
-		REQUIRE((((PyObject*)(ret[0].cdt_val.array_val->arr[5].cdt_val.handle_val.val))->ob_refcnt > 0));
+		REQUIRE((ret[0].cdt_val.array_val->arr[5].cdt_val.handle_val->handle != nullptr));
+		REQUIRE((((PyObject*)(ret[0].cdt_val.array_val->arr[5].cdt_val.handle_val->handle))->ob_refcnt > 0));
 	}
 
 	TEST_CASE("call_any")
@@ -1371,8 +1375,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg([&cdts_param_ret]() { xllr_free_cdts_buffer(cdts_param_ret); });
 		cdts& params = cdts_param_ret[0];
-		params[0] = cdt((metaffi_int64)0);
-		params[1] = cdt((metaffi_int64)1);
+		params[0] = (metaffi_int64)0;
+		params[1] = (metaffi_int64)1;
 		
 		(*pcall_any)((cdts*)cdts_param_ret, &err);
 		if(err)
@@ -1383,8 +1387,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret2 = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg2([&cdts_param_ret2]() { xllr_free_cdts_buffer(cdts_param_ret2); });
 		cdts& params2 = cdts_param_ret2[0];
-		params2[0] = cdt((metaffi_int64)1);
-		params2[1] = cdt((metaffi_string8)u8"string", true);
+		params2[0] = (metaffi_int64)1;
+		params2[1].set_string((metaffi_string8)u8"string", true);
 		(*pcall_any)((cdts*)cdts_param_ret2, &err);
 		if(err)
 		{
@@ -1394,8 +1398,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret3 = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg3([&cdts_param_ret3]() { xllr_free_cdts_buffer(cdts_param_ret3); });
 		cdts& params3 = cdts_param_ret3[0];
-		params3[0] = cdt((metaffi_int64)2);
-		params3[1] = cdt((metaffi_float64)3.0);
+		params3[0] = (metaffi_int64)2;
+		params3[1] = (metaffi_float64)3.0;
 		(*pcall_any)((cdts*)cdts_param_ret, &err);
 		if(err)
 		{
@@ -1405,8 +1409,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret4 = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg4([&cdts_param_ret4]() { xllr_free_cdts_buffer(cdts_param_ret4); });
 		cdts& params4 = cdts_param_ret4[0];
-		params4[0] = cdt((metaffi_int64)3);
-		params4[1] = cdt(cdt_metaffi_handle{nullptr, 0, nullptr});
+		params4[0] = (metaffi_int64)3;
+		params4[1].cdt_val.handle_val = nullptr;
 		(*pcall_any)((cdts*)cdts_param_ret, &err);
 		if(err)
 		{
@@ -1416,11 +1420,11 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret5 = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg5([&cdts_param_ret5]() { xllr_free_cdts_buffer(cdts_param_ret5); });
 		cdts& params5 = cdts_param_ret5[0];
-		params5[0] = cdt((metaffi_int64)4);
-		params5[1] = cdt(3, 1, metaffi_uint8_array_type);
-		params5[1].cdt_val.array_val->arr[0] = cdt((metaffi_uint8)1);
-		params5[1].cdt_val.array_val->arr[1] = cdt((metaffi_uint8)2);
-		params5[1].cdt_val.array_val->arr[2] = cdt((metaffi_uint8)3);
+		params5[0] = ((metaffi_int64)4);
+		params5[1].set_new_array(3, 1, metaffi_uint8_array_type);
+		params5[1].cdt_val.array_val->arr[0] = ((metaffi_uint8)1);
+		params5[1].cdt_val.array_val->arr[1] = ((metaffi_uint8)2);
+		params5[1].cdt_val.array_val->arr[2] = ((metaffi_uint8)3);
 		(*pcall_any)((cdts*)cdts_param_ret, &err);
 		if(err)
 		{
@@ -1443,8 +1447,8 @@ TEST_SUITE("Python Runtime Tests")
 		cdts* cdts_param_ret6 = (cdts*)xllr_alloc_cdts_buffer(2, 0);
 		metaffi::utils::scope_guard sg6([&cdts_param_ret6]() { xllr_free_cdts_buffer(cdts_param_ret6); });
 		cdts& params6 = cdts_param_ret6[0];
-		params6[0] = cdt((metaffi_int64)5);
-		params6[1] = cdt(someclass_instance);
+		params6[0] = ((metaffi_int64)5);
+		params6[1].set_handle(someclass_instance);
 		(*pcall_any)((cdts*)cdts_param_ret3, &err);
 		if(err)
 		{

@@ -22,5 +22,5 @@ public:
 	py_metaffi_handle(py_metaffi_handle&& other) noexcept;
 	py_metaffi_handle& operator=(const py_metaffi_handle& other);
 	
-	explicit operator cdt_metaffi_handle() const;
+	[[nodiscard]] cdt_metaffi_handle* as_cdt_metaffi_handle() const;
 };

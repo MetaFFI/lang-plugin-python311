@@ -111,38 +111,53 @@ void set_entrypoint(const char* entrypoint_name, void* pfunction)
 const char* metaffi_handle_class_code = R"(
 import ctypes
 
-ReleaserFuncType = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
+class CDTMetaFFIHandle(ctypes.Structure):
+	_fields_ = [
+		('handle', ctypes.c_void_p),
+		('runtime_id', ctypes.c_uint64),
+		('releaser', ctypes.c_void_p)
+	]
 
 
-class metaffi_handle:
-	def __init__(self, h, runtime_id, releaser):
-		self.handle = h
-		self.runtime_id = runtime_id
-		self.releaser = ctypes.cast(releaser, ReleaserFuncType)
+ReleaserFuncType = ctypes.CFUNCTYPE(None, CDTMetaFFIHandle)
+
+
+class MetaFFIHandle(ctypes.Structure):
+	def __init__(self, h, runtime_id, releaser, *args, **kw):
+		super().__init__(*args, **kw)
+		self.handle = int(h)
+		self.runtime_id = int(runtime_id)
+		self.releaser = int(releaser)
 		
 	def release(self):
 		if self.releaser:
-			self.releaser(ctypes.c_void_p(self.handle))
+			handle_instance = CDTMetaFFIHandle(ctypes.c_void_p(self.val), ctypes.c_uint64(self.runtime_id), ctypes.cast(self.releaser, ctypes.c_void_p))
+			self.releaser(ctypes.byref(handle_instance))
 	
+	def detach(self):
+		self.releaser = None
+
 	def __exit__(self, exc_type, exc_val, exc_tb):
 		self.release()
 	
 	def __del__(self):
 		self.release()
-		
+
+	def __str__(self):
+		return f'MetaFFIHandle({self.handle}, {self.runtime_id}, {self.releaser})'
 		
 )";
 
 void initialize_environment()
 {
-	PyRun_SimpleString(metaffi_handle_class_code);
-	
 	std::string curpath(boost::filesystem::current_path().string());
-
+	
 	PyObject* sys_path = PySys_GetObject("path");
 	PyList_Append(sys_path, PyUnicode_FromString(curpath.c_str()));
 	PyList_Append(sys_path, PyUnicode_FromString(getenv("METAFFI_HOME")));
 	PySys_SetObject("path", sys_path);
+	
+	PyRun_SimpleString(metaffi_handle_class_code);
 }
 //--------------------------------------------------------------------
 PyThreadState* _save = nullptr;
@@ -167,6 +182,7 @@ void load_runtime(char** err)
 	auto gil = PyGILState_Ensure();
 
 	initialize_environment();
+	
 	g_loaded = true;
 
 	//_save = PyEval_SaveThread();
