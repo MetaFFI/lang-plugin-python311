@@ -7,7 +7,7 @@ from . import metaffi_types, xllr_wrapper
 
 if platform.system() == 'Windows':
 	os.add_dll_directory(os.environ['METAFFI_HOME'])
-	os.add_dll_directory(os.environ['METAFFI_HOME'] + '\\bin')
+	os.add_dll_directory(os.environ['METAFFI_HOME'] + '\\lib')
 
 xllr_python3 = ctypes.cdll.LoadLibrary(xllr_wrapper.get_dynamic_lib_path_from_metaffi_home('xllr.python311'))
 
