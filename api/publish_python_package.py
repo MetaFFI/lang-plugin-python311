@@ -47,10 +47,6 @@ try:
 	# * Publish to pypi
 	subprocess.run(['flit', 'publish', '--repository', 'pypi', '--pypirc', os.path.expanduser("~")+'/.pyirc'], check=True)
 
-	# Move back the "tests" directory from parent directory to current directory
-	shutil.move('../tests', '.')
-	shutil.move('../unittest', '.')
-
 	subprocess.run(['git', 'add', '*'], check=True)
 	subprocess.run(['git', 'commit', '-m', '.'], check=True)
 	subprocess.run(['git', 'push'], check=True)
@@ -69,6 +65,14 @@ try:
 
 finally:
 	shutil.move("../SConscript_api-python3", '.')
+	
+	if os.path.exists('./tests'):
+		shutil.rmtree('./tests', ignore_errors=True)	
+	shutil.move('../tests', '.')
+
+	if os.path.exists('./unittest'):
+		shutil.rmtree('./unittest', ignore_errors=True)
+	shutil.move('../unittest', '.')
 
 	# Change back to the previous current directory
 	os.chdir(current_dir)
