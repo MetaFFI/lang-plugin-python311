@@ -47,10 +47,6 @@ try:
 	# * Publish to pypi
 	subprocess.run(['flit', 'publish', '--repository', 'pypi', '--pypirc', os.path.expanduser("~")+'/.pyirc'], check=True)
 
-	subprocess.run(['git', 'add', '*'], check=True)
-	subprocess.run(['git', 'commit', '-m', '.'], check=True)
-	subprocess.run(['git', 'push'], check=True)
-
 	# wait for pypi to update
 	print("waiting 5 seconds for pypi to update")
 	time.sleep(5)
