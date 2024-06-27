@@ -9,6 +9,8 @@ import re
 current_dir = os.getcwd()
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+git_changed = False
+
 try:
 	shutil.move("SConscript_api-python3", '..')
 
@@ -44,6 +46,8 @@ try:
 	subprocess.run(['git', 'add', '*'], check=True)
 	subprocess.run(['git', 'commit', '-m', '.'], check=True)
 
+	git_changed = True
+
 	# * Publish to pypi
 	subprocess.run(['flit', 'publish', '--repository', 'pypi', '--pypirc', os.path.expanduser("~")+'/.pyirc'], check=True)
 
@@ -70,6 +74,10 @@ finally:
 		shutil.rmtree('./unittest')
 
 	shutil.move('../unittest', '.')
+
+	if git_changed:
+		subprocess.run(['git', 'add', '*'], check=True)
+		subprocess.run(['git', 'commit', '-m', '.'], check=True)
 
 	# Change back to the previous current directory
 	os.chdir(current_dir)
