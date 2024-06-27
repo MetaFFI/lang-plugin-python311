@@ -7,10 +7,6 @@ XCallNoParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, 
 XCallParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p))
 XCallNoParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p)
 
-create_lambda_python_code = ctypes.c_char_p.in_dll(xllr_wrapper.xllr_python3, 'create_lambda_python_code').value.decode('utf-8')
-exec(create_lambda_python_code)  # defines "create_lambda" function
-
-
 def make_metaffi_callable(f: Callable) -> Callable:
 	params_metaffi_types, retval_metaffi_types = metaffi_types.get_callable_types(f)
 	
