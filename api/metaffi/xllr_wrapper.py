@@ -6,6 +6,10 @@ import os
 
 
 def get_dynamic_lib_path_from_metaffi_home(fname: str):
+
+	if fname != 'xllr':
+		fname = f'/{fname}/xllr.{fname}'
+
 	osname = platform.system()
 	if os.getenv('METAFFI_HOME') is None:
 		raise RuntimeError('No METAFFI_HOME environment variable')
@@ -21,10 +25,11 @@ def get_dynamic_lib_path_from_metaffi_home(fname: str):
 
 
 if platform.system() == 'Windows':
-	os.add_dll_directory(os.getenv('METAFFI_HOME') + '\\lib\\')
+	os.add_dll_directory(os.getenv('METAFFI_HOME'))
+	os.add_dll_directory(os.getenv('METAFFI_HOME') + '\\python311\\')
 
-xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('xllr.python311'))
-xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
+xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('python311'))
+xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
 xllr_python3.call_xcall.restype = ctypes.py_object
 
 _xllr = cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('xllr'))
@@ -53,10 +58,6 @@ _xllr.free_cdts_buffer.restype = None
 
 _xllr.free_string.argtypes = [ctypes.c_char_p]
 _xllr.free_string.restype = None
-
-if platform.system() == 'Windows':
-	os.add_dll_directory(os.environ['METAFFI_HOME'])
-	os.add_dll_directory(os.environ['METAFFI_HOME'] + '\\lib')
 
 
 def load_runtime_plugin(runtime_plugin: str) -> None:

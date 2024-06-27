@@ -63,6 +63,9 @@ class MetaFFIEntity:
 	def __del__(self):
 		xllr_wrapper.free_xcall(self.runtime_name, self.pxcall)
 		
+class VoidPtrArray(ctypes.Structure):
+    _fields_ = [("first", ctypes.c_void_p),
+                ("second", ctypes.c_void_p)]
 
 class MetaFFIModule:
 	def __init__(self, runtime: metaffi_runtime.MetaFFIRuntime, module_path: str):
@@ -101,6 +104,14 @@ class MetaFFIModule:
 		# Call xllr.load_function
 		xcall = xllr_wrapper.load_entity('xllr.' + self.runtime.runtime_plugin, self.module_path, function_path, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types))
 		
-		func_lambda: Callable[..., ...] = lambda *args: xllr_wrapper.xllr_python3.call_xcall(xcall, params_metaffi_types, retval_metaffi_types, None if not args else args)
+		xcall_casted = ctypes.cast(xcall, ctypes.POINTER(VoidPtrArray))
+
+		# xcall is void*[2]. xcall[0] is the function pointer, xcall[1] is the context.
+		# get them into the parameter "pxcall" and "pcontext"
+		pxcall = xcall_casted.contents.first
+		pcontext = xcall_casted.contents.second
+
+		# TODO: to this why pxcall and pxcontext are passed seprarately check py_metaffi_callable.cpp:49
+		func_lambda: Callable[..., ...] = lambda *args: xllr_wrapper.xllr_python3.call_xcall(pxcall, pcontext, params_metaffi_types, retval_metaffi_types, None if not args else args)
 		
 		return MetaFFIEntity('xllr.' + self.runtime.runtime_plugin, xcall, func_lambda)
