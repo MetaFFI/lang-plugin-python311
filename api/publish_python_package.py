@@ -12,11 +12,11 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 try:
 	shutil.move("SConscript_api-python3", '..')
 
-	if os.path.exists('./tests') and (not os.path.exists('../tests') or not os.listdir('../tests')):
+	if os.path.exists('./tests') and os.listdir('./tests') is not None and (not os.path.exists('../tests') or not os.listdir('../tests')):
 		shutil.rmtree('../tests', ignore_errors=True)
 		shutil.move('./tests', '..')
 
-	if os.path.exists('./unittest') and (not os.path.exists('../unittest') or not os.listdir('../unittest')):
+	if os.path.exists('./unittest') and os.listdir('./unittest') is not None and (not os.path.exists('../unittest') or not os.listdir('../unittest')):
 		shutil.rmtree('../unittest', ignore_errors=True)
 		shutil.move('./unittest', '..')
 
@@ -62,11 +62,11 @@ try:
 finally:
 	shutil.move("../SConscript_api-python3", '.')
 	
-	if os.path.exists('./tests'):
+	if os.path.exists('./tests') and os.listdir('./tests') is None:
 		shutil.rmtree('./tests', ignore_errors=True)	
 	shutil.move('../tests', '.')
 
-	if os.path.exists('./unittest'):
+	if os.path.exists('./unittest') and os.listdir('./unittest') is None:
 		shutil.rmtree('./unittest', ignore_errors=True)
 	shutil.move('../unittest', '.')
 
