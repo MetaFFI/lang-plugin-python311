@@ -69,7 +69,7 @@ finally:
 
 	print("os.path.exists('./unittest') and len(os.listdir('./unittest')) == 0  ===> {}".format(os.path.exists('./unittest') and len(os.listdir('./unittest')) == 0))
 	if os.path.exists('./unittest') and len(os.listdir('./unittest')) == 0:
-		shutil.rmtree('./unittest', ignore_errors=True)
+		shutil.rmtree('./unittest')
 
 	shutil.move('../unittest', '.')
 
