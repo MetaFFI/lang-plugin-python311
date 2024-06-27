@@ -1,0 +1,73 @@
+import SCons.Environment
+import SCons.Script
+import SCons.Node
+import SCons.Node.FS
+import glob
+import SCons.Script.SConsOptions
+import compiler_options
+import post_actions
+import platform
+import scons_utils
+import unittest
+import sys
+import os
+
+from site_scons import ALIAS_BUILD, ALIAS_PYTHON3, ALIAS_PYTHON3_API_TESTS, ALIAS_PYTHON3_PUBLISH_API, ALIAS_PYTHON3_UNITTESTS
+
+# * Import the parent Environment
+env: SCons.Environment.Environment
+SCons.Script.Import('env')
+
+# * ---- Run API unitest ----
+unitest_path = env.Dir('./unittest').abspath
+def python3_api_unitest(target, source, env):
+	# run using unitest "unittest/test_python311_api.py"
+	suite = unittest.TestLoader().discover(start_dir=unitest_path)
+	result = unittest.TextTestRunner().run(suite)
+	if not result.wasSuccessful():
+		print("Python3 API unittest failed", file=sys.stderr)
+		env.Exit(1)
+
+python3_api_unitest_cmd = env.Command(target='python3_api_unitest', source=[], action=python3_api_unitest)
+env.Depends(python3_api_unitest_cmd, ALIAS_PYTHON3)
+SCons.Script.Alias(ALIAS_PYTHON3_UNITTESTS, python3_api_unitest_cmd)
+
+
+# * ---- Run Cross Language tests ----
+test_path = env.Dir('./tests').abspath
+def python3_cross_lang_test(target, source, env):
+	# execute "tests/run_api_tests.py"
+	curpath = os.getcwd()
+	try:
+		os.chdir(test_path)
+		env.Execute(f'{scons_utils.python3_executable()} run_api_tests.py')
+	except Exception as e:
+		print(f"Cross language tests failed: {e}", file=sys.stderr)
+		env.Exit(1)
+	finally:
+		os.chdir(curpath)
+
+python3_cross_lang_test_cmd = env.Command(target='python3_cross_lang_test', source=[], action=python3_cross_lang_test)
+env.Depends(python3_cross_lang_test_cmd, ALIAS_BUILD)
+SCons.Script.Alias(ALIAS_PYTHON3_API_TESTS, python3_cross_lang_test_cmd)
+	
+
+
+# * ---- Publish python metaffi package to pypi ----
+publish_path = env.Dir('.').abspath
+def publish_python_package(target, source, env):
+	# execute "publish_python_package.py"
+	curpath = os.getcwd()
+	try:
+		# execute "publish_python_package.py"
+		os.chdir(publish_path)
+		env.Execute(f'{scons_utils.python3_executable()} publish_python_package.py')
+	except Exception as e:
+		print(f"Publishing python package failed: {e}", file=sys.stderr)
+		env.Exit(1)
+	finally:
+		os.chdir(curpath)
+
+publish_python_package_cmd = env.Command(target='publish_python_package', source=[], action=publish_python_package)
+SCons.Script.Alias(ALIAS_PYTHON3_PUBLISH_API, publish_python_package_cmd)
+env.Depends(ALIAS_PYTHON3_PUBLISH_API, ALIAS_PYTHON3_UNITTESTS)
