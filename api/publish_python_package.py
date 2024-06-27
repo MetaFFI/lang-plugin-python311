@@ -63,11 +63,9 @@ finally:
 	shutil.move("../SConscript_api-python3", '.')
 	
 	if os.path.exists('./tests') and len(os.listdir('./tests')) == 0:
-		shutil.rmtree('./tests', ignore_errors=True)
+		shutil.rmtree('./tests')
 	shutil.move('../tests', '.')
 
-
-	print("os.path.exists('./unittest') and len(os.listdir('./unittest')) == 0  ===> {}".format(os.path.exists('./unittest') and len(os.listdir('./unittest')) == 0))
 	if os.path.exists('./unittest') and len(os.listdir('./unittest')) == 0:
 		shutil.rmtree('./unittest')
 
