@@ -13,5 +13,5 @@
 
 extern "C"
 {
-    PyObject* call_xcall(xcall* pxcall, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args);
+    PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args);
 }

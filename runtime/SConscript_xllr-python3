@@ -1,0 +1,62 @@
+import SCons.Environment
+import SCons.Script
+import SCons.Node
+import SCons.Node.FS
+import glob
+import SCons.Script.SConsOptions
+from colorama import Fore
+import compiler_options
+import post_actions
+import platform
+import scons_utils
+from site_scons import ALIAS_PYTHON3, ALIAS_PYTHON3_UNITTESTS
+
+# * Import the parent Environment
+env: SCons.Environment.Environment
+SCons.Script.Import('env')
+
+
+# * ---- Build XLLR dynamic library ----
+env.LoadConanPackagesInfo()
+
+source = env['sdk_src']
+source += [s for s in glob.glob(env.Dir('.').abspath + '/*.cpp') if not s.endswith("_test.cpp")]
+
+includes = [env['sdk_path']]
+includes.append(env.Dir('.').abspath)
+
+if platform.system() == 'Linux' or platform.system() == 'Darwin':
+	env.Append(LINKFLAGS=['-Wl,-rpath,$ORIGIN'])
+
+xllr_python311_dylib = env.CPPSharedLibrary(target='xllr.python311', project_name='python311', sources=source, include_dirs=includes)
+xllr_python311_install = env.Install(env['METAFFI_HOME']+'/python311', xllr_python311_dylib) # install only dll.
+
+# # install boost_filesystem.dll
+xllr_python311_dependencies_install = env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'boost_filesystem{env.DynamicLibraryExtension()}'))
+SCons.Script.Alias(ALIAS_PYTHON3, [xllr_python311_dylib, xllr_python311_install, xllr_python311_dependencies_install])
+
+# # to be used by other targets in the project as dependency
+# env['xllr_python311_dylib'] = xllr_python311_dylib
+
+# # * --- Unit Tests ---
+includes = []
+includes.extend(env['sdk_includes'])
+includes.append(env['sdk_path'])
+
+# dependet on XLLR dynamic library
+env_test = env.Clone()
+python_runtime_test: SCons.Node.NodeList = env_test.CPPProgram(target='python_runtime_test',
+															project_name='python311',
+															sources=[
+																env.Dir('.').File('python_runtime_test.cpp').abspath
+															],
+															include_dirs=[
+																includes
+															],
+															lib_dirs=[xllr_python311_dylib[0].dir.abspath],
+															libs=['xllr.python311.lib'])
+
+env_test.AddPostAction(python_runtime_test, post_actions.execute_doctest_unitest)
+env_test.Depends(python_runtime_test, ALIAS_PYTHON3)
+
+SCons.Script.Alias(ALIAS_PYTHON3_UNITTESTS, python_runtime_test)

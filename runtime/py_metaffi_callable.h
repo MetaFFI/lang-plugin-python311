@@ -10,8 +10,6 @@
 #include "py_object.h"
 #include <runtime/cdt.h>
 
-extern "C" const char* create_lambda_python_code;
-
 class py_metaffi_callable : public py_object
 {
 public:

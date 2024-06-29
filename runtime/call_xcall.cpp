@@ -5,21 +5,23 @@
 #include <stdexcept>
 
 
-PyObject* call_xcall(xcall* pxcall, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
+PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
 {
-	pyscope();
-	
-	if(pxcall == nullptr)
+	if(pxcall_ptr == nullptr)
 	{
 		PyErr_SetString(PyExc_ValueError, "xcall is null");
 		return Py_None;
 	}
 
+	xcall pxcall(pxcall_ptr, context);
+
+	pyscope();
+	
 	Py_ssize_t retval_count = py_tuple::get_size(retval_metaffi_types);
 	
 	py_tuple param_metaffi_types_tuple(param_metaffi_types);
 	Py_ssize_t params_count = param_metaffi_types_tuple.size();
-	
+
 	std::vector<metaffi_type_info> param_metaffi_types_vec(params_count);
 	
 	for(int i=0 ; i<params_count ; i++)
@@ -73,7 +75,7 @@ PyObject* call_xcall(xcall* pxcall, PyObject* param_metaffi_types, PyObject* ret
 			return Py_None;
 		}
 	}
-	
+
 	if (params_count > 0 || retval_count > 0)
 	{
 		cdts* pcdts = convert_host_params_to_cdts(args, param_metaffi_types_vec.data(), params_count, retval_count);
@@ -83,7 +85,7 @@ PyObject* call_xcall(xcall* pxcall, PyObject* param_metaffi_types, PyObject* ret
 		}
 
 		char* out_err = nullptr;
-		(*pxcall)(pcdts, &out_err);
+		pxcall(pcdts, &out_err);
 
 		if(out_err)
 		{
@@ -101,7 +103,7 @@ PyObject* call_xcall(xcall* pxcall, PyObject* param_metaffi_types, PyObject* ret
 	else
 	{
 		char* out_err = nullptr;
-		(*pxcall)(&out_err);
+		pxcall(&out_err);
 		if (out_err)
 		{
 			PyErr_SetString(PyExc_ValueError, out_err);

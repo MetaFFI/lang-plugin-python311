@@ -6,6 +6,7 @@
 #include "utils.h"
 #include <cstdio>
 #include "runtime_id.h"
+#include "metaffi_package_importer.h"
 
 py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_handle& cdt_handle)
 {
@@ -24,10 +25,22 @@ py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 		PyObject* sys_mod_dict = PyImport_GetModuleDict();
 		PyObject* metaffi_handle_mod = nullptr;
 		
-		metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi.MetaFFIHandle");
+		metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi");
 		if(!metaffi_handle_mod)
 		{
-			metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "__main__");
+			PyRun_SimpleString("import metaffi");
+			//import_metaffi_package();
+			std::cerr << "imported metaffi - try again" << std::endl;
+			metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi");
+
+			if(!metaffi_handle_mod){
+				std::cerr << "Failed to get metaffi module" << std::endl;
+				throw std::runtime_error("Failed to get metaffi module");
+			}
+			else
+			{
+				std::cerr << "Got metaffi module" << std::endl;
+			}
 		}
 		
 		PyObject* instance = PyObject_CallMethod(metaffi_handle_mod, "MetaFFIHandle", "KKK", cdt_handle.handle, cdt_handle.runtime_id, cdt_handle.release);

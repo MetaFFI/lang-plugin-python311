@@ -14,6 +14,7 @@
 #include <utility>
 #include <utils/foreign_function.h>
 #include <utils/function_path_parser.h>
+#include "metaffi_package_importer.h"
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -107,47 +108,6 @@ void set_entrypoint(const char* entrypoint_name, void* pfunction)
 	foreign_entities[entrypoint_name] = pfunction;
 }
 //--------------------------------------------------------------------
-
-const char* metaffi_handle_class_code = R"(
-import ctypes
-
-class CDTMetaFFIHandle(ctypes.Structure):
-	_fields_ = [
-		('handle', ctypes.c_void_p),
-		('runtime_id', ctypes.c_uint64),
-		('releaser', ctypes.c_void_p)
-	]
-
-
-ReleaserFuncType = ctypes.CFUNCTYPE(None, CDTMetaFFIHandle)
-
-
-class MetaFFIHandle(ctypes.Structure):
-	def __init__(self, h, runtime_id, releaser, *args, **kw):
-		super().__init__(*args, **kw)
-		self.handle = int(h)
-		self.runtime_id = int(runtime_id)
-		self.releaser = int(releaser)
-		
-	def release(self):
-		if self.releaser:
-			handle_instance = CDTMetaFFIHandle(ctypes.c_void_p(self.val), ctypes.c_uint64(self.runtime_id), ctypes.cast(self.releaser, ctypes.c_void_p))
-			self.releaser(ctypes.byref(handle_instance))
-	
-	def detach(self):
-		self.releaser = None
-
-	def __exit__(self, exc_type, exc_val, exc_tb):
-		self.release()
-	
-	def __del__(self):
-		self.release()
-
-	def __str__(self):
-		return f'MetaFFIHandle({self.handle}, {self.runtime_id}, {self.releaser})'
-		
-)";
-
 void initialize_environment()
 {
 	std::string curpath(boost::filesystem::current_path().string());
@@ -157,7 +117,7 @@ void initialize_environment()
 	PyList_Append(sys_path, PyUnicode_FromString(getenv("METAFFI_HOME")));
 	PySys_SetObject("path", sys_path);
 	
-	PyRun_SimpleString(metaffi_handle_class_code);
+	import_metaffi_package();
 }
 //--------------------------------------------------------------------
 PyThreadState* _save = nullptr;
