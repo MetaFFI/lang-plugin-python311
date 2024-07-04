@@ -1,4 +1,5 @@
 #include "cdts_python3.h"
+#include "metaffi_package_importer.h"
 #include "py_list.h"
 #include "py_tuple.h"
 #include "utils.h"
@@ -14,7 +15,6 @@
 #include <utility>
 #include <utils/foreign_function.h>
 #include <utils/function_path_parser.h>
-#include "metaffi_package_importer.h"
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -26,16 +26,16 @@
 
 using namespace metaffi::utils;
 
-#define handle_err(err, desc)              \
-	{                                      \
-		auto err_len = strlen(desc);       \
-		*err = (char*)xllr_alloc_string(desc, err_len);\
+#define handle_err(err, desc)                           \
+	{                                                   \
+		auto err_len = strlen(desc);                    \
+		*err = (char*)xllr_alloc_string(desc, err_len); \
 	}
 
-#define handle_err_str(err, descstr)       \
-	{                                      \
-		auto err_len = descstr.length();   \
-		*err = xllr_alloc_string(descstr.c_str(), err_len);\
+#define handle_err_str(err, descstr)                        \
+	{                                                       \
+		auto err_len = descstr.length();                    \
+		*err = xllr_alloc_string(descstr.c_str(), err_len); \
 	}
 
 #define handle_py_err(err)                   \
@@ -111,12 +111,12 @@ void set_entrypoint(const char* entrypoint_name, void* pfunction)
 void initialize_environment()
 {
 	std::string curpath(boost::filesystem::current_path().string());
-	
+
 	PyObject* sys_path = PySys_GetObject("path");
 	PyList_Append(sys_path, PyUnicode_FromString(curpath.c_str()));
 	PyList_Append(sys_path, PyUnicode_FromString(getenv("METAFFI_HOME")));
 	PySys_SetObject("path", sys_path);
-	
+
 	import_metaffi_package();
 }
 //--------------------------------------------------------------------
@@ -142,7 +142,7 @@ void load_runtime(char** err)
 	auto gil = PyGILState_Ensure();
 
 	initialize_environment();
-	
+
 	g_loaded = true;
 
 	//_save = PyEval_SaveThread();
@@ -151,41 +151,84 @@ void load_runtime(char** err)
 //--------------------------------------------------------------------
 void free_runtime(char** err)
 {
-	//printf("+++ SKIP FREE PYTHON!\n");
-	//	return;// skip freeing python due to deadlock in PyFinalizeEx
+	// TODO: return errors into "err"
 
-	//	printf("++++ going to free python runtime\n");
-	if(!Py_IsInitialized())
+	// Ensure we have the GIL before we interact with Python
+	PyGILState_STATE gstate = PyGILState_Ensure();
+
+	// Import the threading module
+	PyObject* threadingModule = PyImport_ImportModule("threading");
+	if(!threadingModule)
 	{
+		PyErr_Print();
+		PyGILState_Release(gstate);
 		return;
 	}
 
-	//	printf("++++ before gil ensure\n");
-	//	PyGILState_STATE gstate = PyGILState_Ensure();
-	//	std::string kill_all_objects = "import threading\n";
-	//	kill_all_objects += "print('active threads: {}'.format(threading.active_count()))\n";
-	//	kill_all_objects += "print('current thread indent: {}'.format(threading.current_thread().ident))\n";
-	//	kill_all_objects += "for t in threading.enumerate():\n";
-	//	kill_all_objects += "\tprint('get_ident: {} ; native: {}'.format(t.ident, t.native_id))\n";
-	//	kill_all_objects += "\tif not threading.current_thread().ident == t.ident:\n";
-	//	kill_all_objects += "\t\tt.join()\n"; // to make shutdown ignore these threads
-	//	kill_all_objects += "print('going to call _shutdown()')\n";
-	//	kill_all_objects += "threading._shutdown()\n";
-	//	kill_all_objects += "print('after _shutdown()')\n";
-
-
-	//  PyRun_SimpleString(kill_all_objects.c_str());
-
-	//	printf("++++ before gil ensure\n");
-	PyGILState_STATE gstate = PyGILState_Ensure();
-	//
-	//	printf("++++ before FinalizeEx\n");
-	int res = Py_FinalizeEx();
-	//	printf("++++ after FinalizeEx\n");
-	if(res == -1)
+	// Get the active count of threads
+	PyObject* activeCount = PyObject_CallMethod(threadingModule, "active_count", NULL);
+	if(!activeCount)
 	{
-		printf("++++ error %s !\n", *err);
-		handle_err(err, "Python finalization has failed!");
+		PyErr_Print();
+		Py_DECREF(threadingModule);
+		PyGILState_Release(gstate);
+		return;
+	}
+
+	long count = PyLong_AsLong(activeCount);
+	Py_DECREF(activeCount);
+
+	if(count > 1)
+	{
+		printf("More than one thread is active.\n");
+	}
+	else if(count == 1)
+	{
+		PyObject* currentThread = PyObject_CallMethod(threadingModule, "current_thread", NULL);
+		PyObject* currentThreadId = PyObject_GetAttrString(currentThread, "ident");
+		long currentThreadIdValue = PyLong_AsLong(currentThreadId);
+
+		PyObject* mainThreadIdObj = PyObject_CallMethod(threadingModule, "main_thread", NULL);
+		PyObject* mainThreadId = PyObject_GetAttrString(mainThreadIdObj, "ident");
+		long mainThreadIdValue = PyLong_AsLong(mainThreadId);
+
+		if(currentThreadIdValue == mainThreadIdValue)
+		{
+			printf("Only the main thread is active. Finalizing Python.\n");
+
+			// Correctly release Python objects before finalizing
+			Py_DECREF(currentThread);
+			Py_DECREF(currentThreadId);
+			Py_DECREF(mainThreadIdObj);
+			Py_DECREF(mainThreadId);
+			Py_DECREF(threadingModule);
+
+			// Now it's safe to finalize Python
+			int res = Py_FinalizeEx();
+			if(res < 0)
+			{
+				// Handle error during finalization
+				PyErr_Print();
+			}
+		}
+		else
+		{
+			printf("A non-main thread is still active.\n");
+
+			// Release resources if not finalizing
+			Py_DECREF(currentThread);
+			Py_DECREF(currentThreadId);
+			Py_DECREF(mainThreadIdObj);
+			Py_DECREF(mainThreadId);
+			Py_DECREF(threadingModule);
+			PyGILState_Release(gstate);
+		}
+	}
+	else
+	{
+		// Release threadingModule if no action is taken
+		Py_DECREF(threadingModule);
+		PyGILState_Release(gstate);
 	}
 }
 //--------------------------------------------------------------------
@@ -348,7 +391,7 @@ xcall* make_callable(void* py_callable_as_py_object, metaffi_type_info* params_t
 	                                                                            : params_count > 0 && retval_count == 0       ? (void*)xcall_params_no_ret
 	                                                                                                                          : (void*)xcall_no_params_no_ret;
 	xcall* pxcall = new xcall(xcall_func, ctxt.release());
-	
+
 	return pxcall;
 }
 //--------------------------------------------------------------------
@@ -356,12 +399,12 @@ void free_xcall(xcall* pxcall, char** err)
 {
 	void** pxcall_and_context = pxcall->pxcall_and_context;
 
-	delete ((python3_context*)pxcall_and_context[1]);// delete context
+	delete((python3_context*)pxcall_and_context[1]);// delete context
 	pxcall_and_context[1] = nullptr;
 	pxcall_and_context[0] = nullptr;
 
 	delete pxcall;
-	
+
 	*err = nullptr;
 }
 //--------------------------------------------------------------------
@@ -568,8 +611,7 @@ void pyxcall_params_ret(
 		cdts_python3 return_cdts(params_ret[1]);
 		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 
-	}
-	catch(std::exception& err)
+	} catch(std::exception& err)
 	{
 		auto err_len = strlen(err.what());
 		*out_err = (char*)calloc(sizeof(char), err_len + 1);
