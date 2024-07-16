@@ -12,9 +12,9 @@
 #include "utils.h"
 #include <mutex>
 #include <runtime/cdts_traverse_construct.h>
+#include <utils/defines.h>
 
 using namespace metaffi::runtime;
-
 
 //--------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ PyObject* get_element(PyObject* obj, const metaffi_size* index, metaffi_size ind
 	return tmp;
 }
 
-void on_traverse_float64(const metaffi_size* index, metaffi_size index_size, metaffi_float64 val, void* context)
+DLL_PRIVATE void py_on_traverse_float64(const metaffi_size* index, metaffi_size index_size, metaffi_float64 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -81,7 +81,7 @@ void on_traverse_float64(const metaffi_size* index, metaffi_size index_size, met
 	}
 }
 
-void on_traverse_float32(const metaffi_size* index, metaffi_size index_size, metaffi_float32 val, void* context)
+DLL_PRIVATE void py_on_traverse_float32(const metaffi_size* index, metaffi_size index_size, metaffi_float32 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -96,7 +96,7 @@ void on_traverse_float32(const metaffi_size* index, metaffi_size index_size, met
 	}
 }
 
-void on_traverse_int8(const metaffi_size* index, metaffi_size index_size, metaffi_int8 val, void* context)
+DLL_PRIVATE void py_on_traverse_int8(const metaffi_size* index, metaffi_size index_size, metaffi_int8 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -111,7 +111,7 @@ void on_traverse_int8(const metaffi_size* index, metaffi_size index_size, metaff
 	}
 }
 
-void on_traverse_uint8(const metaffi_size* index, metaffi_size index_size, metaffi_uint8 val, void* context)
+DLL_PRIVATE void py_on_traverse_uint8(const metaffi_size* index, metaffi_size index_size, metaffi_uint8 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -126,7 +126,7 @@ void on_traverse_uint8(const metaffi_size* index, metaffi_size index_size, metaf
 	}
 }
 
-void on_traverse_int16(const metaffi_size* index, metaffi_size index_size, metaffi_int16 val, void* context)
+DLL_PRIVATE void py_on_traverse_int16(const metaffi_size* index, metaffi_size index_size, metaffi_int16 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -141,7 +141,7 @@ void on_traverse_int16(const metaffi_size* index, metaffi_size index_size, metaf
 	}
 }
 
-void on_traverse_uint16(const metaffi_size* index, metaffi_size index_size, metaffi_uint16 val, void* context)
+DLL_PRIVATE void py_on_traverse_uint16(const metaffi_size* index, metaffi_size index_size, metaffi_uint16 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -156,7 +156,7 @@ void on_traverse_uint16(const metaffi_size* index, metaffi_size index_size, meta
 	}
 }
 
-void on_traverse_int32(const metaffi_size* index, metaffi_size index_size, metaffi_int32 val, void* context)
+DLL_PRIVATE void py_on_traverse_int32(const metaffi_size* index, metaffi_size index_size, metaffi_int32 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -171,7 +171,7 @@ void on_traverse_int32(const metaffi_size* index, metaffi_size index_size, metaf
 	}
 }
 
-void on_traverse_uint32(const metaffi_size* index, metaffi_size index_size, metaffi_uint32 val, void* context)
+DLL_PRIVATE void py_on_traverse_uint32(const metaffi_size* index, metaffi_size index_size, metaffi_uint32 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -186,7 +186,7 @@ void on_traverse_uint32(const metaffi_size* index, metaffi_size index_size, meta
 	}
 }
 
-void on_traverse_int64(const metaffi_size* index, metaffi_size index_size, metaffi_int64 val, void* context)
+DLL_PRIVATE void py_on_traverse_int64(const metaffi_size* index, metaffi_size index_size, metaffi_int64 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -201,7 +201,7 @@ void on_traverse_int64(const metaffi_size* index, metaffi_size index_size, metaf
 	}
 }
 
-void on_traverse_uint64(const metaffi_size* index, metaffi_size index_size, metaffi_uint64 val, void* context)
+DLL_PRIVATE void py_on_traverse_uint64(const metaffi_size* index, metaffi_size index_size, metaffi_uint64 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -216,7 +216,7 @@ void on_traverse_uint64(const metaffi_size* index, metaffi_size index_size, meta
 	}
 }
 
-void on_traverse_bool(const metaffi_size* index, metaffi_size index_size, metaffi_bool val, void* context)
+DLL_PRIVATE void py_on_traverse_bool(const metaffi_size* index, metaffi_size index_size, metaffi_bool val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -231,7 +231,7 @@ void on_traverse_bool(const metaffi_size* index, metaffi_size index_size, metaff
 	}
 }
 
-void on_traverse_char8(const metaffi_size* index, metaffi_size index_size, metaffi_char8 val, void* context)
+DLL_PRIVATE void py_on_traverse_char8(const metaffi_size* index, metaffi_size index_size, metaffi_char8 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -246,7 +246,7 @@ void on_traverse_char8(const metaffi_size* index, metaffi_size index_size, metaf
 	}
 }
 
-void on_traverse_string8(const metaffi_size* index, metaffi_size index_size, metaffi_string8 val, void* context)
+DLL_PRIVATE void py_on_traverse_string8(const metaffi_size* index, metaffi_size index_size, metaffi_string8 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -261,7 +261,7 @@ void on_traverse_string8(const metaffi_size* index, metaffi_size index_size, met
 	}
 }
 
-void on_traverse_char16(const metaffi_size* index, metaffi_size index_size, metaffi_char16 val, void* context)
+DLL_PRIVATE void py_on_traverse_char16(const metaffi_size* index, metaffi_size index_size, metaffi_char16 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -276,7 +276,7 @@ void on_traverse_char16(const metaffi_size* index, metaffi_size index_size, meta
 	}
 }
 
-void on_traverse_string16(const metaffi_size* index, metaffi_size index_size, metaffi_string16 val, void* context)
+DLL_PRIVATE void py_on_traverse_string16(const metaffi_size* index, metaffi_size index_size, metaffi_string16 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -291,7 +291,7 @@ void on_traverse_string16(const metaffi_size* index, metaffi_size index_size, me
 	}
 }
 
-void on_traverse_char32(const metaffi_size* index, metaffi_size index_size, metaffi_char32 val, void* context)
+DLL_PRIVATE void py_on_traverse_char32(const metaffi_size* index, metaffi_size index_size, metaffi_char32 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -306,7 +306,7 @@ void on_traverse_char32(const metaffi_size* index, metaffi_size index_size, meta
 	}
 }
 
-void on_traverse_string32(const metaffi_size* index, metaffi_size index_size, metaffi_string32 val, void* context)
+DLL_PRIVATE void py_on_traverse_string32(const metaffi_size* index, metaffi_size index_size, metaffi_string32 val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -321,7 +321,7 @@ void on_traverse_string32(const metaffi_size* index, metaffi_size index_size, me
 	}
 }
 
-void on_traverse_handle(const metaffi_size* index, metaffi_size index_size, const cdt_metaffi_handle& val, void* context)
+DLL_PRIVATE void py_on_traverse_handle(const metaffi_size* index, metaffi_size index_size, const cdt_metaffi_handle& val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -336,7 +336,7 @@ void on_traverse_handle(const metaffi_size* index, metaffi_size index_size, cons
 	}
 }
 
-void on_traverse_callable(const metaffi_size* index, metaffi_size index_size, const cdt_metaffi_callable& val, void* context)
+DLL_PRIVATE void py_on_traverse_callable(const metaffi_size* index, metaffi_size index_size, const cdt_metaffi_callable& val, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -351,7 +351,7 @@ void on_traverse_callable(const metaffi_size* index, metaffi_size index_size, co
 	}
 }
 
-void on_traverse_null(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE void py_on_traverse_null(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -366,7 +366,7 @@ void on_traverse_null(const metaffi_size* index, metaffi_size index_size, void* 
 	}
 }
 
-metaffi_bool on_traverse_array(const metaffi_size* index, metaffi_size index_size, const cdts& val, metaffi_int64 fixed_dimensions,
+DLL_PRIVATE metaffi_bool py_on_traverse_array(const metaffi_size* index, metaffi_size index_size, const cdts& val, metaffi_int64 fixed_dimensions,
                        metaffi_type common_type, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
@@ -432,36 +432,36 @@ metaffi_bool on_traverse_array(const metaffi_size* index, metaffi_size index_siz
 	}
 }
 
-metaffi::runtime::traverse_cdts_callbacks get_traverse_cdts_callback(void* context)
+DLL_PRIVATE metaffi::runtime::traverse_cdts_callbacks py_get_traverse_cdts_callback(void* context)
 {
 	metaffi::runtime::traverse_cdts_callbacks tcc = {
 	        context,
-	        &on_traverse_float64,
-	        &on_traverse_float32,
-	        &on_traverse_int8,
-	        &on_traverse_uint8,
-	        &on_traverse_int16,
-	        &on_traverse_uint16,
-	        &on_traverse_int32,
-	        &on_traverse_uint32,
-	        &on_traverse_int64,
-	        &on_traverse_uint64,
-	        &on_traverse_bool,
-	        &on_traverse_char8,
-	        &on_traverse_string8,
-	        &on_traverse_char16,
-	        &on_traverse_string16,
-	        &on_traverse_char32,
-	        &on_traverse_string32,
-	        &on_traverse_handle,
-	        &on_traverse_callable,
-	        &on_traverse_null,
-	        &on_traverse_array};
+	        &py_on_traverse_float64,
+	        &py_on_traverse_float32,
+	        &py_on_traverse_int8,
+	        &py_on_traverse_uint8,
+	        &py_on_traverse_int16,
+	        &py_on_traverse_uint16,
+	        &py_on_traverse_int32,
+	        &py_on_traverse_uint32,
+	        &py_on_traverse_int64,
+	        &py_on_traverse_uint64,
+	        &py_on_traverse_bool,
+	        &py_on_traverse_char8,
+	        &py_on_traverse_string8,
+	        &py_on_traverse_char16,
+	        &py_on_traverse_string16,
+	        &py_on_traverse_char32,
+	        &py_on_traverse_string32,
+	        &py_on_traverse_handle,
+	        &py_on_traverse_callable,
+	        &py_on_traverse_null,
+	        &py_on_traverse_array};
 
 	return tcc;
 }
 
-metaffi_size get_array_metadata(const metaffi_size* index, metaffi_size index_length, metaffi_bool* is_fixed_dimension, metaffi_bool* is_1d_array, metaffi_type* common_type, metaffi_bool* is_manually_construct_array, void* context)
+DLL_PRIVATE metaffi_size py_get_array_metadata(const metaffi_size* index, metaffi_size index_length, metaffi_bool* is_fixed_dimension, metaffi_bool* is_1d_array, metaffi_type* common_type, metaffi_bool* is_manually_construct_array, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 
@@ -504,7 +504,7 @@ metaffi_size get_array_metadata(const metaffi_size* index, metaffi_size index_le
 	}
 }
 
-void construct_cdt_array(const metaffi_size* index, metaffi_size index_length, cdts* manually_fill_array, void* context)
+DLL_PRIVATE void py_construct_cdt_array(const metaffi_size* index, metaffi_size index_length, cdts* manually_fill_array, void* context)
 {
 	auto* tuple = static_cast<py_tuple*>(context);
 	PyObject* elem = get_element((PyObject*) *tuple, index, index_length);
@@ -526,36 +526,36 @@ void construct_cdt_array(const metaffi_size* index, metaffi_size index_length, c
 	}
 }
 
-metaffi_size on_get_root_elements_count(void* context)
+DLL_PRIVATE metaffi_size py_on_get_root_elements_count(void* context)
 {
 	return static_cast<py_tuple*>(context)->size();
 }
 
-metaffi_type_info on_get_type_info(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_type_info py_on_get_type_info(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return metaffi_type_info{ py_object::get_metaffi_type(elem) };
 }
 
-metaffi_float64 on_construct_float64(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_float64 py_on_construct_float64(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_float64) py_float(elem);
 }
 
-metaffi_float32 on_construct_float32(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_float32 py_on_construct_float32(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_float32) py_float(elem);
 }
 
-metaffi_int8 on_construct_int8(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_int8 py_on_construct_int8(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_int8) py_int(elem);
 }
 
-metaffi_uint8 on_construct_uint8(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_uint8 py_on_construct_uint8(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	if(py_bytes::check(elem))
@@ -569,49 +569,49 @@ metaffi_uint8 on_construct_uint8(const metaffi_size* index, metaffi_size index_s
 	}
 }
 
-metaffi_int16 on_construct_int16(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_int16 py_on_construct_int16(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_int16) py_int(elem);
 }
 
-metaffi_uint16 on_construct_uint16(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_uint16 py_on_construct_uint16(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_uint16) py_int(elem);
 }
 
-metaffi_int32 on_construct_int32(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_int32 py_on_construct_int32(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_int32) py_int(elem);
 }
 
-metaffi_uint32 on_construct_uint32(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_uint32 py_on_construct_uint32(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_uint32) py_int(elem);
 }
 
-metaffi_int64 on_construct_int64(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_int64 py_on_construct_int64(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_int64) py_int(elem);
 }
 
-metaffi_uint64 on_construct_uint64(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_uint64 py_on_construct_uint64(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_uint64) py_int(elem);
 }
 
-metaffi_bool on_construct_bool(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_bool py_on_construct_bool(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	return (metaffi_bool) py_bool(elem);
 }
 
-metaffi_char8 on_construct_char8(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_char8 py_on_construct_char8(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	std::u8string str = py_str(elem).to_utf8();
@@ -653,14 +653,14 @@ metaffi_char8 on_construct_char8(const metaffi_size* index, metaffi_size index_s
 	}
 }
 
-metaffi_string8 on_construct_string8(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+DLL_PRIVATE metaffi_string8 py_on_construct_string8(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	*is_free_required = 1;
 	return (metaffi_string8) py_str(elem).to_utf8();
 }
 
-metaffi_char16 on_construct_char16(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_char16 py_on_construct_char16(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	std::u16string str = py_str(elem).to_utf16();
@@ -687,14 +687,14 @@ metaffi_char16 on_construct_char16(const metaffi_size* index, metaffi_size index
 	}
 }
 
-metaffi_string16 on_construct_string16(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+DLL_PRIVATE metaffi_string16 py_on_construct_string16(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	*is_free_required = 1;
 	return (metaffi_string16) py_str(elem).to_utf16();
 }
 
-metaffi_char32 on_construct_char32(const metaffi_size* index, metaffi_size index_size, void* context)
+DLL_PRIVATE metaffi_char32 py_on_construct_char32(const metaffi_size* index, metaffi_size index_size, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	std::u32string str = py_str(elem).to_utf32();
@@ -703,19 +703,19 @@ metaffi_char32 on_construct_char32(const metaffi_size* index, metaffi_size index
 	return c;
 }
 
-metaffi_string32 on_construct_string32(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+DLL_PRIVATE metaffi_string32 py_on_construct_string32(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	*is_free_required = 1;
 	return (metaffi_string32) py_str(elem).to_utf32();
 }
 
-void object_releaser(cdt_metaffi_handle* obj)
+DLL_PRIVATE void py_object_releaser(cdt_metaffi_handle* obj)
 {
 	Py_DECREF((PyObject*)obj->handle);
 }
 
-cdt_metaffi_handle* on_construct_handle(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+DLL_PRIVATE cdt_metaffi_handle* py_on_construct_handle(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	PyObject* elem = get_element((PyObject*) *static_cast<py_tuple*>(context), index, index_size);
 	*is_free_required = 1;
@@ -726,43 +726,43 @@ cdt_metaffi_handle* on_construct_handle(const metaffi_size* index, metaffi_size 
 	else// different object - wrap in metaffi_handle
 	{
 		Py_INCREF(elem);
-		return new cdt_metaffi_handle{elem, PYTHON311_RUNTIME_ID, object_releaser };
+		return new cdt_metaffi_handle{elem, PYTHON311_RUNTIME_ID, py_object_releaser };
 	}
 }
 
-cdt_metaffi_callable* on_construct_callable(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
+DLL_PRIVATE cdt_metaffi_callable* py_on_construct_callable(const metaffi_size* index, metaffi_size index_size, metaffi_bool* is_free_required, void* context)
 {
 	// TODO: implement
 	throw std::runtime_error("cannot export callable from Python3.11 - yet");
 }
 
-metaffi::runtime::construct_cdts_callbacks get_construct_cdts_callbacks(void* context)
+DLL_PRIVATE metaffi::runtime::construct_cdts_callbacks py_get_construct_cdts_callbacks(void* context)
 {
 	metaffi::runtime::construct_cdts_callbacks callbacks{};
 	callbacks.context = context;
-	callbacks.get_array_metadata = &get_array_metadata;
-	callbacks.construct_cdt_array = &construct_cdt_array;
-	callbacks.get_root_elements_count = &on_get_root_elements_count;
-	callbacks.get_type_info = &on_get_type_info;
-	callbacks.get_float64 = &on_construct_float64;
-	callbacks.get_float32 = &on_construct_float32;
-	callbacks.get_int8 = &on_construct_int8;
-	callbacks.get_uint8 = &on_construct_uint8;
-	callbacks.get_int16 = &on_construct_int16;
-	callbacks.get_uint16 = &on_construct_uint16;
-	callbacks.get_int32 = &on_construct_int32;
-	callbacks.get_uint32 = &on_construct_uint32;
-	callbacks.get_int64 = &on_construct_int64;
-	callbacks.get_uint64 = &on_construct_uint64;
-	callbacks.get_bool = &on_construct_bool;
-	callbacks.get_char8 = &on_construct_char8;
-	callbacks.get_string8 = &on_construct_string8;
-	callbacks.get_char16 = &on_construct_char16;
-	callbacks.get_string16 = &on_construct_string16;
-	callbacks.get_char32 = &on_construct_char32;
-	callbacks.get_string32 = &on_construct_string32;
-	callbacks.get_handle = &on_construct_handle;
-	callbacks.get_callable = &on_construct_callable;
+	callbacks.get_array_metadata = &py_get_array_metadata;
+	callbacks.construct_cdt_array = &py_construct_cdt_array;
+	callbacks.get_root_elements_count = &py_on_get_root_elements_count;
+	callbacks.get_type_info = &py_on_get_type_info;
+	callbacks.get_float64 = &py_on_construct_float64;
+	callbacks.get_float32 = &py_on_construct_float32;
+	callbacks.get_int8 = &py_on_construct_int8;
+	callbacks.get_uint8 = &py_on_construct_uint8;
+	callbacks.get_int16 = &py_on_construct_int16;
+	callbacks.get_uint16 = &py_on_construct_uint16;
+	callbacks.get_int32 = &py_on_construct_int32;
+	callbacks.get_uint32 = &py_on_construct_uint32;
+	callbacks.get_int64 = &py_on_construct_int64;
+	callbacks.get_uint64 = &py_on_construct_uint64;
+	callbacks.get_bool = &py_on_construct_bool;
+	callbacks.get_char8 = &py_on_construct_char8;
+	callbacks.get_string8 = &py_on_construct_string8;
+	callbacks.get_char16 = &py_on_construct_char16;
+	callbacks.get_string16 = &py_on_construct_string16;
+	callbacks.get_char32 = &py_on_construct_char32;
+	callbacks.get_string32 = &py_on_construct_string32;
+	callbacks.get_handle = &py_on_construct_handle;
+	callbacks.get_callable = &py_on_construct_callable;
 
 	return callbacks;
 }
@@ -779,7 +779,7 @@ py_tuple cdts_python3::to_py_tuple()
 	int cdts_length = pcdts.length;
 
 	py_tuple res((Py_ssize_t) cdts_length);
-	traverse_cdts(pcdts, get_traverse_cdts_callback(&res));
+	traverse_cdts(pcdts, py_get_traverse_cdts_callback(&res));
 
 	return res;
 }
@@ -796,6 +796,6 @@ void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expec
 		throw std::runtime_error("tuple and tuple_types have different lengths");
 	}
 
-	construct_cdts(pcdts, get_construct_cdts_callbacks(&pyobjs));
+	construct_cdts(pcdts, py_get_construct_cdts_callbacks(&pyobjs));
 }
 //--------------------------------------------------------------------

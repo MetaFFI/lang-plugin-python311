@@ -75,7 +75,7 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 			return Py_None;
 		}
 	}
-
+	
 	if (params_count > 0 || retval_count > 0)
 	{
 		cdts* pcdts = convert_host_params_to_cdts(args, param_metaffi_types_vec.data(), params_count, retval_count);
@@ -85,6 +85,7 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		}
 
 		char* out_err = nullptr;
+		
 		pxcall(pcdts, &out_err);
 
 		if(out_err)

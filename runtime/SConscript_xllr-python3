@@ -26,35 +26,62 @@ includes = [env['sdk_path']]
 includes.append(env.Dir('.').abspath)
 
 if platform.system() == 'Linux' or platform.system() == 'Darwin':
-	env.Append(LINKFLAGS=['-Wl,-rpath,$ORIGIN'])
+	env.Append(LINKFLAGS=['-Wl,-rpath,\\$$ORIGIN'])
 
 xllr_python311_dylib = env.CPPSharedLibrary(target='xllr.python311', project_name='python311', sources=source, include_dirs=includes)
 xllr_python311_install = env.Install(env['METAFFI_HOME']+'/python311', xllr_python311_dylib) # install only dll.
 
 # # install boost_filesystem.dll
-xllr_python311_dependencies_install = env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'boost_filesystem{env.DynamicLibraryExtension()}'))
+
+
+
+xllr_python311_dependencies_install = env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'*boost_filesystem*'))
+if not env.IsWindows(): # non-windows also uses boost thread
+	xllr_python311_dependencies_install.extend(env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'*boost_thread*')))
+	xllr_python311_dependencies_install.extend(env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'*boost_stacktrace_from_exception*')))
+	
+	# in linux, we need to install NOT from conan, but from the system
+	if env.IsWindows():
+		xllr_python311_dependencies_install.extend(env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('cpython', f'*python3.11*')))
+	else:
+		pass # TODO find the python3.11.so in the system, and install it. NOT from conan
+	
+
+
+
 SCons.Script.Alias(ALIAS_PYTHON3, [xllr_python311_dylib, xllr_python311_install, xllr_python311_dependencies_install])
 
 # # to be used by other targets in the project as dependency
-# env['xllr_python311_dylib'] = xllr_python311_dylib
+env['xllr_python311_dylib'] = xllr_python311_dylib
 
 # # * --- Unit Tests ---
+env_test = env.Clone()
+
 includes = []
 includes.extend(env['sdk_includes'])
 includes.append(env['sdk_path'])
 
+libs = []
+lib_dirs = []
+if env_test.IsWindows():
+	libs.append('xllr.python311.lib')
+	lib_dirs.append(xllr_python311_dylib[0].dir.abspath)
+else:
+	libs.append('-l:xllr.python311.so')
+	lib_dirs.append(env_test['METAFFI_HOME']+'/python311')
+
 # dependet on XLLR dynamic library
-env_test = env.Clone()
+metaffi_home = env_test['METAFFI_HOME']
 python_runtime_test: SCons.Node.NodeList = env_test.CPPProgram(target='python_runtime_test',
 															project_name='python311',
 															sources=[
-																env.Dir('.').File('python_runtime_test.cpp').abspath
+																env_test.Dir('.').File('python_runtime_test.cpp').abspath
 															],
 															include_dirs=[
 																includes
 															],
-															lib_dirs=[xllr_python311_dylib[0].dir.abspath],
-															libs=['xllr.python311.lib'])
+															lib_dirs=lib_dirs,
+															libs=libs)
 
 env_test.AddPostAction(python_runtime_test, post_actions.execute_doctest_unitest)
 env_test.Depends(python_runtime_test, ALIAS_PYTHON3)

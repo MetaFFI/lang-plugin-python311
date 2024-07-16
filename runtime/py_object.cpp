@@ -96,18 +96,6 @@ const char* py_object::get_object_type(PyObject* obj)
 	return obj->ob_type->tp_name;
 }
 
-std::unordered_map<std::string, metaffi_types> pytypes_to_metaffi_types =
-{
-    {"str", metaffi_string8_type},
-    {"int", metaffi_int64_type},
-    {"float", metaffi_float64_type},
-    {"bool", metaffi_bool_type},
-    {"list", metaffi_array_type},
-    {"tuple", metaffi_array_type},
-    {"NoneType", metaffi_null_type},
-    {"bytes", metaffi_uint8_array_type}
-};
-
 metaffi_type py_object::get_metaffi_type(PyObject* obj)
 {
 	if(py_str::check(obj)){
