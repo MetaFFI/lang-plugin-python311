@@ -1,5 +1,5 @@
 import ctypes.util
-from typing import Callable, Any, Tuple
+from typing import Callable, Any, Tuple, List
 from . import metaffi_runtime, metaffi_types, xllr_wrapper
 
 XCallParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p))
@@ -21,7 +21,7 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	
 	xllr_python3_bytes = 'xllr.python311'.encode('utf-8')
 	
-	pxcall_and_context_array = xllr_wrapper.make_callable(xllr_python3_bytes, len(xllr_python3_bytes), f, params_array, retvals_array, len(params_metaffi_types), len(retval_metaffi_types), ctypes.byref(err), ctypes.byref(err_len))
+	pxcall_and_context_array = xllr_wrapper.make_callable(xllr_python3_bytes.decode(), f, params_array,  len(params_metaffi_types), retvals_array, len(retval_metaffi_types))
 	
 	pxcall_and_context_array = ctypes.cast(pxcall_and_context_array, ctypes.POINTER(ctypes.c_void_p * 2))
 	
@@ -36,7 +36,7 @@ def make_metaffi_callable(f: Callable) -> Callable:
 	
 	context = pxcall_and_context_array.contents[1]
 	
-	res = create_lambda(pxcall, context, params_metaffi_types, retval_metaffi_types)
+	res = create_lambda(pxcall, context, params_metaffi_types, retval_metaffi_types) # type: ignore - loaded at runtime
 	setattr(res, 'pxcall_and_context', ctypes.addressof(pxcall_and_context_array.contents))
 	setattr(res, 'params_metaffi_types', params_metaffi_types)
 	setattr(res, 'retval_metaffi_types', retval_metaffi_types)
@@ -68,14 +68,20 @@ class MetaFFIModule:
 		self.runtime = runtime
 		self.module_path = module_path
 	
-	def load_entity(self, function_path: str, params_metaffi_types: Tuple[metaffi_types.metaffi_type_info] | None,
-			retval_metaffi_types: Tuple[metaffi_types.metaffi_type_info] | None) -> MetaFFIEntity:
+	def load_entity(self, function_path: str, params_metaffi_types: Tuple[metaffi_types.metaffi_type_info, ...] | List[metaffi_types.metaffi_type_info] | None,
+			retval_metaffi_types: Tuple[metaffi_types.metaffi_type_info, ...] | List[metaffi_types.metaffi_type_info] | None) -> MetaFFIEntity:
 		
 		if params_metaffi_types is None:
 			params_metaffi_types = tuple()
 		
 		if retval_metaffi_types is None:
 			retval_metaffi_types = tuple()
+
+		if isinstance(params_metaffi_types, list):
+			params_metaffi_types = tuple(params_metaffi_types)
+		
+		if not isinstance(retval_metaffi_types, tuple):
+			retval_metaffi_types = tuple(retval_metaffi_types)
 		
 		# Create ctypes arrays for params_metaffi_types and retval_metaffi_types
 		params_array_t = metaffi_types.metaffi_type_info * len(params_metaffi_types)
@@ -83,7 +89,7 @@ class MetaFFIModule:
 		
 		retval_array_t = metaffi_types.metaffi_type_info * len(retval_metaffi_types)
 		retval_array = retval_array_t(*retval_metaffi_types)
-		
+		# 
 		# if parameter is a list - convert it to tuple
 		if not isinstance(params_metaffi_types, tuple) and not isinstance(params_metaffi_types, list):
 			raise ValueError('params_metaffi_types must be a list or tuple')
@@ -91,12 +97,7 @@ class MetaFFIModule:
 		if not isinstance(retval_metaffi_types, tuple) and not isinstance(retval_metaffi_types, list):
 			raise ValueError('retval_metaffi_types must be a list or tuple')
 		
-		if not isinstance(params_metaffi_types, tuple):
-			params_metaffi_types = tuple(params_metaffi_types)
-		
-		if not isinstance(retval_metaffi_types, tuple):
-			retval_metaffi_types = tuple(retval_metaffi_types)
-		
+				
 		# Call xllr.load_function
 		xcall = xllr_wrapper.load_entity('xllr.' + self.runtime.runtime_plugin, self.module_path, function_path, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types))
 		

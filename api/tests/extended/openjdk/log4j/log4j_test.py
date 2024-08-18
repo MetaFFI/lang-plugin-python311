@@ -5,7 +5,7 @@ import metaffi.metaffi_runtime
 import metaffi.metaffi_module
 import metaffi.metaffi_types
 
-runtime: metaffi.metaffi_runtime.MetaFFIRuntime = None
+runtime: metaffi.metaffi_runtime.MetaFFIRuntime | None = None
 
 
 def init():
@@ -15,6 +15,7 @@ def init():
 
 def fini():
 	global runtime
+	assert runtime is not None
 	runtime.release_runtime_plugin()
 
 
@@ -38,6 +39,7 @@ def assert_objects_not_loaded_of_type(tc: unittest.TestCase, type_name: str):
 class Log4jlogger:
 	def __init__(self, logger_name: str):
 		global runtime
+		assert runtime is not None
 		log4j_api_module = runtime.load_module('log4j-api-2.21.1.jar;log4j-core-2.21.1.jar')
 		
 		# load methods

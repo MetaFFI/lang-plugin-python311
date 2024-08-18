@@ -10,7 +10,7 @@ import metaffi.metaffi_runtime
 import metaffi.metaffi_module
 import metaffi.metaffi_types
 
-runtime: metaffi.metaffi_runtime.MetaFFIRuntime = None
+runtime: metaffi.metaffi_runtime.MetaFFIRuntime | None = None
 
 
 def init():
@@ -20,6 +20,7 @@ def init():
 
 def fini():
 	global runtime
+	assert runtime is not None
 	runtime.release_runtime_plugin()
 	del runtime
 
@@ -44,6 +45,8 @@ def assert_objects_not_loaded_of_type(tc: unittest.TestCase, type_name: str):
 class GoMCache:
 	def __init__(self):
 		global runtime
+		assert runtime is not None
+		
 		if platform.system() == 'Windows':
 			module = runtime.load_module('mcache_MetaFFIGuest.dll')
 		elif platform.system() == 'Linux':
@@ -52,19 +55,19 @@ class GoMCache:
 			raise Exception(f'Unsupported platform {platform.system()}')
 		
 		# get INFINITY to use in "set method"
-		infinity_getter = module.load_entity('global=TTL_FOREVER,getter', None, [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)])
+		infinity_getter = module.load_entity('global=TTL_FOREVER,getter', None, (metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type),))
 		self.infinity = infinity_getter()
 		del infinity_getter
 		
 		# load constructor
-		new_gomcache = module.load_entity('callable=New', None, [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)])
+		new_gomcache = module.load_entity('callable=New', None, (metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),))
 		self.instance = new_gomcache()
 		del new_gomcache
 		
 		# load methods
 		self.plen = module.load_entity('callable=CacheDriver.Len,instance_required',
-			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)],
-			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_array_type)])
+			(metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),),
+			(metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_array_type),))
 		
 		self.pset = module.load_entity('callable=CacheDriver.Set,instance_required',
 			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type),
@@ -79,8 +82,10 @@ class GoMCache:
 			[metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_any_type),
 			 metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_bool_type)])
 	
-	def __len__(self):
-		return self.plen(self.instance)
+	def __len__(self) -> int:
+		l = self.plen(self.instance)
+		assert isinstance(l, int)
+		return l
 	
 	def set(self, key: str, val):
 		err = self.pset(self.instance, key, val, self.infinity)

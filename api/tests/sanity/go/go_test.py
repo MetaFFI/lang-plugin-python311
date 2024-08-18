@@ -10,9 +10,9 @@ import metaffi.metaffi_runtime
 import metaffi.metaffi_module
 import metaffi.metaffi_types
 
-runtime: metaffi.metaffi_runtime.MetaFFIRuntime = None
-test_runtime_module: metaffi.metaffi_module.MetaFFIModule = None
-test_map_module: metaffi.metaffi_module.MetaFFIModule = None
+runtime: metaffi.metaffi_runtime.MetaFFIRuntime | None = None
+test_runtime_module: metaffi.metaffi_module.MetaFFIModule | None = None
+test_map_module: metaffi.metaffi_module.MetaFFIModule | None = None
 
 
 def init():
@@ -32,9 +32,10 @@ def init():
 
 def fini():
 	global runtime
-	print('-> sanity fini', file=sys.stderr)
+	assert runtime is not None
+
 	runtime.release_runtime_plugin()
-	print('<- sanity fini', file=sys.stderr)
+
 
 
 def assert_objects_not_loaded_of_type(tc: unittest.TestCase, type_name: str):
@@ -66,7 +67,7 @@ class TestSanity(unittest.TestCase):
 	
 	def test_hello_world(self):
 		global test_runtime_module
-		
+		assert test_runtime_module is not None
 		# load hello world
 		hello_world = test_runtime_module.load_entity('callable=HelloWorld', None, None)
 		hello_world()
@@ -75,7 +76,9 @@ class TestSanity(unittest.TestCase):
 		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_returns_an_error(self):
-		
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		returns_an_error: metaffi.MetaFFIEntity
 		
 		try:
@@ -89,6 +92,9 @@ class TestSanity(unittest.TestCase):
 		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_div_integers(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+		
 		params_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type),
 		               metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
 		ret_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_float32_type)]
@@ -108,6 +114,9 @@ class TestSanity(unittest.TestCase):
 		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_join_strings(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		params_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_array_type, dims=1)]
 		ret_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_string8_type)]
 		
@@ -120,6 +129,9 @@ class TestSanity(unittest.TestCase):
 		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_wait_a_bit(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		ret_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_int64_type)]
 		
 		getFiveSeconds = test_runtime_module.load_entity('global=FiveSeconds,getter', None, ret_type)
@@ -138,6 +150,9 @@ class TestSanity(unittest.TestCase):
 		assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_test_map(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		# load functions
 		
 		ret_type = [metaffi.metaffi_types.metaffi_type_info(metaffi.metaffi_types.MetaFFITypes.metaffi_handle_type)]
@@ -182,12 +197,14 @@ class TestSanity(unittest.TestCase):
 		
 		mapped_deq = testMapGet(map, 'z')
 		self.assertIsInstance(mapped_deq, collections.deque, 'z should be a deque')
+		assert isinstance(mapped_deq, collections.deque), 'z should be a deque' # for the type checker
 		val = mapped_deq.pop()
 		self.assertEqual(val, 600, 'mapped_deq should contain 600')
 		
 		testMapNameSetter(map, 'MyName')
 		
 		name = testMapNameGetter(map)
+		assert isinstance(name, str), 'name should be a string'
 		self.assertEqual(name, 'MyName', 'Expected name is MyName. Received: ' + name)
 		
 		del newTestMap

@@ -22,25 +22,33 @@ import ctypes
 
 # create_lambda is a function that creates a lambda function that calls xllr.call_xcall
 def get_dynamic_lib_path_from_metaffi_home(fname: str):
+	
+	if fname is None or isinstance(fname, str) is False:
+		raise RuntimeError('requested file is None ?!')
+	
 	if fname != 'xllr':
 		fname = f'/{fname}/xllr.{fname}'
 
 	osname = platform.system()
-	if os.getenv('METAFFI_HOME') is None:
-		raise RuntimeError('No METAFFI_HOME environment variable')
-	elif fname is None:
-		raise RuntimeError('fname is None')
 	
+	metaffi_home = os.getenv('METAFFI_HOME')
+	if metaffi_home is None:
+		raise RuntimeError('No METAFFI_HOME environment variable')
+
 	if osname == 'Windows':
-		return os.getenv('METAFFI_HOME') + '\\' + fname + '.dll'
+		return metaffi_home + '/' + fname + '.dll'
 	elif osname == 'Darwin':
-		return os.getenv('METAFFI_HOME') + '/' + fname + '.dylib'
+		return metaffi_home + '/' + fname + '.dylib'
 	else:
-		return os.getenv('METAFFI_HOME') + '/' + fname + '.so'  # for everything that is not windows or mac, return .so
+		return metaffi_home + '/' + fname + '.so' # for everything that is not windows or mac, return .so
 
 if platform.system() == 'Windows':
-	os.add_dll_directory(os.getenv('METAFFI_HOME'))
-	os.add_dll_directory(os.getenv('METAFFI_HOME') + '\\python311\\')
+	metaffi_home = os.getenv('METAFFI_HOME')
+	if metaffi_home is None:
+		raise RuntimeError('No METAFFI_HOME environment variable')
+
+	os.add_dll_directory(metaffi_home)
+	os.add_dll_directory(metaffi_home + '/python311/')
 
 xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('python311'))
 xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]

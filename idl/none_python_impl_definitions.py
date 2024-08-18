@@ -3,6 +3,11 @@ from typing import Any, Callable, DefaultDict, Deque, Dict, Iterable, List, Opti
 import inspect
 import sys
 
+# This file contains the definitions of the built-in classes and functions in Python 3
+# The definitions are used to generate the Python 3 implementation of the IDL
+
+# disable all reportReturnType errors in this file
+# pyright: reportReturnType=false
 
 class __builtins__tuple:
 	def __repr__(self) -> str:
@@ -17,7 +22,7 @@ class __builtins__tuple:
 	def count(self, value: Any) -> int:
 		pass
 
-	def index(self, value: Any, start: int = 0, end: int = None) -> int:
+	def index(self, value: Any, start: int = 0, end: int | None = None) -> int:
 		pass
 
 
@@ -121,19 +126,19 @@ class __builtins__str:
 	def center(self, width: int, fillchar: str = ' ') -> str:
 		pass
 
-	def count(self, sub: str, start: int = 0, end: int = None) -> int:
+	def count(self, sub: str, start: int = 0, end: int | None = None) -> int:
 		pass
 
 	def encode(self, encoding: str = 'utf-8', errors: str = 'strict') -> bytes:
 		pass
 
-	def endswith(self, suffix: str, start: int = 0, end: int = None) -> bool:
+	def endswith(self, suffix: str, start: int = 0, end: int | None = None) -> bool:
 		pass
 
 	def expandtabs(self, tabsize: int = 8) -> str:
 		pass
 
-	def find(self, sub: str, start: int = 0, end: int = None) -> int:
+	def find(self, sub: str, start: int = 0, end: int | None = None) -> int:
 		pass
 
 	def format(self, *args: Any, **kwargs: Any) -> str:
@@ -142,7 +147,7 @@ class __builtins__str:
 	def format_map(self, mapping: Any) -> str:
 		pass
 
-	def index(self, sub: str, start: int = 0, end: int = None) -> int:
+	def index(self, sub: str, start: int = 0, end: int | None = None) -> int:
 		pass
 
 	def isalnum(self) -> bool:
@@ -190,7 +195,7 @@ class __builtins__str:
 	def lower(self) -> str:
 		pass
 
-	def lstrip(self, chars: str = None) -> str:
+	def lstrip(self, chars: int | None = None) -> str:
 		pass
 
 	def partition(self, sep: str) -> tuple:
@@ -199,10 +204,10 @@ class __builtins__str:
 	def replace(self, old: str, new: str, count: int = -1) -> str:
 		pass
 
-	def rfind(self, sub: str, start: int = 0, end: int = None) -> int:
+	def rfind(self, sub: str, start: int = 0, end: int | None = None) -> int:
 		pass
 
-	def rindex(self, sub: str, start: int = 0, end: int = None) -> int:
+	def rindex(self, sub: str, start: int = 0, end: int | None = None) -> int:
 		pass
 
 	def rjust(self, width: int, fillchar: str = ' ') -> str:
@@ -211,22 +216,22 @@ class __builtins__str:
 	def rpartition(self, sep: str) -> tuple:
 		pass
 
-	def rsplit(self, sep: str = None, maxsplit: int = -1) -> list:
+	def rsplit(self, sep: int | None = None, maxsplit: int = -1) -> list:
 		pass
 
-	def rstrip(self, chars: str = None) -> str:
+	def rstrip(self, chars: int | None = None) -> str:
 		pass
 
-	def split(self, sep: str = None, maxsplit: int = -1) -> list:
+	def split(self, sep: int | None = None, maxsplit: int = -1) -> list:
 		pass
 
 	def splitlines(self, keepends: bool = False) -> list:
 		pass
 
-	def startswith(self, prefix: str, start: int = 0, end: int = None) -> bool:
+	def startswith(self, prefix: str, start: int = 0, end: int | None = None) -> bool:
 		pass
 
-	def strip(self, chars: str = None) -> str:
+	def strip(self, chars: str | None = None) -> str:
 		pass
 
 	def swapcase(self) -> str:
@@ -276,7 +281,7 @@ class __builtins__list:
 	def pop(self, index: int = -1) -> Any:
 		pass
 
-	def index(self, value: Any, start: int = 0, end: int = None) -> int:
+	def index(self, value: Any, start: int = 0, end: int | None = None) -> int:
 		pass
 
 	def count(self, value: Any) -> int:

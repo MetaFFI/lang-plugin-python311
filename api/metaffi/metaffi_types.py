@@ -2,7 +2,7 @@ import ctypes.util
 import inspect
 from enum import IntFlag
 import platform
-from typing import *
+from typing import Callable, Tuple, get_type_hints
 
 
 # This should be taken from metaffi_primitives.h
@@ -60,7 +60,7 @@ class metaffi_type_info(ctypes.Structure):
 	            ("is_free_alias", ctypes.c_bool),
 	            ("fixed_dimensions", ctypes.c_int64)]
 	
-	def __init__(self, metaffi_type: MetaFFITypes = MetaFFITypes.metaffi_null_type, alias: str = None, dims: int = 0):
+	def __init__(self, metaffi_type: MetaFFITypes = MetaFFITypes.metaffi_null_type, alias: str | None = None, dims: int = 0):
 		super().__init__()
 		
 		# Set the type

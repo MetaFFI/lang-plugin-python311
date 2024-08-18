@@ -1,5 +1,5 @@
 import builtins
-from inspect import *
+from inspect import getmembers, isfunction, isclass, signature, getcomments, isgetsetdescriptor, ismethoddescriptor, ismodule
 import importlib
 import os
 import sys
@@ -51,7 +51,7 @@ class parameter_info:
 
 class function_info:
 	name: str
-	comment: str
+	comment: str | None
 	parameters: List[parameter_info]
 	return_values: List[str]
 
@@ -68,7 +68,7 @@ class function_info:
 
 class class_info:
 	name: str
-	comment: str
+	comment: str | None
 	fields: List[variable_info]
 	methods: List[function_info]
 
@@ -287,7 +287,7 @@ class py_extractor:
 
 		return func_info
 
-	def _extract_function(self, f, clsname: str) -> function_info:
+	def _extract_function(self, f, clsname: str | None) -> function_info:
 		func_info = function_info()
 		func_info.name = f[0]
 

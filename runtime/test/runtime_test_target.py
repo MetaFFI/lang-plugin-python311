@@ -1,5 +1,6 @@
 import sys
 import time
+import typing
 
 
 # basic void(void)
@@ -118,7 +119,7 @@ def returns_array_of_different_objects():
 	return [1, 'string', 3.0, None, bytes([1, 2, 3]), SomeClass()]
 
 
-def return_any(which_type: int) -> any:
+def return_any(which_type: int) -> typing.Any:
 	if which_type == 0:
 		return 1
 	elif which_type == 1:
@@ -133,7 +134,7 @@ def return_any(which_type: int) -> any:
 		return None
 
 
-def accepts_any(which_type_to_expect: int, val: any):
+def accepts_any(which_type_to_expect: int, val: typing.Any):
 	if which_type_to_expect == 0:
 		if not isinstance(val, int) and val == 1:
 			raise ValueError(f"Expected int, got {type(val)} which is {val}")

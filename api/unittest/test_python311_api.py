@@ -11,9 +11,8 @@ import metaffi
 runtime: metaffi.metaffi_runtime.MetaFFIRuntime = metaffi.metaffi_runtime.MetaFFIRuntime('python311')
 current_path = os.path.dirname(os.path.realpath(__file__))
 
-runtime: metaffi.metaffi_runtime.MetaFFIRuntime = None
-test_runtime_module: metaffi.metaffi_module.MetaFFIModule = None
-test_map_module: metaffi.metaffi_module.MetaFFIModule = None
+test_runtime_module: metaffi.metaffi_module.MetaFFIModule | None = None
+test_map_module: metaffi.metaffi_module.MetaFFIModule | None = None
 
 
 def init():
@@ -59,6 +58,7 @@ class TestAPI(unittest.TestCase):
 	
 	def test_hello_world(self):
 		global test_runtime_module
+		assert test_runtime_module is not None
 		
 		# load hello world
 		hello_world = test_runtime_module.load_entity('callable=hello_world', None, None)
@@ -69,6 +69,7 @@ class TestAPI(unittest.TestCase):
 	
 	def test_returns_an_error(self):
 		global test_runtime_module
+		assert test_runtime_module is not None
 		
 		# Load the function that is expected to return an error
 		returns_an_error = test_runtime_module.load_entity('callable=returns_an_error', None, None)
@@ -85,6 +86,7 @@ class TestAPI(unittest.TestCase):
 	
 	def test_div_integers(self):
 		global test_runtime_module
+		assert test_runtime_module is not None
 		
 		# Load the function for dividing integers
 		div_integers = test_runtime_module.load_entity('callable=div_integers', [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_int64_type), metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_int64_type)], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_float64_type)])
@@ -103,6 +105,7 @@ class TestAPI(unittest.TestCase):
 	
 	def test_join_strings(self):
 		global test_runtime_module
+		assert test_runtime_module is not None
 		
 		# Load the function for joining strings
 		join_strings = test_runtime_module.load_entity('callable=join_strings',
@@ -123,6 +126,7 @@ class TestAPI(unittest.TestCase):
 	
 	def test_wait_a_bit(self):
 		global test_runtime_module
+		assert test_runtime_module is not None
 		
 		# Retrieve the global variable five_seconds
 		five_seconds_getter = test_runtime_module.load_entity('attribute=five_seconds,getter', [], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_int64_type)])
@@ -147,6 +151,7 @@ class TestAPI(unittest.TestCase):
 	
 	def test_testmap_set_get_contains(self):
 		global test_runtime_module
+		assert test_runtime_module is not None
 		
 		new_testmap = test_runtime_module.load_entity('callable=testmap', [], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_handle_type)])
 		testmap_set = test_runtime_module.load_entity('callable=testmap.set,instance_required',
@@ -189,6 +194,9 @@ class TestAPI(unittest.TestCase):
 		# assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_runtime_test_target_SomeClass(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		pgetSomeClasses = test_runtime_module.load_entity('callable=get_some_classes', [], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_handle_array_type)])
 		someclassList = pgetSomeClasses()
 		
@@ -209,6 +217,9 @@ class TestAPI(unittest.TestCase):
 		# assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_runtime_test_target_ThreeBuffers(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		pexpectThreeBuffers = test_runtime_module.load_entity('callable=expect_three_buffers', [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_uint8_array_type, dims=2)], [])
 		pgetThreeBuffers = test_runtime_module.load_entity('callable=get_three_buffers', [], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_uint8_array_type, dims=2)])
 		
@@ -247,6 +258,9 @@ class TestAPI(unittest.TestCase):
 		# assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_return_null(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		# Load the entity that is expected to return null
 		preturn_null = test_runtime_module.load_entity('callable=return_null', [], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_handle_type)])
 		
@@ -259,6 +273,9 @@ class TestAPI(unittest.TestCase):
 		# assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_returns_array_of_different_objects(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		# Load the entity that returns an array of different objects
 		preturns_array_of_different_objects = test_runtime_module.load_entity('callable=returns_array_of_different_objects', [], [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_any_type)])
 		
@@ -293,6 +310,9 @@ class TestAPI(unittest.TestCase):
 		# assert_objects_not_loaded_of_type(self, 'MetaFFIEntity')
 	
 	def test_call_any(self):
+		global test_runtime_module
+		assert test_runtime_module is not None
+
 		# Load the callable that accepts any type
 		pcall_any = test_runtime_module.load_entity('callable=accepts_any', [metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_int64_type), metaffi.metaffi_type_info(metaffi.MetaFFITypes.metaffi_any_type)], None)
 		

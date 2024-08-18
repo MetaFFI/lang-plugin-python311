@@ -669,7 +669,7 @@ void pyxcall_no_params_no_ret(
 		}
 
 		// call function
-		PyObject* res = PyObject_CallObject(pctxt->entrypoint, nullptr);
+		PyObject_CallObject(pctxt->entrypoint, nullptr);
 		std::string err_msg = std::move(check_python_error());
 
 		if(!err_msg.empty())

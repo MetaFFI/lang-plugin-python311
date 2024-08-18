@@ -1,32 +1,36 @@
 import ctypes
-from ctypes import *
+from ctypes import cdll
 from .metaffi_types import *
 import platform
 import os
 
+metaffi_home = os.getenv('METAFFI_HOME')
+if metaffi_home is None:
+	raise RuntimeError('METAFFI_HOME environment variable is not set')
+
+assert isinstance(metaffi_home, str)
 
 def get_dynamic_lib_path_from_metaffi_home(fname: str):
+	global metaffi_home
+	assert isinstance(metaffi_home, str)
+	assert isinstance(fname, str)
 
 	if fname != 'xllr':
 		fname = f'/{fname}/xllr.{fname}'
 
 	osname = platform.system()
-	if os.getenv('METAFFI_HOME') is None:
-		raise RuntimeError('No METAFFI_HOME environment variable')
-	elif fname is None:
-		raise RuntimeError('fname is None')
 	
 	if osname == 'Windows':
-		return os.getenv('METAFFI_HOME') + '\\' + fname + '.dll'
+		return metaffi_home + '\\' + fname + '.dll'
 	elif osname == 'Darwin':
-		return os.getenv('METAFFI_HOME') + '/' + fname + '.dylib'
+		return metaffi_home + '/' + fname + '.dylib'
 	else:
-		return os.getenv('METAFFI_HOME') + '/' + fname + '.so'  # for everything that is not windows or mac, return .so
+		return metaffi_home + '/' + fname + '.so'  # for everything that is not windows or mac, return .so
 
 
 if platform.system() == 'Windows':
-	os.add_dll_directory(os.getenv('METAFFI_HOME'))
-	os.add_dll_directory(os.getenv('METAFFI_HOME') + '\\python311\\')
+	os.add_dll_directory(metaffi_home)
+	os.add_dll_directory(metaffi_home + '\\python311\\')
 
 xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('python311'))
 xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
@@ -110,7 +114,7 @@ def free_xcall(runtime_plugin_name: str, pxcall: ctypes.c_void_p) -> None:
 		raise RuntimeError(msg)
 
 
-def make_callable(runtime_plugin_name: str, f: callable, params_types: ctypes.POINTER(metaffi_type_info), params_count: int, retvals_types: ctypes.POINTER(metaffi_type_info), retval_count: int) -> ctypes.c_void_p:
+def make_callable(runtime_plugin_name: str, f: Callable, params_types: ctypes.POINTER(metaffi_type_info), params_count: int, retvals_types: ctypes.POINTER(metaffi_type_info), retval_count: int) -> ctypes.c_void_p:
 	err = ctypes.c_char_p()
 	result = _xllr.make_callable(runtime_plugin_name.encode('utf-8'), f, params_types, params_count, retvals_types, retval_count, ctypes.byref(err))
 	
