@@ -68,7 +68,7 @@ class MetaFFIModule:
 		self.runtime = runtime
 		self.module_path = module_path
 	
-	def load_entity(self, function_path: str, params_metaffi_types: Tuple[metaffi_types.metaffi_type_info, ...] | List[metaffi_types.metaffi_type_info] | None,
+	def load_entity(self, entity_path: str, params_metaffi_types: Tuple[metaffi_types.metaffi_type_info, ...] | List[metaffi_types.metaffi_type_info] | None,
 			retval_metaffi_types: Tuple[metaffi_types.metaffi_type_info, ...] | List[metaffi_types.metaffi_type_info] | None) -> MetaFFIEntity:
 		
 		if params_metaffi_types is None:
@@ -99,7 +99,7 @@ class MetaFFIModule:
 		
 				
 		# Call xllr.load_function
-		xcall = xllr_wrapper.load_entity('xllr.' + self.runtime.runtime_plugin, self.module_path, function_path, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types))
+		xcall = xllr_wrapper.load_entity('xllr.' + self.runtime.runtime_plugin, self.module_path, entity_path, params_array, len(params_metaffi_types), retval_array, len(retval_metaffi_types))
 		
 		xcall_casted = ctypes.cast(xcall, ctypes.POINTER(VoidPtrArray))
 

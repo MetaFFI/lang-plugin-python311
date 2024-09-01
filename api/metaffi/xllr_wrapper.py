@@ -87,12 +87,12 @@ def free_runtime_plugin(runtime_plugin: str) -> None:
 		raise RuntimeError(msg)
 
 
-def load_entity(runtime_plugin_name: str, module_path: str, function_path: str,
+def load_entity(runtime_plugin_name: str, module_path: str, entity_path: str,
 		params_types: ctypes.POINTER(metaffi_type_info), params_count: int,
 		retvals_types: ctypes.POINTER(metaffi_type_info), retval_count: int) -> ctypes.c_void_p:
 	err = ctypes.c_char_p()
 	result = _xllr.load_entity(runtime_plugin_name.encode('utf-8'), module_path.encode('utf-8'),
-		function_path.encode('utf-8'), params_types, params_count, retvals_types,
+		entity_path.encode('utf-8'), params_types, params_count, retvals_types,
 		retval_count, ctypes.byref(err))
 	
 	# check if err is not NULL

@@ -2,7 +2,7 @@
 set namespaceSeparator none
 
 +class MetaFFIModule {
-  + load(function_path: string, params_metaffi_types: MetaFFITypeWithAlias[], retval_metaffi_types: MetaFFITypeWithAlias[]): xcall_callable
+  + load(entity_path: string, params_metaffi_types: MetaFFITypeWithAlias[], retval_metaffi_types: MetaFFITypeWithAlias[]): xcall_callable
 }
 +class MetaFFIRuntime {
   - runtime_plugin : str
@@ -22,7 +22,7 @@ set namespaceSeparator none
   + load_runtime_plugin(runtime_plugin: string)
   + free_runtime_plugin(runtime_plugin: string)
   + alloc_cdts_buffer(params_count: int, ret_count: int): pcdts*
-  + load_function(runtime_plugin_name: string, module_path: string, function_path: string, params_types: MetaFFITypeWithAlias[], retvals_types: MetaFFITypeWithAlias[]): void**
+  + load_function(runtime_plugin_name: string, module_path: string, entity_path: string, params_types: MetaFFITypeWithAlias[], retvals_types: MetaFFITypeWithAlias[]): void**
   + free_function(runtime_plugin_name: string, pxcall: void**)
   + make_callable(runtime_plugin_name: string, make_callable_context: void*, params_types: MetaFFITypeWithAlias[], retvals_types: MetaFFITypeWithAlias[]): xcall_callable
 }
