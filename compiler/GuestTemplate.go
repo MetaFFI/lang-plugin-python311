@@ -63,7 +63,7 @@ const GuestFunctionXLLRTemplate = `
 {{GenerateCEntryPoint $f.Getter.GetNameWithOverloadIndex $f.Getter.Parameters $f.Getter.ReturnValues false 0}}
 def EntryPoint_{{$f.Getter.Name}}{{$f.Getter.GetOverloadIndexIfExists}}():
 	ret_val_types = ({{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
-	return (None, ret_val_types, {{$f.Getter.FunctionPath.module}}.{{$f.Name}})
+	return (None, ret_val_types, {{$f.Getter.EntityPath.module}}.{{$f.Name}})
 
 {{end}}{{/* end getter */}}
 {{if $f.Setter}}{{$retvalLength := len $f.Setter.ReturnValues}}
@@ -72,7 +72,7 @@ def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*handle)
 	ret_val_types = ({{range $index, $elem := $f.Setter.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 	if len(handle) != 1:
 		raise ValueError('received parameter in {{$f.Setter.Name}} expects exactly one parameter')
-	{{$f.Setter.FunctionPath.module}}.{{$f.Name}} = handle[0]
+	{{$f.Setter.EntityPath.module}}.{{$f.Name}} = handle[0]
 	return (None, ret_val_types)
 
 {{end}}{{/* end setter */}}
@@ -85,7 +85,7 @@ def EntryPoint_{{$f.Setter.Name}}{{$f.Setter.GetOverloadIndexIfExists}}(*handle)
 def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 	try:
 		# call function
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}(*vals, **named_vals)
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.EntityPath.module}}.{{$f.Name}}(*vals, **named_vals)
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})
 
@@ -103,7 +103,7 @@ def EntryPoint_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 def EntryPoint_{{$c.Name}}_{{$f.Name}}{{$f.GetOverloadIndexIfExists}}(*vals, **named_vals):
 	try:
 		# call constructor
-		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.FunctionPath.module}}.{{$f.Name}}(*vals, **named_vals)
+		{{range $index, $elem := $f.ReturnValues}}{{if $index}},{{end}}{{$elem.Name}}{{end}}{{if $f.ReturnValues}} = {{end}}{{$f.EntityPath.module}}.{{$f.Name}}(*vals, **named_vals)
 		
 		{{$retvalLength := len $f.ReturnValues}}
 		ret_val_types = ({{range $index, $elem := $f.ReturnValues}}{{if $index}}, {{end}}{{GetMetaFFIType $elem false}}{{end}}{{if eq $retvalLength 1}},{{end}})

@@ -2,7 +2,7 @@ package main
 
 import "github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 
-func TestGetIDL(){
+func TestGetIDL() {
 	idl := IDL.NewIDLDefinition("py_extractor.json", "python3")
 	module := IDL.NewModuleDefinition("py_extractor")
 	idl.AddModule(module)
@@ -49,7 +49,7 @@ func TestGetIDL(){
 
 	module.AddClass(py_extractor)
 
-	module.SetFunctionPath("module", "py_extractor")
+	module.SetEntityPath("module", "py_extractor")
 
 	idl.FinalizeConstruction()
 	println(idl.ToJSON())

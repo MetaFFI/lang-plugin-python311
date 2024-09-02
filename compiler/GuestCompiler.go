@@ -3,12 +3,13 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 )
 
 var (
@@ -41,7 +42,7 @@ func (this *GuestCompiler) Compile(definition *IDL.IDLDefinition, outputDir stri
 		outputFilename = definition.IDLSource
 	}
 
-	if strings.ToLower(filepath.Ext(outputFilename)) == ".py"{
+	if strings.ToLower(filepath.Ext(outputFilename)) == ".py" {
 		outputFilename = strings.ReplaceAll(outputFilename, filepath.Ext(outputFilename), "")
 	}
 
@@ -122,7 +123,7 @@ func (this *GuestCompiler) parseImports() (string, error) {
 	set := make(map[string]bool)
 
 	for _, m := range this.def.Modules {
-		importMod := m.GetFunctionPathSet("module")
+		importMod := m.GetEntityPathSet("module")
 		for _, im := range importMod {
 			set[im] = true
 		}

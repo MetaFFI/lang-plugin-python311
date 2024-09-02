@@ -12,7 +12,7 @@
 					"constructors": [
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args_metaffi_keyword_args",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -39,13 +39,13 @@
 					],
 					"fields": [
 					],
-					"function_path": {
+					"entity_path": {
 						"module": "metaffi_objects"
 					},
 					"methods": [
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___delattr__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -92,7 +92,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___dir__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -129,7 +129,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___eq__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -176,7 +176,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___format__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -223,7 +223,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___ge__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -270,7 +270,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___getattribute__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -317,7 +317,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___getitem__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -364,7 +364,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___getstate__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -401,7 +401,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___gt__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -448,7 +448,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___le__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -495,7 +495,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___lt__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -542,7 +542,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___ne__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -589,7 +589,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___reduce__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -626,7 +626,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___reduce_ex__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -673,7 +673,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___repr__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -710,7 +710,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___setattr__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -767,7 +767,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___sizeof__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -804,7 +804,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args___str__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -841,7 +841,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_keyword_args_set_arg",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -890,7 +890,7 @@
 					"name": "metaffi_keyword_args",
 					"release": {
 						"comment": "Releases object",
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_metaffi_keyword_args_Releasemetaffi_keyword_args",
 							"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 							"module": "metaffi_objects"
@@ -923,7 +923,7 @@
 					"constructors": [
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args_metaffi_positional_args",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -954,7 +954,7 @@
 							"dimensions": 0,
 							"getter": {
 								"comment": "",
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_metaffi_positional_args_Gett",
 									"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 									"module": "metaffi_objects"
@@ -994,7 +994,7 @@
 							"name": "t",
 							"setter": {
 								"comment": "",
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_metaffi_positional_args_Sett",
 									"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 									"module": "metaffi_objects"
@@ -1036,13 +1036,13 @@
 							"type_alias": ""
 						}
 					],
-					"function_path": {
+					"entity_path": {
 						"module": "metaffi_objects"
 					},
 					"methods": [
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___delattr__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1089,7 +1089,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___dir__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1126,7 +1126,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___eq__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1173,7 +1173,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___format__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1220,7 +1220,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___ge__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1267,7 +1267,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___getattribute__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1314,7 +1314,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___getstate__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1351,7 +1351,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___gt__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1398,7 +1398,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___hash__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1435,7 +1435,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___le__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1482,7 +1482,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___lt__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1529,7 +1529,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___ne__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1576,7 +1576,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___reduce__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1613,7 +1613,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___reduce_ex__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1660,7 +1660,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___repr__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1697,7 +1697,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___setattr__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1754,7 +1754,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___sizeof__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1791,7 +1791,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args___str__",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1828,7 +1828,7 @@
 						},
 						{
 							"comment": "",
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_metaffi_positional_args_set_arg",
 								"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 								"module": "metaffi_objects"
@@ -1867,7 +1867,7 @@
 					"name": "metaffi_positional_args",
 					"release": {
 						"comment": "Releases object",
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_metaffi_positional_args_Releasemetaffi_positional_args",
 							"metaffi_guest_lib": "metaffi_objects_MetaFFIGuest",
 							"module": "metaffi_objects"

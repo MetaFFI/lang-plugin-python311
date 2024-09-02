@@ -14,7 +14,7 @@
 #include <sstream>
 #include <utility>
 #include <utils/foreign_function.h>
-#include <utils/function_path_parser.h>
+#include <utils/entity_path_parser.h>
 
 #ifdef _DEBUG
 #undef _DEBUG
@@ -718,7 +718,7 @@ xcall* make_callable(void* py_callable_as_py_object, metaffi_type_info* params_t
 	return pxcall;
 }
 //--------------------------------------------------------------------
-xcall* load_entity(const char* module_path, const char* function_path, metaffi_type_info* param_types, int8_t params_count, metaffi_type_info* ret_types, int8_t retval_count, char** err)
+xcall* load_entity(const char* module_path, const char* entity_path, metaffi_type_info* param_types, int8_t params_count, metaffi_type_info* ret_types, int8_t retval_count, char** err)
 {
 	if(!Py_IsInitialized())
 	{
@@ -727,7 +727,7 @@ xcall* load_entity(const char* module_path, const char* function_path, metaffi_t
 
 	pyscope();
 
-	metaffi::utils::function_path_parser fp(function_path);
+	metaffi::utils::entity_path_parser fp(entity_path);
 	std::filesystem::path p(module_path);
 	std::filesystem::path dir = p.parent_path();
 	std::string dir_str = dir.string();

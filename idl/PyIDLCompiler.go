@@ -1,28 +1,31 @@
 package main
 
 import (
-	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
-	. "github.com/MetaFFI/lang-plugin-python3/idl/py_extractor"
+	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
-	"fmt"
+
+	. "github.com/MetaFFI/lang-plugin-python3/idl/py_extractor"
+	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 )
 
-//--------------------------------------------------------------------
-type PyIDLCompiler struct{
+// --------------------------------------------------------------------
+type PyIDLCompiler struct {
 	sourceCode         string
 	sourceCodeFilePath string
 	pyfile             *Py_Extractor
 
 	idl *IDL.IDLDefinition
 }
-//--------------------------------------------------------------------
-func NewPyIDLCompiler() *PyIDLCompiler{
+
+// --------------------------------------------------------------------
+func NewPyIDLCompiler() *PyIDLCompiler {
 	MetaFFILoad("py_extractor_MetaFFIGuest")
 	return &PyIDLCompiler{}
 }
-//--------------------------------------------------------------------
+
+// --------------------------------------------------------------------
 func (this *PyIDLCompiler) getModulesPathInSitePackages(pathToPyFile string) []string {
 
 	if !strings.Contains(strings.ToLower(pathToPyFile), "site-packages") {
@@ -53,50 +56,59 @@ func (this *PyIDLCompiler) getModulesPathInSitePackages(pathToPyFile string) []s
 	return res
 
 }
-//--------------------------------------------------------------------
-func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.IDLDefinition, bool, error){
+
+// --------------------------------------------------------------------
+func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.IDLDefinition, bool, error) {
 
 	MetaFFILoad("py_extractor")
-    pyfile, err := NewPy_Extractor(filePath)
-    if err != nil{
-        return nil, true, err
-    }
+	pyfile, err := NewPy_Extractor(filePath)
+	if err != nil {
+		return nil, true, err
+	}
 
-    this.sourceCode = sourceCode
-    this.sourceCodeFilePath = strings.ReplaceAll(filePath, "\\", "/")
-    this.pyfile = pyfile
+	this.sourceCode = sourceCode
+	this.sourceCodeFilePath = strings.ReplaceAll(filePath, "\\", "/")
+	this.pyfile = pyfile
 
 	this.idl = IDL.NewIDLDefinition(this.sourceCodeFilePath, "python3")
-	
+
 	pyinfo, err := this.pyfile.Extract()
-	if err != nil{ return nil, true, err }
+	if err != nil {
+		return nil, true, err
+	}
 
 	globals, err := ExtractGlobals(&pyinfo, this.idl.MetaFFIGuestLib)
-	if err != nil{ return nil, true, err }
+	if err != nil {
+		return nil, true, err
+	}
 
 	classes, err := ExtractClasses(&pyinfo, this.idl.MetaFFIGuestLib)
-	if err != nil{ return nil, true, err }
+	if err != nil {
+		return nil, true, err
+	}
 
 	functions, err := ExtractFunctions(&pyinfo, this.idl.MetaFFIGuestLib)
-	if err != nil{ return nil, true, err }
-
+	if err != nil {
+		return nil, true, err
+	}
 
 	// to_py_tuple AST and to_cdts IDLDefinition
 
-	
 	module := IDL.NewModuleDefinition(this.idl.IDLSource)
 
 	module.AddGlobals(globals)
 	module.AddFunctions(functions)
 
-	for _, c := range classes{ module.AddClass(c) }
+	for _, c := range classes {
+		module.AddClass(c)
+	}
 
 	this.idl.AddModule(module)
 
 	guestCodeModule := strings.ReplaceAll(path.Base(this.sourceCodeFilePath), path.Ext(this.sourceCodeFilePath), "")
 
 	// set package function path if from "site-packages"
-	if strings.Contains(this.idl.IDLFullPath, "site-packages"){
+	if strings.Contains(this.idl.IDLFullPath, "site-packages") {
 
 		pathToModule := this.getModulesPathInSitePackages(this.idl.IDLFullPath)
 		pathToModule = append(pathToModule, guestCodeModule)
@@ -104,14 +116,15 @@ func (this *PyIDLCompiler) ParseIDL(sourceCode string, filePath string) (*IDL.ID
 		fullPathToModule := strings.Join(pathToModule, ".")
 
 		module.AddExternalResource(fullPathToModule)
-		module.SetFunctionPath("module", strings.Replace(fullPathToModule, "\\", "/", -1))
+		module.SetEntityPath("module", strings.Replace(fullPathToModule, "\\", "/", -1))
 	} else {
 		module.AddExternalResource(guestCodeModule)
-        module.SetFunctionPath("module", strings.Replace(guestCodeModule, "\\", "/", -1))
+		module.SetEntityPath("module", strings.Replace(guestCodeModule, "\\", "/", -1))
 	}
 
 	this.idl.FinalizeConstruction()
 
 	return this.idl, false, nil
 }
+
 //--------------------------------------------------------------------

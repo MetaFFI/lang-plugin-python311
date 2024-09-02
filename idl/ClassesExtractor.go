@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	. "github.com/MetaFFI/lang-plugin-python3/idl/py_extractor"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 )
@@ -62,12 +63,12 @@ func ExtractClasses(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.ClassDefini
 				fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "Get"+name, "Set"+name, true)
 
 				fdecl.Getter.SetTag("receiver_pointer", "true")
-				fdecl.Getter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				fdecl.Getter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
+				fdecl.Getter.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+				fdecl.Getter.SetEntityPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
 
 				fdecl.Setter.SetTag("receiver_pointer", "true")
-				fdecl.Setter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				fdecl.Setter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
+				fdecl.Setter.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+				fdecl.Setter.SetEntityPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
 
 				pycls.AddField(fdecl)
 
@@ -75,8 +76,8 @@ func ExtractClasses(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.ClassDefini
 				fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "Get"+name, "", true)
 
 				fdecl.Getter.SetTag("receiver_pointer", "true")
-				fdecl.Getter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				fdecl.Getter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
+				fdecl.Getter.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+				fdecl.Getter.SetEntityPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Getter.Name)
 
 				pycls.AddField(fdecl)
 
@@ -84,8 +85,8 @@ func ExtractClasses(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.ClassDefini
 				fdecl := IDL.NewFieldDefinition(pycls, name, pyTypeToMFFI(typy), "", "Set"+name, true)
 
 				fdecl.Setter.SetTag("receiver_pointer", "true")
-				fdecl.Setter.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				fdecl.Setter.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
+				fdecl.Setter.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+				fdecl.Setter.SetEntityPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+fdecl.Setter.Name)
 
 				pycls.AddField(fdecl)
 			} else {
@@ -134,15 +135,15 @@ func ExtractClasses(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.ClassDefini
 			if name == "__init__" {
 				pymeth.Name = clsName
 				cstr := IDL.NewConstructorDefinitionFromFunctionDefinition(pymeth)
-				cstr.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+cstr.Name)
-				cstr.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
+				cstr.SetEntityPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+cstr.Name)
+				cstr.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
 				pycls.AddConstructor(cstr)
 			} else if name == "__del__" {
 				pycls.Releaser = IDL.NewReleaserDefinitionFromFunctionDefinition(pycls, pymeth)
 			} else {
 				meth := IDL.NewMethodDefinitionWithFunction(pycls, pymeth, true)
-				meth.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-				meth.SetFunctionPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+meth.Name)
+				meth.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+				meth.SetEntityPath("entrypoint_function", "EntryPoint_"+pycls.Name+"_"+meth.Name)
 				pycls.AddMethod(meth)
 			}
 		}
@@ -153,8 +154,8 @@ func ExtractClasses(pyinfo *Py_Info, metaffiGuestLib string) ([]*IDL.ClassDefini
 	res := make([]*IDL.ClassDefinition, 0)
 	for _, c := range classes {
 
-		c.Releaser.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-		c.Releaser.SetFunctionPath("entrypoint_function", "EntryPoint_"+c.Name+"_"+c.Releaser.Name)
+		c.Releaser.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+		c.Releaser.SetEntityPath("entrypoint_function", "EntryPoint_"+c.Name+"_"+c.Releaser.Name)
 
 		res = append(res, c)
 	}

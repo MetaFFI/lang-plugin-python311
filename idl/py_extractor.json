@@ -21,7 +21,7 @@
 						"name": "Releasevariable_info",
 						"comment": "Releases object",
 						"tags": {},
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_variable_info_Releasevariable_info",
 							"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 							"module": "py_extractor"
@@ -51,7 +51,7 @@
 								"name": "get_name",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_variable_info_get_name",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -91,7 +91,7 @@
 								"name": "get_type",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_variable_info_get_type",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -131,7 +131,7 @@
 								"name": "get_is_getter",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_variable_info_get_is_getter",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -171,7 +171,7 @@
 								"name": "get_is_setter",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_variable_info_get_is_setter",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -211,7 +211,7 @@
 						"name": "Releaseparameter_info",
 						"comment": "Releases object",
 						"tags": {},
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_parameter_info_Releaseparameter_info",
 							"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 							"module": "py_extractor"
@@ -241,7 +241,7 @@
 								"name": "get_name",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_parameter_info_get_name",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -281,7 +281,7 @@
 								"name": "get_type",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_parameter_info_get_type",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -321,7 +321,7 @@
 								"name": "get_is_default_value",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_parameter_info_get_is_default_value",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -361,7 +361,7 @@
 								"name": "get_is_optional",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_parameter_info_get_is_optional",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -401,7 +401,7 @@
 								"name": "get_kind",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_parameter_info_get_kind",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -441,7 +441,7 @@
 						"name": "Releasefunction_info",
 						"comment": "Releases object",
 						"tags": {},
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_function_info_Releasefunction_info",
 							"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 							"module": "py_extractor"
@@ -471,7 +471,7 @@
 								"name": "get_name",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_function_info_get_name",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -511,7 +511,7 @@
 								"name": "get_comment",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_function_info_get_comment",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -551,7 +551,7 @@
 								"name": "get_parameters",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_function_info_get_parameters",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -591,7 +591,7 @@
 								"name": "get_return_values",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_function_info_get_return_values",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -631,7 +631,7 @@
 						"name": "Releaseclass_info",
 						"comment": "Releases object",
 						"tags": {},
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_class_info_Releaseclass_info",
 							"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 							"module": "py_extractor"
@@ -661,7 +661,7 @@
 								"name": "get_name",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_class_info_get_name",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -701,7 +701,7 @@
 								"name": "get_comment",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_class_info_get_comment",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -741,7 +741,7 @@
 								"name": "get_fields",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_class_info_get_fields",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -781,7 +781,7 @@
 								"name": "get_methods",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_class_info_get_methods",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -821,7 +821,7 @@
 						"name": "Releasepy_info",
 						"comment": "Releases object",
 						"tags": {},
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_py_info_Releasepy_info",
 							"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 							"module": "py_extractor"
@@ -851,7 +851,7 @@
 								"name": "get_globals",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_py_info_get_globals",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -891,7 +891,7 @@
 								"name": "get_functions",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_py_info_get_functions",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -931,7 +931,7 @@
 								"name": "get_classes",
 								"comment": "",
 								"tags": {},
-								"function_path": {
+								"entity_path": {
 									"entrypoint_function": "EntryPoint_py_info_get_classes",
 									"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 									"module": "py_extractor"
@@ -971,7 +971,7 @@
 							"name": "py_extractor",
 							"comment": "",
 							"tags": {},
-							"function_path": {
+							"entity_path": {
 								"entrypoint_function": "EntryPoint_py_extractor_py_extractor",
 								"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 								"module": "py_extractor"
@@ -1002,7 +1002,7 @@
 						"name": "Releasepy_extractor",
 						"comment": "Releases object",
 						"tags": {},
-						"function_path": {
+						"entity_path": {
 							"entrypoint_function": "EntryPoint_py_extractor_Releasepy_extractor",
 							"metaffi_guest_lib": "py_extractor_MetaFFIGuest",
 							"module": "py_extractor"
@@ -1024,7 +1024,7 @@
 							"name": "extract",
 							"comment": "",
 							"tags": {},
-							"function_path": {
+							"entity_path": {
 								"entrypoint_class": "py_extractor",
 								"entrypoint_function": "EntryPoint_py_extractor_extract",
 								"metaffi_guest_lib": "py_extractor_MetaFFIGuest",

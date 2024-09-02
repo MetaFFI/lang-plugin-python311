@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	. "github.com/MetaFFI/lang-plugin-python3/idl/py_extractor"
 	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 )
@@ -33,11 +34,11 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 		}
 
 		isOptional, err := p.Get_Is_Optional_MetaFFIGetter()
-        if err != nil {
-            return nil, err
-        }
+		if err != nil {
+			return nil, err
+		}
 
-        isOptional = isDefaultVal || isOptional
+		isOptional = isDefaultVal || isOptional
 
 		var pyty string
 
@@ -56,7 +57,7 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			}
 
 			commentArgIsOptionalText := ""
-			if isOptional{
+			if isOptional {
 				commentArgIsOptionalText = "(Optional)"
 			}
 
@@ -76,7 +77,7 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			pyty = "list"
 
 			isOptional = true
-            pyfunc.Comment += fmt.Sprintf("\nvariant positional argument %v", paramName)
+			pyfunc.Comment += fmt.Sprintf("\nvariant positional argument %v", paramName)
 
 		} else {
 			pyty, err = p.Get_Type_MetaFFIGetter()
@@ -109,9 +110,9 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 			i := pyfunc.GetFirstIndexOfOptionalParameter()
 
 			// insert after last optional parameter
-			if i > -1{
+			if i > -1 {
 				pyfunc.Parameters = append(pyfunc.Parameters[:i+1], pyfunc.Parameters[i:]...)
-                pyfunc.Parameters[i] = p
+				pyfunc.Parameters[i] = p
 			} else {
 				pyfunc.Parameters = append(pyfunc.Parameters, p)
 			}
@@ -130,8 +131,8 @@ func GenerateFunctionDefinition(name string, comment string, params []Parameter_
 		pyfunc.AddReturnValues(IDL.NewArgArrayDefinitionWithAlias(retvalname, mffiType, 0, talias))
 	}
 
-	pyfunc.SetFunctionPath("metaffi_guest_lib", metaffiGuestLib)
-	pyfunc.SetFunctionPath("entrypoint_function", "EntryPoint_"+pyfunc.Name)
+	pyfunc.SetEntityPath("metaffi_guest_lib", metaffiGuestLib)
+	pyfunc.SetEntityPath("entrypoint_function", "EntryPoint_"+pyfunc.Name)
 
 	return pyfunc, nil
 }

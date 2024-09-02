@@ -171,15 +171,15 @@ def metaffi_load(module_path: str)->None:
 
 	{{range $findex, $f := $m.Globals}}
 	{{if $f.Getter}}
-	function_path_str = r"""{{$f.Getter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$f.Getter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
+	entity_path_str = r"""{{$f.Getter.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$f.Getter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
 	if not bool({{$f.Getter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 	{{if $f.Setter}}
-	function_path_str = r"""{{$f.Setter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$f.Setter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
+	entity_path_str = r"""{{$f.Setter.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$f.Setter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
 	if not bool({{$f.Setter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -187,8 +187,8 @@ def metaffi_load(module_path: str)->None:
 	{{end}} {{/* end globals */}}
 
 	{{range $findex, $f := $m.Functions}}
-	function_path_str = r"""{{$f.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$f.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
+	entity_path_str = r"""{{$f.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$f.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$f.Name}}_id, {{len $f.Parameters}}, {{len $f.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Parameters $f.ReturnValues}})
 	if not bool({{$f.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -196,7 +196,7 @@ def metaffi_load(module_path: str)->None:
 
 	{{range $cindex, $c := $m.Classes}}
 	{{range $cstrindex, $cstr := $c.Constructors}}
-	{{$c.Name}}_{{$cstr.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8"), len('{{$cstr.FunctionPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}})
+	{{$c.Name}}_{{$cstr.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), '{{$cstr.EntityPathAsString $idl}}'.encode("utf-8"), len('{{$cstr.EntityPathAsString $idl}}'.encode("utf-8")), {{$c.Name}}_{{$cstr.Name}}_id, {{len $cstr.Parameters}}, {{len $cstr.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $cstr.Parameters $cstr.ReturnValues}})
 	if not bool({{$c.Name}}_{{$cstr.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -204,15 +204,15 @@ def metaffi_load(module_path: str)->None:
 
 	{{range $findex, $f := $c.Fields}}
 	{{if $f.Getter}}
-	function_path_str = r"""{{$f.Getter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$f.Getter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
+	entity_path_str = r"""{{$f.Getter.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$f.Getter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$c.Name}}_{{$f.Getter.Name}}_id, {{len $f.Getter.Parameters}}, {{len $f.Getter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Getter.Parameters $f.Getter.ReturnValues}})
 	if not bool({{$c.Name}}_{{$f.Getter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 	{{if $f.Setter}}
-	function_path_str = r"""{{$f.Setter.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$f.Setter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
+	entity_path_str = r"""{{$f.Setter.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$f.Setter.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$c.Name}}_{{$f.Setter.Name}}_id, {{len $f.Setter.Parameters}}, {{len $f.Setter.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $f.Setter.Parameters $f.Setter.ReturnValues}})
 	if not bool({{$c.Name}}_{{$f.Setter.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
@@ -220,16 +220,16 @@ def metaffi_load(module_path: str)->None:
 	{{end}} {{/* End fields */}}
 
 	{{range $methindex, $meth := $c.Methods}}
-	function_path_str = r"""{{$meth.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$meth.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
+	entity_path_str = r"""{{$meth.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$meth.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$c.Name}}_{{$meth.Name}}_id, {{len $meth.Parameters}}, {{len $meth.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $meth.Parameters $meth.ReturnValues}})
 	if not bool({{$c.Name}}_{{$meth.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))
 	{{end}}
 
 	{{if $c.Releaser}}
-	function_path_str = r"""{{$c.Releaser.FunctionPathAsString $idl}}""".encode("utf-8")
-	{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), function_path_str, len(function_path_str), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
+	entity_path_str = r"""{{$c.Releaser.EntityPathAsString $idl}}""".encode("utf-8")
+	{{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}_id = cast(xllr_handle.load_function(runtime_plugin, len(runtime_plugin), module_path.encode("utf-8"), len(module_path.encode("utf-8")), entity_path_str, len(entity_path_str), {{$c.Name}}_{{$c.Releaser.Name}}_id, {{len $c.Releaser.Parameters}}, {{len $c.Releaser.ReturnValues}}, out_err, out_err_len), {{GetCFuncType $c.Releaser.Parameters $c.Releaser.ReturnValues}})
 	if not bool({{$c.Name}}_{{$c.Releaser.GetNameWithOverloadIndex}}_id): # failed to load function
 		err_text = string_at(out_err.contents, out_err_len.contents.value)
 		raise RuntimeError('\n'+str(err_text).replace("\\n", "\n"))

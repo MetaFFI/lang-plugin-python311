@@ -429,7 +429,7 @@ TEST_SUITE("CDTS Python3 Test")
 }
 
 xcall* cpp_load_entity(const std::string& module_path,
-                        const std::string& function_path,
+                        const std::string& entity_path,
                         std::vector<metaffi_type_info> params_types,
                         std::vector<metaffi_type_info> retvals_types)
 {
@@ -439,7 +439,7 @@ xcall* cpp_load_entity(const std::string& module_path,
 	metaffi_type_info* retvals_types_arr = retvals_types.empty() ? nullptr : retvals_types.data();
 
 	xcall* pfunction = load_entity(module_path.c_str(),
-	                               function_path.c_str(),
+	                               entity_path.c_str(),
 	                               params_types_arr, (int8_t)params_types.size(),
 	                               retvals_types_arr, (int8_t)retvals_types.size(),
 	                               &err);
@@ -460,8 +460,8 @@ TEST_SUITE("Python Runtime Tests")
 
 	TEST_CASE("runtime_test_target.hello_world")
 	{
-		std::string function_path = "callable=hello_world";
-		xcall* phello_world = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, {});
+		std::string entity_path = "callable=hello_world";
+		xcall* phello_world = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, {});
 		metaffi::utils::scope_guard sg([&] {
 			free_xcall(phello_world, &err);
 
@@ -481,8 +481,8 @@ TEST_SUITE("Python Runtime Tests")
 
 	TEST_CASE("runtime_test_target.returns_an_error")
 	{
-		std::string function_path = "callable=returns_an_error";
-		xcall* preturns_an_error = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, {});
+		std::string entity_path = "callable=returns_an_error";
+		xcall* preturns_an_error = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, {});
 		metaffi::utils::scope_guard sg([&] {
 			free_xcall(preturns_an_error, &err);
 
@@ -502,12 +502,12 @@ TEST_SUITE("Python Runtime Tests")
 
 	TEST_CASE("runtime_test_target.div_integers")
 	{
-		std::string function_path = "callable=div_integers";
+		std::string entity_path = "callable=div_integers";
 		std::vector<metaffi_type_info> params_types = {metaffi_type_info{metaffi_int64_type},
 		                                               metaffi_type_info{metaffi_int64_type}};
 		std::vector<metaffi_type_info> retvals_types = {metaffi_type_info{metaffi_float64_type}};
 
-		xcall* pdiv_integers = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, retvals_types);
+		xcall* pdiv_integers = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, retvals_types);
 		metaffi::utils::scope_guard sg([&] {
 			free_xcall(pdiv_integers, &err);
 
@@ -538,11 +538,11 @@ TEST_SUITE("Python Runtime Tests")
 
 	TEST_CASE("runtime_test_target.join_strings")
 	{
-		std::string function_path = "callable=join_strings";
+		std::string entity_path = "callable=join_strings";
 		std::vector<metaffi_type_info> params_types = {metaffi_type_info{metaffi_string8_array_type}};
 		std::vector<metaffi_type_info> retvals_types = {metaffi_type_info{metaffi_string8_type}};
 
-		xcall* join_strings = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types,
+		xcall* join_strings = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types,
 		                                      retvals_types);
 		metaffi::utils::scope_guard sg([&] {
 			free_xcall(join_strings, &err);
@@ -607,10 +607,10 @@ TEST_SUITE("Python Runtime Tests")
 		int64_t five = ret[0].cdt_val.int64_val;
 
 		// call wait_a_bit
-		std::string function_path = "callable=wait_a_bit";
+		std::string entity_path = "callable=wait_a_bit";
 		std::vector<metaffi_type_info> params_types = {metaffi_type_info{metaffi_int64_type}};
 
-		xcall* pwait_a_bit = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, {});
+		xcall* pwait_a_bit = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, {});
 		metaffi::utils::scope_guard sg1([&] {
 			free_xcall(pwait_a_bit, &err);
 
@@ -637,10 +637,10 @@ TEST_SUITE("Python Runtime Tests")
 	TEST_CASE("runtime_test_target.testmap.set_get_contains")
 	{
 		// create new testmap
-		std::string function_path = "callable=testmap";
+		std::string entity_path = "callable=testmap";
 		std::vector<metaffi_type_info> retvals_types = {metaffi_type_info(metaffi_handle_type)};
 
-		xcall* pnew_testmap = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, retvals_types);
+		xcall* pnew_testmap = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, retvals_types);
 		metaffi::utils::scope_guard sg5([&] {
 			free_xcall(pnew_testmap, &err);
 
@@ -668,12 +668,12 @@ TEST_SUITE("Python Runtime Tests")
 		cdt_metaffi_handle* testmap_instance = ret[0].cdt_val.handle_val;
 
 		// set
-		function_path = "callable=testmap.set,instance_required";
+		entity_path = "callable=testmap.set,instance_required";
 		std::vector<metaffi_type_info> params_types = {metaffi_type_info(metaffi_handle_type),
 		                                               metaffi_type_info(metaffi_string8_type),
 		                                               metaffi_type_info(metaffi_any_type)};
 
-		xcall* p_testmap_set = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, {});
+		xcall* p_testmap_set = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, {});
 		metaffi::utils::scope_guard sg6([&] {
 			free_xcall(p_testmap_set, &err);
 
@@ -699,12 +699,12 @@ TEST_SUITE("Python Runtime Tests")
 		}
 
 		// contains
-		function_path = "callable=testmap.contains,instance_required";
+		entity_path = "callable=testmap.contains,instance_required";
 		params_types = {metaffi_type_info(metaffi_handle_type),
 		                metaffi_type_info(metaffi_string8_type)};
 		retvals_types = {metaffi_type_info(metaffi_bool_type)};
 
-		xcall* p_testmap_contains = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, retvals_types);
+		xcall* p_testmap_contains = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, retvals_types);
 		metaffi::utils::scope_guard sg7([&] {
 			free_xcall(p_testmap_contains, &err);
 
@@ -733,12 +733,12 @@ TEST_SUITE("Python Runtime Tests")
 		REQUIRE((contains_ret[0].cdt_val.bool_val != 0));
 
 		// get
-		function_path = "callable=testmap.get,instance_required";
+		entity_path = "callable=testmap.get,instance_required";
 		params_types = {metaffi_type_info(metaffi_handle_type),
 		                metaffi_type_info(metaffi_string8_type)};
 		retvals_types = {metaffi_type_info(metaffi_any_type)};
 
-		xcall* p_testmap_get = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, retvals_types);
+		xcall* p_testmap_get = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, retvals_types);
 		metaffi::utils::scope_guard sg8([&] {
 			free_xcall(p_testmap_get, &err);
 
@@ -769,10 +769,10 @@ TEST_SUITE("Python Runtime Tests")
 	TEST_CASE("runtime_test_target.testmap.set_get_contains_cpp_object")
 	{
 		// create new testmap
-		std::string function_path = "callable=testmap";
+		std::string entity_path = "callable=testmap";
 		std::vector<metaffi_type_info> retvals_types = {metaffi_type_info(metaffi_handle_type)};
 
-		xcall* pnew_testmap = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, retvals_types);
+		xcall* pnew_testmap = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, retvals_types);
 		metaffi::utils::scope_guard sg5([&] {
 			free_xcall(pnew_testmap, &err);
 
@@ -801,12 +801,12 @@ TEST_SUITE("Python Runtime Tests")
 		cdt_metaffi_handle* testmap_instance = wrapper_ret[0].cdt_val.handle_val;
 
 		// set
-		function_path = "callable=testmap.set,instance_required";
+		entity_path = "callable=testmap.set,instance_required";
 		std::vector<metaffi_type_info> params_types = {metaffi_type_info(metaffi_handle_type),
 		                                               metaffi_type_info(metaffi_string8_type),
 		                                               metaffi_type_info(metaffi_any_type)};
 
-		xcall* p_testmap_set = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, {});
+		xcall* p_testmap_set = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, {});
 		metaffi::utils::scope_guard sg6([&] {
 			free_xcall(p_testmap_set, &err);
 
@@ -844,12 +844,12 @@ TEST_SUITE("Python Runtime Tests")
 		insert(p_testmap_set, testmap_instance, std::u8string(u8"key2"), &obj_to_insert2, 733);
 
 		// contains
-		function_path = "callable=testmap.contains,instance_required";
+		entity_path = "callable=testmap.contains,instance_required";
 		std::vector<metaffi_type_info> params_contains_types = {metaffi_type_info(metaffi_handle_type),
 		                                                        metaffi_type_info(metaffi_string8_type)};
 		std::vector<metaffi_type_info> retvals_contains_types = {metaffi_type_info(metaffi_bool_type)};
 
-		xcall* p_testmap_contains = cpp_load_entity(setup.runtime_test_target_path, function_path, params_contains_types, retvals_contains_types);
+		xcall* p_testmap_contains = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_contains_types, retvals_contains_types);
 		metaffi::utils::scope_guard sg7([&] {
 			free_xcall(p_testmap_contains, &err);
 
@@ -877,12 +877,12 @@ TEST_SUITE("Python Runtime Tests")
 		REQUIRE((wrapper_contains_ret[0].cdt_val.bool_val != 0));
 
 		// get
-		function_path = "callable=testmap.get,instance_required";
+		entity_path = "callable=testmap.get,instance_required";
 		std::vector<metaffi_type_info> params_get_types = {metaffi_type_info(metaffi_handle_type),
 		                                                   metaffi_type_info(metaffi_string8_type)};
 		std::vector<metaffi_type_info> retvals_get_types = {metaffi_type_info(metaffi_any_type)};
 
-		xcall* p_testmap_get = cpp_load_entity(setup.runtime_test_target_path, function_path, params_get_types, retvals_get_types);
+		xcall* p_testmap_get = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_get_types, retvals_get_types);
 		metaffi::utils::scope_guard sg8([&] {
 			free_xcall(p_testmap_get, &err);
 
@@ -924,10 +924,10 @@ TEST_SUITE("Python Runtime Tests")
 	TEST_CASE("runtime_test_target.testmap.get_set_name")
 	{
 		// Load constructor
-		std::string function_path = "callable=testmap";
+		std::string entity_path = "callable=testmap";
 		std::vector<metaffi_type_info> retvals_types = {metaffi_type_info(metaffi_handle_type)};
 
-		xcall* pnew_testmap = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, retvals_types);
+		xcall* pnew_testmap = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, retvals_types);
 		metaffi::utils::scope_guard sg5([&] {
 			free_xcall(pnew_testmap, &err);
 
@@ -939,10 +939,10 @@ TEST_SUITE("Python Runtime Tests")
 		});
 
 		// Load getter
-		function_path = "attribute=name,instance_required,getter";
+		entity_path = "attribute=name,instance_required,getter";
 		std::vector<metaffi_type_info> params_types = {metaffi_type_info{metaffi_handle_type}, metaffi_type_info{metaffi_string8_type}};
 
-		xcall* pget_name = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, retvals_types);
+		xcall* pget_name = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, retvals_types);
 		metaffi::utils::scope_guard sg6([&] {
 			free_xcall(pget_name, &err);
 
@@ -954,10 +954,10 @@ TEST_SUITE("Python Runtime Tests")
 		});
 
 		// Load setter
-		function_path = "attribute=name,instance_required,setter";
+		entity_path = "attribute=name,instance_required,setter";
 		params_types = {metaffi_type_info{metaffi_handle_type}, metaffi_type_info{metaffi_string8_type}};
 
-		xcall* pset_name = cpp_load_entity(setup.runtime_test_target_path, function_path, params_types, {});
+		xcall* pset_name = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_types, {});
 		metaffi::utils::scope_guard sg7([&] {
 			free_xcall(pset_name, &err);
 
@@ -1030,10 +1030,10 @@ TEST_SUITE("Python Runtime Tests")
 
 	TEST_CASE("runtime_test_target.SomeClass")
 	{
-		std::string function_path = "callable=get_some_classes";
+		std::string entity_path = "callable=get_some_classes";
 		std::vector<metaffi_type_info> retvals_getSomeClasses_types = {metaffi_type_info{metaffi_handle_array_type}};
 
-		xcall* pgetSomeClasses = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, retvals_getSomeClasses_types);
+		xcall* pgetSomeClasses = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, retvals_getSomeClasses_types);
 		metaffi::utils::scope_guard sg4([&] {
 			free_xcall(pgetSomeClasses, &err);
 
@@ -1044,10 +1044,10 @@ TEST_SUITE("Python Runtime Tests")
 			}
 		});
 
-		function_path = "callable=expect_three_some_classes";
+		entity_path = "callable=expect_three_some_classes";
 		std::vector<metaffi_type_info> params_expectThreeSomeClasses_types = {metaffi_type_info{metaffi_handle_array_type}};
 
-		xcall* pexpectThreeSomeClasses = cpp_load_entity(setup.runtime_test_target_path, function_path, params_expectThreeSomeClasses_types, {});
+		xcall* pexpectThreeSomeClasses = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_expectThreeSomeClasses_types, {});
 		metaffi::utils::scope_guard sg5([&] {
 			free_xcall(pexpectThreeSomeClasses, &err);
 
@@ -1058,10 +1058,10 @@ TEST_SUITE("Python Runtime Tests")
 			}
 		});
 
-		function_path = "callable=SomeClass.print";
+		entity_path = "callable=SomeClass.print";
 		std::vector<metaffi_type_info> params_SomeClassPrint_types = {metaffi_type_info{metaffi_handle_type}};
 
-		xcall* pSomeClassPrint = cpp_load_entity(setup.runtime_test_target_path, function_path, params_SomeClassPrint_types, {});
+		xcall* pSomeClassPrint = cpp_load_entity(setup.runtime_test_target_path, entity_path, params_SomeClassPrint_types, {});
 		metaffi::utils::scope_guard sg6([&] {
 			free_xcall(pSomeClassPrint, &err);
 
@@ -1136,8 +1136,8 @@ TEST_SUITE("Python Runtime Tests")
 
 	TEST_CASE("runtime_test_target.ThreeBuffers")
 	{
-		std::string function_path = "callable=expect_three_buffers";
-		xcall* pexpectThreeBuffers = cpp_load_entity(setup.runtime_test_target_path, function_path, {metaffi_type_info{metaffi_uint8_array_type, nullptr, false, 2}}, {});
+		std::string entity_path = "callable=expect_three_buffers";
+		xcall* pexpectThreeBuffers = cpp_load_entity(setup.runtime_test_target_path, entity_path, {metaffi_type_info{metaffi_uint8_array_type, nullptr, false, 2}}, {});
 		metaffi::utils::scope_guard sg10([&] {
 			free_xcall(pexpectThreeBuffers, &err);
 
@@ -1148,8 +1148,8 @@ TEST_SUITE("Python Runtime Tests")
 			}
 		});
 
-		function_path = "callable=get_three_buffers";
-		xcall* pgetThreeBuffers = cpp_load_entity(setup.runtime_test_target_path, function_path, {}, {{metaffi_uint8_array_type, nullptr, false, 2}});
+		entity_path = "callable=get_three_buffers";
+		xcall* pgetThreeBuffers = cpp_load_entity(setup.runtime_test_target_path, entity_path, {}, {{metaffi_uint8_array_type, nullptr, false, 2}});
 		metaffi::utils::scope_guard sg11([&] {
 			free_xcall(pgetThreeBuffers, &err);
 
