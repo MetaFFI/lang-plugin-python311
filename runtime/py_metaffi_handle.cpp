@@ -28,9 +28,16 @@ py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 		metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi");
 		if(!metaffi_handle_mod)
 		{
-			PyRun_SimpleString("import metaffi");
+			PyErr_Clear();
 			//import_metaffi_package();
-			std::cerr << "imported metaffi - try again" << std::endl;
+			std::string err_during_import = check_python_error();
+			if(!err_during_import.empty())
+			{
+				std::cerr << "Error during import metaffi: " << std::endl << err_during_import << std::endl;
+				throw std::runtime_error("Failed to get metaffi module");
+			}
+
+			std::cerr << "metaffi imported - try again" << std::endl;
 			metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi");
 
 			if(!metaffi_handle_mod){

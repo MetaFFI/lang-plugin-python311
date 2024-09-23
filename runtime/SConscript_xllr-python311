@@ -1,3 +1,5 @@
+from math import e
+import sys
 import SCons.Environment
 import SCons.Script
 import SCons.Node
@@ -9,7 +11,8 @@ import compiler_options
 import post_actions
 import platform
 import scons_utils
-from site_scons import ALIAS_PYTHON3, ALIAS_PYTHON3_UNITTESTS
+from site_scons import ALIAS_PYTHON311, ALIAS_PYTHON311_UNITTESTS
+import os
 
 # * Import the parent Environment
 env: SCons.Environment.Environment
@@ -17,7 +20,29 @@ SCons.Script.Import('env')
 
 
 # * ---- Build XLLR dynamic library ----
-env.LoadConanPackagesInfo()
+if env.IsWindows():
+	env.LoadConanPackagesInfo('conanfile.txt', 'SConscript_conandeps_windows')
+elif env.IsLinux():
+	env.LoadConanPackagesInfo('conanfile.txt', 'SConscript_conandeps_linux')
+else:
+	print(f'{Fore.RED}Unsupported platform: {platform.system()}{Fore.RESET}')
+	sys.exit(1)
+
+cpython_info = SCons.Script.SConscript('SConscript_cpythondeps')
+if env.IsWindows():
+	cpython_info = cpython_info['windows']
+elif env.IsLinux():
+	cpython_info = cpython_info['linux']
+else:
+	print(f'{Fore.RED}Unsupported platform: {platform.system()}{Fore.RESET}')
+	sys.exit(1)
+
+env.Append(CPPDEFINES=cpython_info['cpython'].get('CPPDEFINES', []))
+env.Append(CPPFLAGS=cpython_info['cpython'].get('CPPFLAGS', []))
+env.Append(CPPPATH=cpython_info['cpython'].get('CPPPATH', []))
+env.Append(LIBS=cpython_info['cpython'].get('LIBS', []))
+env.Append(LIBPATH=cpython_info['cpython'].get('LIBPATH', []))
+
 
 source = env['sdk_src']
 source += [s for s in glob.glob(env.Dir('.').abspath + '/*.cpp') if not s.endswith("_test.cpp")]
@@ -31,30 +56,21 @@ if platform.system() == 'Linux' or platform.system() == 'Darwin':
 xllr_python311_dylib = env.CPPSharedLibrary(target='xllr.python311', project_name='python311', sources=source, include_dirs=includes)
 xllr_python311_install = env.Install(env['METAFFI_HOME']+'/python311', xllr_python311_dylib) # install only dll.
 
-# # install boost_filesystem.dll
-
-
-
-xllr_python311_dependencies_install = env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'*boost_filesystem*'))
+# * --- Install dependencies ---
+os_deps_dir_name = "windows" if env.IsWindows() else "linux"
+files_to_install = [env.Dir(".").Dir("deps").Dir(os_deps_dir_name).Dir("cpython")] # cpython 3.11 runtime
+files_to_install.append(env.SearchConanBinaryFile('boost', f'*boost_filesystem*'))
 if not env.IsWindows(): # non-windows also uses boost thread
-	xllr_python311_dependencies_install.extend(env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'*boost_thread*')))
-	xllr_python311_dependencies_install.extend(env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('boost', f'*boost_stacktrace_from_exception*')))
+	files_to_install.append(env.SearchConanBinaryFile('boost', f'*boost_thread*'))
+	files_to_install.append(env.SearchConanBinaryFile('boost', f'*boost_stacktrace_from_exception*'))
+
 	
-	# in linux, we need to install NOT from conan, but from the system
-	if env.IsWindows():
-		xllr_python311_dependencies_install.extend(env.Install(env['METAFFI_HOME']+'/python311', env.SearchConanBinaryFile('cpython', f'*python3.11*')))
-	else:
-		pass # TODO find the python3.11.so in the system, and install it. NOT from conan
-	
-
-
-
-SCons.Script.Alias(ALIAS_PYTHON3, [xllr_python311_dylib, xllr_python311_install, xllr_python311_dependencies_install])
+SCons.Script.Alias(ALIAS_PYTHON311, [xllr_python311_dylib, xllr_python311_install])
 
 # # to be used by other targets in the project as dependency
 env['xllr_python311_dylib'] = xllr_python311_dylib
 
-# # * --- Unit Tests ---
+# * --- Unit Tests ---
 env_test = env.Clone()
 
 includes = []
@@ -70,8 +86,13 @@ else:
 	libs.append('-l:xllr.python311.so')
 	lib_dirs.append(env_test['METAFFI_HOME']+'/python311')
 
-# dependet on XLLR dynamic library
+# dependent on XLLR dynamic library
 metaffi_home = env_test['METAFFI_HOME']
+
+# add python3.11 to the PATH
+if env_test.IsWindows():
+	env_test['ENV']['PATH'] += ';'+(env_test.Dir("./deps/windows/cpython").abspath)
+
 python_runtime_test: SCons.Node.NodeList = env_test.CPPProgram(target='python_runtime_test',
 															project_name='python311',
 															sources=[
@@ -84,6 +105,6 @@ python_runtime_test: SCons.Node.NodeList = env_test.CPPProgram(target='python_ru
 															libs=libs)
 
 env_test.AddPostAction(python_runtime_test, post_actions.execute_doctest_unitest)
-env_test.Depends(python_runtime_test, ALIAS_PYTHON3)
+env_test.Depends(python_runtime_test, ALIAS_PYTHON311)
 
-SCons.Script.Alias(ALIAS_PYTHON3_UNITTESTS, python_runtime_test)
+SCons.Script.Alias(ALIAS_PYTHON311_UNITTESTS, python_runtime_test)
