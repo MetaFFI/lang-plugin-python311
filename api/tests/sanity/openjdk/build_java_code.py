@@ -25,7 +25,8 @@ java_files = [f for f in os.listdir(current_path) if f.endswith('.java')]
 command = ['javac', '-d', current_path] + java_files
 
 # Execute the command
-process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+print('Going to run: '+' '.join(command))
+process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=os.environ)
 
 # Create threads to handle stdout and stderr
 stdout_thread = threading.Thread(target=handle_output, args=(process.stdout, sys.stdout.write))

@@ -1,4 +1,26 @@
 # python script to run unitests for api using subprocess
+
+import importlib
+import sys
+
+def ensure_package(package_name, pip_package_name=None):
+	try:
+		importlib.import_module(package_name)
+	except ImportError:
+		import subprocess
+		import sys
+		print(f"Installing {package_name}...")
+		
+		if pip_package_name is None:
+			pip_package_name = package_name
+			
+		subprocess.check_call([sys.executable, "-m", "pip", "install", pip_package_name])
+		
+		print(f"{package_name} installed successfully!")
+
+ensure_package("colorama")
+
+
 import glob
 import subprocess
 import os
@@ -28,8 +50,7 @@ def run_script(script_path):
 	
 	if script_path.endswith('.py'):
 		# Python script
-		python_command = 'py' if platform.system() == 'Windows' else 'python3.11'
-		command = [python_command, script_path]
+		command = [sys.executable, script_path]
 	else:
 		raise ValueError(f'Unsupported script file type: {script_path}')
 	
@@ -50,8 +71,7 @@ def run_unittest(script_path):
 	
 	if script_path.endswith('.py'):
 		# Python unittest
-		python_command = 'py' if platform.system() == 'Windows' else 'python3.11'
-		command = [python_command, '-m', 'unittest', script_path]
+		command = ['py', '-3.11', script_path] if platform.system() == 'Windows' else ['python3.11', script_path]
 	elif script_path.endswith('.java'):
 		# Java JUnit test
 		junit_jar = os.path.join(current_path, 'junit-platform-console-standalone-1.10.2.jar')
@@ -97,6 +117,14 @@ def run_unittest(script_path):
 			os.remove(file)
 
 
+def is_plugin_installed(plugin_name: str) -> bool:
+	plugin_dir = os.path.join(os.environ['METAFFI_HOME'], plugin_name)
+	return os.path.exists(plugin_dir)
+
+if not is_plugin_installed('openjdk') and not is_plugin_installed('go'):
+	print(f"{Fore.RED}No other plugins installed. Skipping tests...{Fore.RESET}")
+	sys.exit(0)
+
 # --------------------------------------------
 
 # --------------------------------------------
@@ -106,35 +134,35 @@ def run_unittest(script_path):
 # --------------------------------------------
 
 # run python3.11->openjdk tests
+if is_plugin_installed('openjdk'):
+	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> OpenJDK{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
 
-print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> OpenJDK{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
+	# Define the paths to the scripts to be run
+	build_sanity_openjdk_script_path = os.path.join(current_path, 'sanity', 'openjdk', 'build_java_code.py')
+	test_sanity_openjdk_path = os.path.join(current_path, 'sanity', 'openjdk', 'openjdk_test.py')
 
-# Define the paths to the scripts to be run
-build_sanity_openjdk_script_path = os.path.join(current_path, 'sanity', 'openjdk', 'build_java_code.py')
-test_sanity_openjdk_path = os.path.join(current_path, 'sanity', 'openjdk', 'openjdk_test.py')
+	# Run the scripts
+	run_script(build_sanity_openjdk_script_path)
+	run_unittest(test_sanity_openjdk_path)
 
-# Run the scripts
-run_script(build_sanity_openjdk_script_path)
-run_unittest(test_sanity_openjdk_path)
-
-print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> OpenJDK{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
+	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> OpenJDK{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
 
 # --------------------------------------------
 
 # run python3.11->Go tests
+if is_plugin_installed('go'):
+	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
 
-print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
+	# Define the paths to the scripts to be run
+	build_sanity_go_script_path = os.path.join(current_path, 'sanity', 'go', 'build_metaffi.py')
+	test_sanity_go_path = os.path.join(current_path, 'sanity', 'go', 'go_test.py')
 
-# Define the paths to the scripts to be run
-build_sanity_go_script_path = os.path.join(current_path, 'sanity', 'go', 'build_metaffi.py')
-test_sanity_go_path = os.path.join(current_path, 'sanity', 'go', 'go_test.py')
+	# Run the scripts
+	run_script(build_sanity_go_script_path)
+	run_unittest(test_sanity_go_path)
 
-# Run the scripts
-run_script(build_sanity_go_script_path)
-run_unittest(test_sanity_go_path)
-
-print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
-os.remove(os.path.join(current_path, 'sanity', 'go', f'TestRuntime_MetaFFIGuest{get_extension_by_platform()}'))
+	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
+	os.remove(os.path.join(current_path, 'sanity', 'go', f'TestRuntime_MetaFFIGuest{get_extension_by_platform()}'))
 
 # --------------------------------------------
 
@@ -143,30 +171,30 @@ os.remove(os.path.join(current_path, 'sanity', 'go', f'TestRuntime_MetaFFIGuest{
 # --------------------------------------------
 
 # run python3.11->OpenJDK tests
+if is_plugin_installed('openjdk'):
+	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> OpenJDK{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
 
-print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> OpenJDK{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
+	# Define the path to the unittest script
+	test_extended_openjdk_path = os.path.join(current_path, 'extended', 'openjdk', 'log4j', 'log4j_test.py')
 
-# Define the path to the unittest script
-test_extended_openjdk_path = os.path.join(current_path, 'extended', 'openjdk', 'log4j', 'log4j_test.py')
+	# Run the script
+	run_unittest(test_extended_openjdk_path)
 
-# Run the script
-run_unittest(test_extended_openjdk_path)
-
-print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> OpenJDK{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
+	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> OpenJDK{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
 
 # --------------------------------------------
 
 # run python3.11->Go tests
+if is_plugin_installed('go'):
+	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> Go{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
 
-print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> Go{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
+	# Define the paths to the scripts to be run
+	build_extended_go_script_path = os.path.join(current_path, 'extended', 'go', 'gomcache', 'build_metaffi.py')
+	test_extended_go_path = os.path.join(current_path, 'extended', 'go', 'gomcache', 'gomcache_test.py')
 
-# Define the paths to the scripts to be run
-build_extended_go_script_path = os.path.join(current_path, 'extended', 'go', 'gomcache', 'build_metaffi.py')
-test_extended_go_path = os.path.join(current_path, 'extended', 'go', 'gomcache', 'gomcache_test.py')
+	# Run the scripts
+	run_script(build_extended_go_script_path)
+	run_unittest(test_extended_go_path)
 
-# Run the scripts
-run_script(build_extended_go_script_path)
-run_unittest(test_extended_go_path)
-
-print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> Go{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
-os.remove(os.path.join(current_path, 'extended', 'go', 'gomcache', f'mcache_MetaFFIGuest{get_extension_by_platform()}'))
+	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> Go{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
+	os.remove(os.path.join(current_path, 'extended', 'go', 'gomcache', f'mcache_MetaFFIGuest{get_extension_by_platform()}'))

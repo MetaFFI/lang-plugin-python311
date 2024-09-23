@@ -1,7 +1,6 @@
 [requires]
 boost/1.85.0
 doctest/2.4.11
-cpython/3.11.9
 
 [generators]
 SConsDeps
@@ -12,5 +11,3 @@ boost/*:magic_autolink=False
 boost/*:fPIC=True
 boost/*:multithreading=True
 boost/*:system_use_utf8=True
-cpython/*:shared=True
-cpython/*:fPIC=True

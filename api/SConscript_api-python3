@@ -11,11 +11,14 @@ import scons_utils
 import unittest
 import sys
 import os
+from typing import Any, TYPE_CHECKING, Callable
 
-from site_scons import ALIAS_BUILD, ALIAS_PYTHON3, ALIAS_PYTHON3_API_TESTS, ALIAS_PYTHON3_PUBLISH_API, ALIAS_PYTHON3_UNITTESTS
+from site_scons import ALIAS_BUILD, ALIAS_PYTHON311, ALIAS_PYTHON311_API_TESTS, ALIAS_PYTHON311_PUBLISH_API, ALIAS_PYTHON311_UNITTESTS
+
+if TYPE_CHECKING:
+	env: SCons.Environment.Environment = SCons.Script.DefaultEnvironment()
 
 # * Import the parent Environment
-env: SCons.Environment.Environment
 SCons.Script.Import('env')
 
 # * ---- Run API unitest ----
@@ -25,12 +28,12 @@ def python3_api_unitest(target, source, env):
 	suite = unittest.TestLoader().discover(start_dir=unitest_path)
 	result = unittest.TextTestRunner().run(suite)
 	if not result.wasSuccessful():
-		print("Python3 API unittest failed", file=sys.stderr)
+		print("Python3.11 API unittest failed", file=sys.stderr)
 		sys.exit(1)
 
 python3_api_unitest_cmd = env.Command(target='python3_api_unitest', source=[], action=python3_api_unitest)
-env.Depends(python3_api_unitest_cmd, ALIAS_PYTHON3)
-SCons.Script.Alias(ALIAS_PYTHON3_UNITTESTS, python3_api_unitest_cmd)
+env.Depends(python3_api_unitest_cmd, ALIAS_PYTHON311)
+SCons.Script.Alias(ALIAS_PYTHON311_UNITTESTS, python3_api_unitest_cmd)
 
 
 # * ---- Run Cross Language tests ----
@@ -51,7 +54,7 @@ def python3_cross_lang_test(target, source, env):
 				custom_env['ENV']['CGO_CFLAGS'] = os.environ['CGO_CFLAGS']
 			custom_env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
 
-		exit_code = custom_env.Execute(f'{scons_utils.python3_executable()} run_api_tests.py')
+		exit_code = custom_env.Execute(f'{scons_utils.python3_executable("3.11")} run_api_tests.py')
 		if exit_code:
 			print(f"Cross language tests failed: exit code {exit_code}", file=sys.stderr)
 			sys.exit(1)
@@ -63,7 +66,7 @@ def python3_cross_lang_test(target, source, env):
 
 python3_cross_lang_test_cmd = env.Command(target='python3_cross_lang_test', source=[], action=python3_cross_lang_test)
 env.Depends(python3_cross_lang_test_cmd, ALIAS_BUILD)
-SCons.Script.Alias(ALIAS_PYTHON3_API_TESTS, python3_cross_lang_test_cmd)
+SCons.Script.Alias(ALIAS_PYTHON311_API_TESTS, python3_cross_lang_test_cmd)
 	
 
 
@@ -75,7 +78,7 @@ def publish_python_package(target, source, env):
 	try:
 		# execute "publish_python_package.py"
 		os.chdir(publish_path)
-		exit_code = env.Execute(f'{scons_utils.python3_executable()} publish_python_package.py')
+		exit_code = env.Execute(f'{scons_utils.python3_executable("3.11")} publish_python_package.py')
 		if exit_code:
 			print(f"Publishing python package failed: exit code {exit_code}", file=sys.stderr)
 			sys.exit(1)
@@ -86,5 +89,5 @@ def publish_python_package(target, source, env):
 		os.chdir(curpath)
 
 publish_python_package_cmd = env.Command(target='publish_python_package', source=[], action=publish_python_package)
-SCons.Script.Alias(ALIAS_PYTHON3_PUBLISH_API, publish_python_package_cmd)
-env.Depends(ALIAS_PYTHON3_PUBLISH_API, ALIAS_PYTHON3_UNITTESTS)
+SCons.Script.Alias(ALIAS_PYTHON311_PUBLISH_API, publish_python_package_cmd)
+env.Depends(ALIAS_PYTHON311_PUBLISH_API, ALIAS_PYTHON311_UNITTESTS)

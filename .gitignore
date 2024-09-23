@@ -67,4 +67,4 @@ vendor/
 /api/metaffi_api.egg-info/
 /dist/
 
-runtime/SConscript_conandeps
+*SConscript_conandeps*

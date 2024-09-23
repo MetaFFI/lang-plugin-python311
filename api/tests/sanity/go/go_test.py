@@ -19,7 +19,7 @@ def init():
 	global runtime
 	global test_runtime_module
 	global test_map_module
-	
+
 	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('go')
 	runtime.load_runtime_plugin()
 	if platform.system() == 'Windows':
@@ -196,7 +196,7 @@ class TestSanity(unittest.TestCase):
 		testMapSet(map, 'z', deq)
 		
 		mapped_deq = testMapGet(map, 'z')
-		self.assertIsInstance(mapped_deq, collections.deque, 'z should be a deque')
+		self.assertIsInstance(mapped_deq, collections.deque, f'z should be a deque')
 		assert isinstance(mapped_deq, collections.deque), 'z should be a deque' # for the type checker
 		val = mapped_deq.pop()
 		self.assertEqual(val, 600, 'mapped_deq should contain 600')

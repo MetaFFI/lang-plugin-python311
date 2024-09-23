@@ -72,7 +72,7 @@ static GlobalSetup setup;
 
 char* err = nullptr;
 
-TEST_SUITE("CDTS Python3 Test")
+TEST_SUITE("CDTS Python3.11 Test")
 {
 
 	TEST_CASE("Traverse 2D bytes array")

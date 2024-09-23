@@ -138,11 +138,43 @@ void initialize_environment()
 			throw std::runtime_error("failed to append METAFFI_HOME");
 		}
 		Py_DECREF(metaffi_home_pystr);// Decrement reference count
+		PyRun_SimpleString("import sys\nprint('Loaded python pathes:', sys.path)\n");
 	}
 	else
 	{
 		// Handle error: METAFFI_HOME not set
 		throw std::runtime_error("METAFFI_HOME not set");
+	}
+
+	// add "site.getusersitepackages" and "site.getsitepackages" to sys.path
+	const char* code = R"(
+import site
+import sys 
+
+# Split the existing sys.path into a set for faster membership checks
+existing_paths = set(sys.path)
+
+# Add any missing site-packages directories to sys.path
+site_dir = site.getusersitepackages()
+if site_dir not in existing_paths:
+	sys.path.append(site_dir)
+	print(f"Added '{site_dir}' to sys.path")
+
+for site_dir in site.getsitepackages():
+	if site_dir not in existing_paths:
+		sys.path.append(site_dir)
+		print(f"Added '{site_dir}' to sys.path")
+
+print('Loaded python pathes: ', sys.path)
+)";
+
+	PyRun_SimpleString(code);
+	if(PyErr_Occurred())
+	{
+		PyErr_Print();
+		PyErr_Clear();
+
+		throw std::runtime_error("Failed to add site-packages directories to sys.path");
 	}
 
 	import_metaffi_package();
@@ -171,7 +203,17 @@ void load_runtime(char** err)
 
 	auto gil = PyGILState_Ensure();
 
-	initialize_environment();
+	try
+	{
+		initialize_environment();
+	}
+	catch(std::exception& e)
+	{
+		auto err_len = strlen(e.what());
+		*err = (char*)calloc(sizeof(char), err_len + 1);
+		strncpy(*err, e.what(), err_len);
+	}
+	
 
 	g_loaded = true;
 
