@@ -68,3 +68,11 @@ vendor/
 /dist/
 
 *SConscript_conandeps*
+
+# ignore symbolic links
+runtime/deps/linux/cpython/bin/2to3
+runtime/deps/linux/cpython/bin/idle3
+runtime/deps/linux/cpython/bin/pydoc3
+runtime/deps/linux/cpython/bin/python
+runtime/deps/linux/cpython/bin/python3
+runtime/deps/linux/cpython/bin/python3-config
