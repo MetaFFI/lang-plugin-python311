@@ -4,12 +4,19 @@ from typing import List, Union, Tuple
 import os
 import platform
 from . import metaffi_types, xllr_wrapper
+import sys
+
+python_plugin_dir: str = ''
+if '3.12' in sys.version:
+	python_plugin_dir = 'python312'
+else:
+	python_plugin_dir = 'python311'
 
 if platform.system() == 'Windows':
 	os.add_dll_directory(os.environ['METAFFI_HOME'])
-	os.add_dll_directory(os.environ['METAFFI_HOME'] + '\\python311\\')
+	os.add_dll_directory(os.environ['METAFFI_HOME'] + f'\\{python_plugin_dir}\\')
 
-xllr_python3 = ctypes.cdll.LoadLibrary(xllr_wrapper.get_dynamic_lib_path_from_metaffi_home('python311'))
+xllr_python3 = ctypes.cdll.LoadLibrary(xllr_wrapper.get_dynamic_lib_path_from_metaffi_home(python_plugin_dir))
 
 # Set argtypes and restype for convert_host_params_to_cdts
 xllr_python3.convert_host_params_to_cdts.argtypes = [py_object, ctypes.POINTER(metaffi_types.metaffi_type_info), ctypes.c_uint64, ctypes.c_uint64]
