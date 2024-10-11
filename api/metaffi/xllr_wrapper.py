@@ -3,10 +3,17 @@ from ctypes import cdll
 from .metaffi_types import *
 import platform
 import os
+import sys
 
 metaffi_home = os.getenv('METAFFI_HOME')
 if metaffi_home is None:
 	raise RuntimeError('METAFFI_HOME environment variable is not set')
+
+python_plugin_dir: str = ''
+if '3.12' in sys.version:
+	python_plugin_dir = 'python312'
+else:
+	python_plugin_dir = 'python311'
 
 assert isinstance(metaffi_home, str)
 
@@ -30,9 +37,9 @@ def get_dynamic_lib_path_from_metaffi_home(fname: str):
 
 if platform.system() == 'Windows':
 	os.add_dll_directory(metaffi_home)
-	os.add_dll_directory(metaffi_home + '\\python311\\')
+	os.add_dll_directory(metaffi_home + f'\\{python_plugin_dir}\\')
 
-xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('python311'))
+xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home(python_plugin_dir))
 xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
 xllr_python3.call_xcall.restype = ctypes.py_object
 

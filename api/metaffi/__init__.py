@@ -1,6 +1,6 @@
 """Python MetaFFI API"""
 
-__version__ = "0.0.45"
+__version__ = "0.0.46"
 
 __all__ = ['metaffi', 'metaffi_types', 'metaffi_runtime', 'metaffi_module', 'MetaFFIHandle', 'metaffi_types', 'xllr_wrapper', 'pycdts_converter', 'metaffi_type_info', 'MetaFFITypes', 'MetaFFIEntity', 'create_lambda']
 
@@ -19,6 +19,13 @@ from .metaffi_module import MetaFFIEntity
 import platform
 import os
 import ctypes
+import sys
+
+python_plugin_dir: str = ''
+if '3.12' in sys.version:
+	python_plugin_dir = 'python312'
+else:
+	python_plugin_dir = 'python311'
 
 # create_lambda is a function that creates a lambda function that calls xllr.call_xcall
 def get_dynamic_lib_path_from_metaffi_home(fname: str):
@@ -48,9 +55,9 @@ if platform.system() == 'Windows':
 		raise RuntimeError('No METAFFI_HOME environment variable')
 
 	os.add_dll_directory(metaffi_home)
-	os.add_dll_directory(metaffi_home + '/python311/')
+	os.add_dll_directory(metaffi_home + f'/{python_plugin_dir}/')
 
-xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home('python311'))
+xllr_python3 = ctypes.cdll.LoadLibrary(get_dynamic_lib_path_from_metaffi_home(python_plugin_dir))
 xllr_python3.call_xcall.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.py_object, ctypes.py_object, ctypes.py_object]
 xllr_python3.call_xcall.restype = ctypes.py_object
 
