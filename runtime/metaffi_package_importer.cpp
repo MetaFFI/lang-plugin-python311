@@ -3,13 +3,7 @@
 #include "utils.h"
 #include <cstdio>
 
-#ifdef _DEBUG
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+#include "python3_api_wrapper.h"
 
 void import_metaffi_package()
 {

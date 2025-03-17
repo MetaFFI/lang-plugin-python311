@@ -16,13 +16,8 @@
 #include <utils/foreign_function.h>
 #include <utils/entity_path_parser.h>
 
-#ifdef _DEBUG
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+
+#include "python3_api_wrapper.h"
 
 
 using namespace metaffi::utils;
@@ -189,6 +184,19 @@ void load_runtime(char** err)
 	{
 		return;
 	}
+	
+	try
+	{
+		load_python3_api();
+	}
+	catch(std::exception& e)
+	{
+		auto err_len = strlen(e.what());
+		*err = (char*)calloc(sizeof(char), err_len + 1);
+		strncpy(*err, e.what(), err_len);
+		return;
+	}
+	
 
 	// load python runtime
 	if(!Py_IsInitialized())

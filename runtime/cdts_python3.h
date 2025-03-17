@@ -2,13 +2,8 @@
 #include <runtime/cdts_wrapper.h>
 #include<unordered_map>
 #include <memory>
-#ifdef _DEBUG
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+
+#include "python3_api_wrapper.h"
 
 #include "py_tuple.h"
 

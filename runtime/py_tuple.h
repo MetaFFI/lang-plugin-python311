@@ -1,12 +1,6 @@
 #pragma once
 
-#ifdef _DEBUG
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+#include "python3_api_wrapper.h"
 #include "py_object.h"
 
 class py_tuple : public py_object

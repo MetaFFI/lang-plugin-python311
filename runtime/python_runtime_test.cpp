@@ -12,14 +12,8 @@
 #include <runtime/runtime_plugin_api.h>
 #include <runtime/xcall.h>
 
-#ifdef _DEBUG
-#undef _DEBUG
-
-#include <Python.h>
-
-#define _DEBUG
-#else
-#include <Python.h>
+#include "python3_api_wrapper.h"
+#include "python3_api_wrapper.h"
 #endif
 
 struct GlobalSetup {

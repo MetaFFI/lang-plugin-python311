@@ -24,6 +24,8 @@ py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 	{
 		PyObject* sys_mod_dict = PyImport_GetModuleDict();
 		PyObject* metaffi_handle_mod = nullptr;
+
+		PyRun_SimpleString("import sys\nprint(f'EXECUTABLE: {sys.executable}')\nprint(f'VERSION: {sys.version}')\nprint(f'SYS.PATH {sys.path}')\n");
 		
 		metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi");
 		if(!metaffi_handle_mod)
@@ -39,6 +41,7 @@ py_object py_metaffi_handle::extract_pyobject_from_handle(const cdt_metaffi_hand
 
 			std::cerr << "metaffi imported - try again" << std::endl;
 			metaffi_handle_mod = PyMapping_GetItemString(sys_mod_dict, "metaffi");
+			
 
 			if(!metaffi_handle_mod){
 				std::cerr << "Failed to get metaffi module" << std::endl;

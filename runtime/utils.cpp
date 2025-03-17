@@ -1,13 +1,7 @@
 #include "utils.h"
 #include <utils/scope_guard.hpp>
 
-#ifdef _DEBUG
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+#include "python3_api_wrapper.h"
 
 using namespace metaffi::utils;
 

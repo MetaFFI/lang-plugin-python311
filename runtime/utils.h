@@ -1,13 +1,7 @@
 #pragma once
 #include <runtime/cdts_wrapper.h>
 #include <memory>
-#ifdef _DEBUG
-#undef _DEBUG
-#include <Python.h>
-#define _DEBUG
-#else
-#include <Python.h>
-#endif
+#include "python3_api_wrapper.h"
 
 #include <string>
 #include <utils/scope_guard.hpp>
