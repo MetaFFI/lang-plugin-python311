@@ -9,6 +9,7 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/runtime")
 # api
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/api")
 
-add_custom_target(python311 ALL
-	DEPENDS xllr.python311
+add_custom_target(python311
+	DEPENDS xllr.python311 python_runtime_test
 )
+set_target_properties(python311 PROPERTIES EXCLUDE_FROM_ALL TRUE)
