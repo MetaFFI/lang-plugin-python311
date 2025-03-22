@@ -12,8 +12,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 git_changed = False
 
 try:
-	shutil.move("SConscript_api-python3.py", '..')
-
 	if os.path.exists('./tests') and len(os.listdir('./tests')) > 0 and (not os.path.exists('../tests') or len(os.listdir('../tests')) == 0):
 		shutil.rmtree('../tests', ignore_errors=True)
 		shutil.move('./tests', '..')
@@ -64,8 +62,6 @@ try:
 	print("done updating package")
 
 finally:
-	shutil.move("../SConscript_api-python3", '.')
-	
 	if os.path.exists('./tests') and len(os.listdir('./tests')) == 0:
 		shutil.rmtree('./tests')
 	shutil.move('../tests', '.')

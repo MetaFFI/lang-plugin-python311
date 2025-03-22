@@ -1,6 +1,6 @@
 """Python MetaFFI API"""
 
-__version__ = "0.0.47"
+__version__ = "0.0.48"
 
 __all__ = ['metaffi', 'metaffi_types', 'metaffi_runtime', 'metaffi_module', 'MetaFFIHandle', 'metaffi_types', 'xllr_wrapper', 'pycdts_converter', 'metaffi_type_info', 'MetaFFITypes', 'MetaFFIEntity', 'create_lambda']
 
@@ -21,11 +21,7 @@ import os
 import ctypes
 import sys
 
-python_plugin_dir: str = ''
-if '3.12' in sys.version:
-	python_plugin_dir = 'python312'
-else:
-	python_plugin_dir = 'python311'
+python_plugin_dir = 'python311'
 
 # create_lambda is a function that creates a lambda function that calls xllr.call_xcall
 def get_dynamic_lib_path_from_metaffi_home(fname: str):
@@ -65,6 +61,13 @@ XCallParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ct
 XCallNoParamsRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
 XCallParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.POINTER(ctypes.c_uint64))
 XCallNoParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64))
+
+# Load the python runtime plugin, required python for either
+# as a host or a guest due to the initialization of the python interpreter
+# and loading the functions and variables
+runtime = metaffi.metaffi_runtime.MetaFFIRuntime('python311')
+runtime.load_runtime_plugin()
+
 
 # TODO: replace pxcall and context to a single parameter
 # 		to xcall*. The current problem is that I can't find how to pass
