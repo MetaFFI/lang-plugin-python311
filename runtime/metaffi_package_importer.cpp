@@ -7,23 +7,26 @@
 
 void import_metaffi_package()
 {
-	if(PyErr_Occurred())
+	if(pPyErr_Occurred())
 	{
 		printf("Error before import metaffi script\n");
-		PyErr_Print();
-		PyErr_Clear();
+		pPyErr_Print();
+		pPyErr_Clear();
 	}
 
 const char* script = R"(
+import sys
+sys.__loading_within_xllr_python3 = True
 from metaffi import *
+del sys.__loading_within_xllr_python3
 )";
 
-	PyRun_SimpleString(script);
-	if(PyErr_Occurred())
+	pPyRun_SimpleString(script);
+	if(pPyErr_Occurred())
 	{
 		printf("Error after import metaffi module!!!!!!!! did you pip install metaffi-api? Error:\n");
-		PyErr_Print();
-		PyErr_Clear();
+		pPyErr_Print();
+		pPyErr_Clear();
 	}
 
 }

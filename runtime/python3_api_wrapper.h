@@ -6,7 +6,7 @@
 // Function pointer types for Python API functions
 typedef PyThreadState* (*PyEval_SaveThread_t)(void);
 typedef void (*PyEval_RestoreThread_t)(PyThreadState *tstate);
-typedef PyGILState_STATE (*PyGILState_Ensure_t)(void);
+typedef PyGILState_STATE (*pPyGILState_Ensure_t)(void);
 typedef void (*PyGILState_Release_t)(PyGILState_STATE);
 typedef PyThreadState* (*PyGILState_GetThisThreadState_t)(void);
 typedef int (*PyGILState_Check_t)(void);
@@ -27,6 +27,8 @@ typedef PyObject* (*PyLong_FromLong_t)(long);
 typedef PyObject* (*PyLong_FromUnsignedLong_t)(unsigned long);
 typedef PyObject* (*PyLong_FromDouble_t)(double);
 typedef PyObject* (*PyLong_FromString_t)(const char *str, char **pend, int base);
+typedef PyObject* (*PyLong_FromLongLong_t)(long long);
+typedef PyObject* (*PyLong_FromUnsignedLongLong_t)(unsigned long long);
 typedef long (*PyLong_AsLong_t)(PyObject *);
 typedef long long (*PyLong_AsLongLong_t)(PyObject *);
 typedef unsigned long (*PyLong_AsUnsignedLong_t)(PyObject *);
@@ -98,6 +100,7 @@ typedef PyObject* (*PyObject_GetIter_t)(PyObject *o);
 typedef int (*PyObject_IsTrue_t)(PyObject *o);
 typedef int (*PyObject_Not_t)(PyObject *o);
 typedef int (*PyCallable_Check_t)(PyObject *o);
+typedef PyInterpreterState* (*PyInterpreterState_Get_t)();
 
 typedef int (*PySequence_Check_t)(PyObject *o);
 typedef Py_ssize_t (*PySequence_Size_t)(PyObject *o);
@@ -119,11 +122,11 @@ typedef PyObject* (*PySequence_InPlaceConcat_t)(PyObject *o1, PyObject *o2);
 typedef PyObject* (*PySequence_InPlaceRepeat_t)(PyObject *o, Py_ssize_t count);
 
 typedef PyObject* (*PyImport_ImportModule_t)(const char *name);
-typedef PyObject* (*PyImport_ImportModuleEx_t)(const char *name, PyObject *globals, PyObject *locals, PyObject *fromlist);
 typedef PyObject* (*PyImport_Import_t)(PyObject *name);
 typedef PyObject* (*PyImport_ReloadModule_t)(PyObject *m);
 typedef PyObject* (*PyImport_AddModule_t)(const char *name);
 typedef PyObject* (*PyImport_GetModuleDict_t)(void);
+typedef PyObject* (*PyImport_ImportModuleLevel_t)(const char *name, PyObject *globals, PyObject *locals, PyObject *fromlist, int level);
 
 typedef void (*_Py_Dealloc_t)(PyObject *obj);
 
@@ -162,185 +165,179 @@ typedef PyObject* (*PyUnicode_FromKindAndData_t)(int kind, const void *buffer, P
 typedef PyObject* (*PyUnicode_AsUTF16String_t)(PyObject *unicode);
 typedef PyObject* (*PyUnicode_AsUTF32String_t)(PyObject *unicode);
 
+typedef PyObject* (*PyModule_GetDict_t)(PyObject *module);
+typedef PyObject* (*PyUnicode_AsUTF8String_t)(PyObject *unicode);
+
 typedef void (*PyErr_NormalizeException_t)(PyObject**, PyObject**, PyObject**);
 typedef PyObject* (*PyObject_Repr_t)(PyObject *);
 
 // Extern declarations of function pointers
-extern PyEval_SaveThread_t PyEval_SaveThread;
-extern PyEval_RestoreThread_t PyEval_RestoreThread;
-extern PyGILState_Ensure_t PyGILState_Ensure;
-extern PyGILState_Release_t PyGILState_Release;
-extern PyGILState_GetThisThreadState_t PyGILState_GetThisThreadState;
-extern PyGILState_Check_t PyGILState_Check;
+extern PyEval_SaveThread_t pPyEval_SaveThread;
+extern PyEval_RestoreThread_t pPyEval_RestoreThread;
+extern pPyGILState_Ensure_t pPyGILState_Ensure;
+extern PyGILState_Release_t pPyGILState_Release;
+extern PyGILState_GetThisThreadState_t pPyGILState_GetThisThreadState;
+extern PyGILState_Check_t pPyGILState_Check;
 
-extern Py_Initialize_t Py_Initialize;
-extern Py_InitializeEx_t Py_InitializeEx;
-extern Py_Finalize_t Py_Finalize;
-extern Py_FinalizeEx_t Py_FinalizeEx;
-extern Py_IsInitialized_t Py_IsInitialized;
+extern Py_Initialize_t pPy_Initialize;
+extern Py_InitializeEx_t pPy_InitializeEx;
+extern Py_Finalize_t pPy_Finalize;
+extern Py_FinalizeEx_t pPy_FinalizeEx;
+extern Py_IsInitialized_t pPy_IsInitialized;
 
-extern PyUnicode_FromString_t PyUnicode_FromString;
-extern PyUnicode_FromStringAndSize_t PyUnicode_FromStringAndSize;
-extern PyUnicode_FromFormat_t PyUnicode_FromFormat;
-extern PyUnicode_AsUTF8_t PyUnicode_AsUTF8;
-extern PyUnicode_AsUTF8AndSize_t PyUnicode_AsUTF8AndSize;
+extern PyUnicode_FromString_t pPyUnicode_FromString;
+extern PyUnicode_FromStringAndSize_t pPyUnicode_FromStringAndSize;
+extern PyUnicode_FromFormat_t pPyUnicode_FromFormat;
+extern PyUnicode_AsUTF8_t pPyUnicode_AsUTF8;
+extern PyUnicode_AsUTF8AndSize_t pPyUnicode_AsUTF8AndSize;
 
-extern PyLong_FromLong_t PyLong_FromLong;
-extern PyLong_FromUnsignedLong_t PyLong_FromUnsignedLong;
-extern PyLong_FromDouble_t PyLong_FromDouble;
-extern PyLong_FromString_t PyLong_FromString;
-extern PyLong_AsLong_t PyLong_AsLong;
-extern PyLong_AsLongLong_t PyLong_AsLongLong;
-extern PyLong_AsUnsignedLong_t PyLong_AsUnsignedLong;
-extern PyLong_AsUnsignedLongLong_t PyLong_AsUnsignedLongLong;
+extern PyLong_FromLong_t pPyLong_FromLong;
+extern PyLong_FromUnsignedLong_t pPyLong_FromUnsignedLong;
+extern PyLong_FromDouble_t pPyLong_FromDouble;
+extern PyLong_FromString_t pPyLong_FromString;
+extern PyLong_FromLongLong_t pPyLong_FromLongLong;
+extern PyLong_FromUnsignedLongLong_t pPyLong_FromUnsignedLongLong;
+extern PyLong_AsLong_t pPyLong_AsLong;
+extern PyLong_AsLongLong_t pPyLong_AsLongLong;
+extern PyLong_AsUnsignedLong_t pPyLong_AsUnsignedLong;
+extern PyLong_AsUnsignedLongLong_t pPyLong_AsUnsignedLongLong;
 
-extern PyFloat_FromDouble_t PyFloat_FromDouble;
-extern PyFloat_FromString_t PyFloat_FromString;
-extern PyFloat_AsDouble_t PyFloat_AsDouble;
+extern PyFloat_FromDouble_t pPyFloat_FromDouble;
+extern PyFloat_FromString_t pPyFloat_FromString;
+extern PyFloat_AsDouble_t pPyFloat_AsDouble;
 
-extern PyList_New_t PyList_New;
-extern PyList_Size_t PyList_Size;
-extern PyList_GetItem_t PyList_GetItem;
-extern PyList_SetItem_t PyList_SetItem;
-extern PyList_Insert_t PyList_Insert;
-extern PyList_Append_t PyList_Append;
-extern PyList_GetSlice_t PyList_GetSlice;
-extern PyList_SetSlice_t PyList_SetSlice;
+extern PyList_New_t pPyList_New;
+extern PyList_Size_t pPyList_Size;
+extern PyList_GetItem_t pPyList_GetItem;
+extern PyList_SetItem_t pPyList_SetItem;
+extern PyList_Insert_t pPyList_Insert;
+extern PyList_Append_t pPyList_Append;
+extern PyList_GetSlice_t pPyList_GetSlice;
+extern PyList_SetSlice_t pPyList_SetSlice;
 
-extern PyTuple_New_t PyTuple_New;
-extern PyTuple_Size_t PyTuple_Size;
-extern PyTuple_GetItem_t PyTuple_GetItem;
-extern PyTuple_SetItem_t PyTuple_SetItem;
-extern PyTuple_GetSlice_t PyTuple_GetSlice;
+extern PyTuple_New_t pPyTuple_New;
+extern PyTuple_Size_t pPyTuple_Size;
+extern PyTuple_GetItem_t pPyTuple_GetItem;
+extern PyTuple_SetItem_t pPyTuple_SetItem;
+extern PyTuple_GetSlice_t pPyTuple_GetSlice;
 
-extern PyDict_New_t PyDict_New;
-extern PyDict_SetItem_t PyDict_SetItem;
-extern PyDict_SetItemString_t PyDict_SetItemString;
-extern PyDict_GetItem_t PyDict_GetItem;
-extern PyDict_GetItemString_t PyDict_GetItemString;
-extern PyDict_DelItem_t PyDict_DelItem;
-extern PyDict_DelItemString_t PyDict_DelItemString;
-extern PyDict_Clear_t PyDict_Clear;
-extern PyDict_Next_t PyDict_Next;
-extern PyDict_Size_t PyDict_Size;
+extern PyDict_New_t pPyDict_New;
+extern PyDict_SetItem_t pPyDict_SetItem;
+extern PyDict_SetItemString_t pPyDict_SetItemString;
+extern PyDict_GetItem_t pPyDict_GetItem;
+extern PyDict_GetItemString_t pPyDict_GetItemString;
+extern PyDict_DelItem_t pPyDict_DelItem;
+extern PyDict_DelItemString_t pPyDict_DelItemString;
+extern PyDict_Clear_t pPyDict_Clear;
+extern PyDict_Next_t pPyDict_Next;
+extern PyDict_Size_t pPyDict_Size;
 
-extern PyErr_SetString_t PyErr_SetString;
-extern PyErr_SetObject_t PyErr_SetObject;
-extern PyErr_Occurred_t PyErr_Occurred;
-extern PyErr_Clear_t PyErr_Clear;
-extern PyErr_Print_t PyErr_Print;
-extern PyErr_WriteUnraisable_t PyErr_WriteUnraisable;
-extern PyErr_ExceptionMatches_t PyErr_ExceptionMatches;
-extern PyErr_GivenExceptionMatches_t PyErr_GivenExceptionMatches;
-extern PyErr_Fetch_t PyErr_Fetch;
-extern PyErr_Restore_t PyErr_Restore;
+extern PyErr_SetString_t pPyErr_SetString;
+extern PyErr_SetObject_t pPyErr_SetObject;
+extern PyErr_Occurred_t pPyErr_Occurred;
+extern PyErr_Clear_t pPyErr_Clear;
+extern PyErr_Print_t pPyErr_Print;
+extern PyErr_WriteUnraisable_t pPyErr_WriteUnraisable;
+extern PyErr_ExceptionMatches_t pPyErr_ExceptionMatches;
+extern PyErr_GivenExceptionMatches_t pPyErr_GivenExceptionMatches;
+extern PyErr_Fetch_t pPyErr_Fetch;
+extern PyErr_Restore_t pPyErr_Restore;
 
-extern PyObject_Print_t PyObject_Print;
-extern PyObject_HasAttrString_t PyObject_HasAttrString;
-extern PyObject_GetAttrString_t PyObject_GetAttrString;
-extern PyObject_HasAttr_t PyObject_HasAttr;
-extern PyObject_GetAttr_t PyObject_GetAttr;
-extern PyObject_SetAttrString_t PyObject_SetAttrString;
-extern PyObject_SetAttr_t PyObject_SetAttr;
-extern PyObject_CallObject_t PyObject_CallObject;
-extern PyObject_Call_t PyObject_Call;
-extern PyObject_CallNoArgs_t PyObject_CallNoArgs;
-extern PyObject_CallFunction_t PyObject_CallFunction;
-extern PyObject_CallMethod_t PyObject_CallMethod;
-extern PyObject_Type_t PyObject_Type;
-extern PyObject_Size_t PyObject_Size;
-extern PyObject_GetItem_t PyObject_GetItem;
-extern PyObject_SetItem_t PyObject_SetItem;
-extern PyObject_DelItem_t PyObject_DelItem;
-extern PyObject_DelItemString_t PyObject_DelItemString;
-extern PyObject_AsCharBuffer_t PyObject_AsCharBuffer;
-extern PyObject_CheckReadBuffer_t PyObject_CheckReadBuffer;
-extern PyObject_Format_t PyObject_Format;
-extern PyObject_GetIter_t PyObject_GetIter;
-extern PyObject_IsTrue_t PyObject_IsTrue;
-extern PyObject_Not_t PyObject_Not;
-extern PyCallable_Check_t PyCallable_Check;
+extern PyObject_Print_t pPyObject_Print;
+extern PyObject_HasAttrString_t pPyObject_HasAttrString;
+extern PyObject_GetAttrString_t pPyObject_GetAttrString;
+extern PyObject_HasAttr_t pPyObject_HasAttr;
+extern PyObject_GetAttr_t pPyObject_GetAttr;
+extern PyObject_SetAttrString_t pPyObject_SetAttrString;
+extern PyObject_SetAttr_t pPyObject_SetAttr;
+extern PyObject_CallObject_t pPyObject_CallObject;
+extern PyObject_Call_t pPyObject_Call;
+extern PyObject_CallNoArgs_t pPyObject_CallNoArgs;
+extern PyObject_CallFunction_t pPyObject_CallFunction;
+extern PyObject_CallMethod_t pPyObject_CallMethod;
+extern PyObject_Type_t pPyObject_Type;
+extern PyObject_Size_t pPyObject_Size;
+extern PyObject_GetItem_t pPyObject_GetItem;
+extern PyObject_SetItem_t pPyObject_SetItem;
+extern PyObject_DelItem_t pPyObject_DelItem;
+extern PyObject_DelItemString_t pPyObject_DelItemString;
+extern PyObject_AsCharBuffer_t pPyObject_AsCharBuffer;
+extern PyObject_CheckReadBuffer_t pPyObject_CheckReadBuffer;
+extern PyObject_Format_t pPyObject_Format;
+extern PyObject_GetIter_t pPyObject_GetIter;
+extern PyObject_IsTrue_t pPyObject_IsTrue;
+extern PyObject_Not_t pPyObject_Not;
+extern PyCallable_Check_t pPyCallable_Check;
+extern PyInterpreterState_Get_t pPyInterpreterState_Get;
 
-extern PySequence_Check_t PySequence_Check;
-extern PySequence_Size_t PySequence_Size;
-extern PySequence_Concat_t PySequence_Concat;
-extern PySequence_Repeat_t PySequence_Repeat;
-extern PySequence_GetItem_t PySequence_GetItem;
-extern PySequence_GetSlice_t PySequence_GetSlice;
-extern PySequence_SetItem_t PySequence_SetItem;
-extern PySequence_DelItem_t PySequence_DelItem;
-extern PySequence_SetSlice_t PySequence_SetSlice;
-extern PySequence_DelSlice_t PySequence_DelSlice;
-extern PySequence_Tuple_t PySequence_Tuple;
-extern PySequence_List_t PySequence_List;
-extern PySequence_Fast_t PySequence_Fast;
-extern PySequence_Count_t PySequence_Count;
-extern PySequence_Contains_t PySequence_Contains;
-extern PySequence_Index_t PySequence_Index;
-extern PySequence_InPlaceConcat_t PySequence_InPlaceConcat;
-extern PySequence_InPlaceRepeat_t PySequence_InPlaceRepeat;
+extern PySequence_Check_t pPySequence_Check;
+extern PySequence_Size_t pPySequence_Size;
+extern PySequence_Concat_t pPySequence_Concat;
+extern PySequence_Repeat_t pPySequence_Repeat;
+extern PySequence_GetItem_t pPySequence_GetItem;
+extern PySequence_GetSlice_t pPySequence_GetSlice;
+extern PySequence_SetItem_t pPySequence_SetItem;
+extern PySequence_DelItem_t pPySequence_DelItem;
+extern PySequence_SetSlice_t pPySequence_SetSlice;
+extern PySequence_DelSlice_t pPySequence_DelSlice;
+extern PySequence_Tuple_t pPySequence_Tuple;
+extern PySequence_List_t pPySequence_List;
+extern PySequence_Fast_t pPySequence_Fast;
+extern PySequence_Count_t pPySequence_Count;
+extern PySequence_Contains_t pPySequence_Contains;
+extern PySequence_Index_t pPySequence_Index;
+extern PySequence_InPlaceConcat_t pPySequence_InPlaceConcat;
+extern PySequence_InPlaceRepeat_t pPySequence_InPlaceRepeat;
 
-extern PyImport_ImportModule_t PyImport_ImportModule;
-extern PyImport_ImportModuleEx_t PyImport_ImportModuleEx;
-extern PyImport_Import_t PyImport_Import;
-extern PyImport_ReloadModule_t PyImport_ReloadModule;
-extern PyImport_AddModule_t PyImport_AddModule;
-extern PyImport_GetModuleDict_t PyImport_GetModuleDict;
+extern PyImport_ImportModule_t pPyImport_ImportModule;
+extern PyImport_Import_t pPyImport_Import;
+extern PyImport_ReloadModule_t pPyImport_ReloadModule;
+extern PyImport_AddModule_t pPyImport_AddModule;
+extern PyImport_GetModuleDict_t pPyImport_GetModuleDict;
+extern PyImport_ImportModuleLevel_t pPyImport_ImportModuleLevel;
 
-extern _Py_Dealloc_t _Py_Dealloc;
+extern _Py_Dealloc_t p_Py_Dealloc;
 
-extern PySys_GetObject_t PySys_GetObject;
-extern PySys_SetObject_t PySys_SetObject;
-extern PySys_WriteStdout_t PySys_WriteStdout;
-extern PySys_WriteStderr_t PySys_WriteStderr;
-extern PySys_FormatStdout_t PySys_FormatStdout;
-extern PySys_FormatStderr_t PySys_FormatStderr;
-extern PySys_ResetWarnOptions_t PySys_ResetWarnOptions;
-extern PySys_GetXOptions_t PySys_GetXOptions;
+extern PySys_GetObject_t pPySys_GetObject;
+extern PySys_SetObject_t pPySys_SetObject;
+extern PySys_WriteStdout_t pPySys_WriteStdout;
+extern PySys_WriteStderr_t pPySys_WriteStderr;
+extern PySys_FormatStdout_t pPySys_FormatStdout;
+extern PySys_FormatStderr_t pPySys_FormatStderr;
+extern PySys_ResetWarnOptions_t pPySys_ResetWarnOptions;
+extern PySys_GetXOptions_t pPySys_GetXOptions;
 
-extern Py_CompileString_t Py_CompileString;
-extern PyRun_SimpleString_t PyRun_SimpleString;
-extern PyErr_PrintEx_t PyErr_PrintEx;
-extern PyErr_Display_t PyErr_Display;
+extern Py_CompileString_t pPy_CompileString;
+extern PyRun_SimpleString_t pPyRun_SimpleString;
+extern PyErr_PrintEx_t pPyErr_PrintEx;
+extern PyErr_Display_t pPyErr_Display;
 
-extern PyBool_FromLong_t PyBool_FromLong;
-extern PyBytes_FromString_t PyBytes_FromString;
-extern PyBytes_FromStringAndSize_t PyBytes_FromStringAndSize;
-extern PyBytes_Size_t PyBytes_Size;
-extern PyBytes_AsString_t PyBytes_AsString;
-extern PyBytes_AsStringAndSize_t PyBytes_AsStringAndSize;
+extern PyBool_FromLong_t pPyBool_FromLong;
+extern PyBytes_FromString_t pPyBytes_FromString;
+extern PyBytes_FromStringAndSize_t pPyBytes_FromStringAndSize;
+extern PyBytes_Size_t pPyBytes_Size;
+extern PyBytes_AsString_t pPyBytes_AsString;
+extern PyBytes_AsStringAndSize_t pPyBytes_AsStringAndSize;
 
-extern PyLong_AsVoidPtr_t PyLong_AsVoidPtr;
-extern PyLong_FromVoidPtr_t PyLong_FromVoidPtr;
+extern PyLong_AsVoidPtr_t pPyLong_AsVoidPtr;
+extern PyLong_FromVoidPtr_t pPyLong_FromVoidPtr;
 
-extern PyMapping_GetItemString_t PyMapping_GetItemString;
+extern PyMapping_GetItemString_t pPyMapping_GetItemString;
 
-extern PyUnicode_DecodeUTF8_t PyUnicode_DecodeUTF8;
-extern PyUnicode_AsEncodedString_t PyUnicode_AsEncodedString;
-extern PyUnicode_Decode_t PyUnicode_Decode;
-extern PyUnicode_FromEncodedObject_t PyUnicode_FromEncodedObject;
-extern PyUnicode_GetLength_t PyUnicode_GetLength;
-extern PyUnicode_FromKindAndData_t PyUnicode_FromKindAndData;
-extern PyUnicode_AsUTF16String_t PyUnicode_AsUTF16String;
-extern PyUnicode_AsUTF32String_t PyUnicode_AsUTF32String;
+extern PyUnicode_DecodeUTF8_t pPyUnicode_DecodeUTF8;
+extern PyUnicode_AsEncodedString_t pPyUnicode_AsEncodedString;
+extern PyUnicode_Decode_t pPyUnicode_Decode;
+extern PyUnicode_FromEncodedObject_t pPyUnicode_FromEncodedObject;
+extern PyUnicode_GetLength_t pPyUnicode_GetLength;
+extern PyUnicode_FromKindAndData_t pPyUnicode_FromKindAndData;
+extern PyUnicode_AsUTF16String_t pPyUnicode_AsUTF16String;
+extern PyUnicode_AsUTF32String_t pPyUnicode_AsUTF32String;
 
-extern PyErr_NormalizeException_t PyErr_NormalizeException;
-extern PyObject_Repr_t PyObject_Repr;
+extern PyModule_GetDict_t pPyModule_GetDict;
+extern PyUnicode_AsUTF8String_t pPyUnicode_AsUTF8String;
 
-// Add type pointer declarations
-extern PyTypeObject* PyType_Type_ptr;
-extern PyTypeObject* PyBaseObject_Type_ptr;
-extern PyTypeObject* PySuper_Type_ptr;
-extern PyTypeObject* PyBool_Type_ptr;
-extern PyTypeObject* PyFloat_Type_ptr;
-extern PyTypeObject* PyLong_Type_ptr;
-extern PyTypeObject* PyTuple_Type_ptr;
-extern PyTypeObject* PyList_Type_ptr;
-extern PyTypeObject* PyDict_Type_ptr;
-extern PyTypeObject* PyUnicode_Type_ptr;
-extern PyTypeObject* PyBytes_Type_ptr;
-extern PyTypeObject* PyExc_RuntimeError_ptr;
-extern PyTypeObject* PyProperty_Type_ptr;
+extern PyErr_NormalizeException_t pPyErr_NormalizeException;
+extern PyObject_Repr_t pPyObject_Repr;
 
 // Add new function pointer types
 typedef PyObject* (*PyObject_CallFunctionObjArgs_t)(PyObject *callable, ...);
@@ -348,32 +345,42 @@ typedef PyObject* (*PyUnicode_Join_t)(PyObject *separator, PyObject *seq);
 typedef int (*PyObject_RichCompareBool_t)(PyObject *o1, PyObject *o2, int opid);
 
 // Add new function pointer declarations
-extern PyObject_CallFunctionObjArgs_t PyObject_CallFunctionObjArgs;
-extern PyUnicode_Join_t PyUnicode_Join;
-extern PyObject_RichCompareBool_t PyObject_RichCompareBool;
+extern PyObject_CallFunctionObjArgs_t pPyObject_CallFunctionObjArgs;
+extern PyUnicode_Join_t pPyUnicode_Join;
+extern PyObject_RichCompareBool_t pPyObject_RichCompareBool;
 
 // Update type declarations (remove _ptr suffix)
-extern PyTypeObject* PyType_Type;
-extern PyTypeObject* PyBaseObject_Type;
-extern PyTypeObject* PySuper_Type;
-extern PyTypeObject* PyBool_Type;
-extern PyTypeObject* PyFloat_Type;
-extern PyTypeObject* PyLong_Type;
-extern PyTypeObject* PyTuple_Type;
-extern PyTypeObject* PyList_Type;
-extern PyTypeObject* PyDict_Type;
-extern PyTypeObject* PyUnicode_Type;
-extern PyTypeObject* PyBytes_Type;
-extern PyTypeObject* PyExc_RuntimeError;
-extern PyTypeObject* PyExc_ValueError;
-extern PyTypeObject* PyProperty_Type;
+extern PyObject* pPyType_Type;
+extern PyObject* pPyBaseObject_Type;
+extern PyObject* pPySuper_Type;
+extern PyObject* pPyBool_Type;
+extern PyObject* pPyFloat_Type;
+extern PyObject* pPyLong_Type;
+extern PyObject* pPyList_Type;
+extern PyObject* pPyDict_Type;
+extern PyObject* pPyUnicode_Type;
+extern PyObject* pPyBytes_Type;
+extern PyObject* pPyExc_RuntimeError;
+extern PyObject* pPyExc_ValueError;
+extern PyObject* pPyProperty_Type;
+extern PyObject* pPyTuple_Type;
 
 // Add PyBytes_AS_STRING macro
-#define PyBytes_AS_STRING(op) (PyBytes_AsString(op))
+#define PyBytes_AS_STRING(op) (pPyBytes_AsString(op))
 
 
 // Add Py_IsNone macro
-#define Py_IsNone(x) ((x) == Py_None)
+#define Py_IsNone(x) ((x) == pPy_None)
+
+// Add with other function pointer type definitions
+typedef int (*PyObject_IsInstance_t)(PyObject *inst, PyObject *cls);
+
+// Add with other extern declarations
+extern PyObject_IsInstance_t pPyObject_IsInstance;
 
 // Function to load all Python API functions
 bool load_python3_api();
+
+#ifndef _WIN32
+void load_python3_variables_from_interpreter();
+#endif

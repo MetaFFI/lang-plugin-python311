@@ -64,7 +64,7 @@ def setup_environment():
 
 def check_prerequisites() -> bool:
 	if platform.system() == 'Windows':
-		if os.system('py -3.11 --version') != 0:
+		if os.system(os.path.expandvars(r"%LOCALAPPDATA%\Programs\Python\Python311\python3.exe --version")) != 0:
 			print('Python3.11 is not installed')
 			return False
 	elif platform.system() == 'Linux':

@@ -46,6 +46,9 @@ typedef struct {
 #define PyObject_HEAD  struct _object ob_base;
 #define PyObject_VAR_HEAD  struct { PyObject ob_base; Py_ssize_t ob_size; } ob_base;
 
+#define PyImport_ImportModuleEx(n, g, l, f) \
+    pPyImport_ImportModuleLevel(n, g, l, f, 0)
+
 // Forward declarations of opaque types
 typedef struct _typeobject PyTypeObject;
 typedef struct _ts PyThreadState;
@@ -306,7 +309,7 @@ struct _ts {
 };
 
 // None object
-extern PyObject* Py_None;
+extern PyObject* pPy_None;
 
 // Reference counting macros
 #define Py_INCREF(op) (((PyObject *)(op))->ob_refcnt++)
@@ -314,7 +317,7 @@ extern PyObject* Py_None;
     do { \
         PyObject *_py_decref_tmp = (PyObject *)(op); \
         if (--(_py_decref_tmp)->ob_refcnt == 0) { \
-            _Py_Dealloc(_py_decref_tmp); \
+            p_Py_Dealloc(_py_decref_tmp); \
         } \
     } while (0)
 
@@ -322,10 +325,10 @@ extern PyObject* Py_None;
 #define Py_XDECREF(op) do { if ((op) == NULL) ; else Py_DECREF(op); } while (0)
 
 // Generic operations on objects
-#define PyObject_GetAttr(obj, name) PyObject_GetAttr((PyObject *)(obj), (PyObject *)(name))
-#define PyObject_SetAttr(obj, name, value) PyObject_SetAttr((PyObject *)(obj), (PyObject *)(name), (PyObject *)(value))
-#define PyObject_CallObject(callable, args) PyObject_CallObject((PyObject *)(callable), (PyObject *)(args))
-#define PySequence_Contains(seq, obj) PySequence_Contains((PyObject *)(seq), (PyObject *)(obj))
+#define PyObject_GetAttr(obj, name) pPyObject_GetAttr((PyObject *)(obj), (PyObject *)(name))
+#define PyObject_SetAttr(obj, name, value) pPyObject_SetAttr((PyObject *)(obj), (PyObject *)(name), (PyObject *)(value))
+#define PyObject_CallObject(callable, args) pPyObject_CallObject((PyObject *)(callable), (PyObject *)(args))
+#define PySequence_Contains(seq, obj) pPySequence_Contains((PyObject *)(seq), (PyObject *)(obj))
 
 // GIL state
 typedef enum PyGILState_STATE {
@@ -340,14 +343,16 @@ typedef enum PyGILState_STATE {
 #define Py_TPFLAGS_HEAPTYPE (1UL << 9)
 
 // Common Python types
-#define PyBool_Check(op) (Py_TYPE(op) == PyBool_Type_ptr)
-#define PyFloat_Check(op) (Py_TYPE(op) == PyFloat_Type_ptr)
-#define PyLong_Check(op) (Py_TYPE(op) == PyLong_Type_ptr)
-#define PyTuple_Check(op) (Py_TYPE(op) == PyTuple_Type_ptr)
-#define PyList_Check(op) (Py_TYPE(op) == PyList_Type_ptr)
-#define PyDict_Check(op) (Py_TYPE(op) == PyDict_Type_ptr)
-#define PyUnicode_Check(op) (Py_TYPE(op) == PyUnicode_Type_ptr)
-#define PyBytes_Check(op) (Py_TYPE(op) == PyBytes_Type_ptr)
+//#ifdef _WIN32
+#define pPyBool_Check(op) (Py_TYPE(op) == pPyBool_Type)
+#define pPyFloat_Check(op) (Py_TYPE(op) == pPyFloat_Type)
+#define pPyLong_Check(op) (Py_TYPE(op) == pPyLong_Type)
+#define pPyTuple_Check(op) (Py_TYPE(op) == pPyTuple_Type)
+#define pPyList_Check(op) (Py_TYPE(op) == pPyList_Type)
+#define pPyDict_Check(op) (Py_TYPE(op) == pPyDict_Type)
+#define pPyUnicode_Check(op) (Py_TYPE(op) == pPyUnicode_Type)
+#define pPyBytes_Check(op) (Py_TYPE(op) == pPyBytes_Type)
+//#endif
 
 // Type access macros
 static inline PyTypeObject* Py_TYPE(PyObject *ob) {

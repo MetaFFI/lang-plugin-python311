@@ -8,10 +8,11 @@
 #include "py_metaffi_handle.h"
 #include "runtime_id.h"
 #include "py_bytes.h"
+#include "py_tuple.h"
 
 py_list::py_list(Py_ssize_t size /*= 0*/): py_object()
 {
-	instance = PyList_New(size);
+	instance = pPyList_New(size);
 	if (!instance)
 	{
 		throw std::runtime_error(check_python_error());
@@ -20,10 +21,10 @@ py_list::py_list(Py_ssize_t size /*= 0*/): py_object()
 
 py_list::py_list(PyObject* obj): py_object(obj)
 {
-	if (!PyList_Check(obj))
+	if (!py_list::check(obj))
 	{
 		std::stringstream ss;
-		ss << "Object is not a list. It is " << obj->ob_type->tp_name;
+		ss << "Object is not a list. It is " << py_object::get_object_type(obj);
 		throw std::runtime_error(ss.str());
 	}
 	instance = obj;
@@ -48,7 +49,7 @@ py_list& py_list::operator=(const py_list& other)
 
 PyObject* py_list::operator[](int index)
 {
-	PyObject* item = PyList_GetItem(instance, index);
+	PyObject* item = pPyList_GetItem(instance, index);
 	if (!item)
 	{
 		throw std::runtime_error(check_python_error());
@@ -58,12 +59,12 @@ PyObject* py_list::operator[](int index)
 
 Py_ssize_t py_list::length() const
 {
-	return PyList_Size(instance);
+	return pPyList_Size(instance);
 }
 
 void py_list::append(PyObject* obj)
 {
-	int res = PyList_Append(instance, obj);
+	int res = pPyList_Append(instance, obj);
 	if (res == -1)
 	{
 		throw std::runtime_error(check_python_error());
@@ -84,7 +85,11 @@ py_list& py_list::operator=(PyObject* other)
 
 bool py_list::check(PyObject* obj)
 {
-	return PyList_Check(obj);
+#ifdef _WIN32
+	return pPyList_Check(obj);
+#else
+	return py_object::get_object_type(obj) == "list";
+#endif
 }
 
 py_list::py_list(py_list& other) noexcept
@@ -95,7 +100,7 @@ py_list::py_list(py_list& other) noexcept
 
 void py_list::get_metadata(PyObject* obj, bool& out_is_1d_array, bool& out_is_fixed_dimension, Py_ssize_t& out_size, metaffi_type& out_common_type)
 {
-	out_size = PyList_Size(obj);
+	out_size = pPyList_Size(obj);
 	out_is_1d_array = true;
 	out_is_fixed_dimension = true;
 	out_common_type = 0;
@@ -106,7 +111,7 @@ void py_list::get_metadata(PyObject* obj, bool& out_is_1d_array, bool& out_is_fi
 	int8_t last_item = 0;
 	for(Py_ssize_t i = 0; i < out_size; i++)
 	{
-		PyObject* item = PyList_GetItem(obj, i);
+		PyObject* item = pPyList_GetItem(obj, i);
 		
 		if(i == 0)
 		{
@@ -117,7 +122,7 @@ void py_list::get_metadata(PyObject* obj, bool& out_is_1d_array, bool& out_is_fi
 			out_common_type = 0; // no common type
 		}
 		
-		if(PyList_Check(item) || PyTuple_Check(item) || PyBytes_Check(item))
+		if(py_list::check(item) || py_tuple::check(item) || py_bytes::check(item))
 		{
 			out_is_1d_array = false;
 			

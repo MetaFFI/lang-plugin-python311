@@ -63,8 +63,8 @@ struct python3_context {
 	bool is_varargs = false;
 	bool is_named_args = false;
 
-	[[nodiscard]] uint8_t params_count() const { return params_types.size(); };
-	[[nodiscard]] uint8_t retvals_count() const { return retvals_types.size(); };
+	[[nodiscard]] uint8_t params_count() const { return (uint8_t)params_types.size(); };
+	[[nodiscard]] uint8_t retvals_count() const { return (uint8_t)retvals_types.size(); };
 
 	// fills entrypoint and attribute holders
 	// this returns correctly only if the context is of an attribute
@@ -80,7 +80,7 @@ struct python3_context {
 
 		for(const std::string& step: attribute_path)
 		{
-			PyObject* temp = PyObject_GetAttrString(pyobj, step.c_str());
+			PyObject* temp = pPyObject_GetAttrString(pyobj, step.c_str());
 			parent = pyobj;
 			pyobj = temp;
 			if(!pyobj)
@@ -89,7 +89,7 @@ struct python3_context {
 			}
 		}
 
-		entrypoint = PyUnicode_FromString(attribute_path[attribute_path.size() - 1].c_str());
+		entrypoint = pPyUnicode_FromString(attribute_path[attribute_path.size() - 1].c_str());
 
 		attribute_holder = parent;
 		attribute_path.clear();
@@ -108,15 +108,16 @@ void initialize_environment()
 {
 	std::string curpath(boost::filesystem::current_path().string());
 
-	PyObject* sys_path = PySys_GetObject("path");
+	PyObject* sys_path = pPySys_GetObject("path");
+
 	if(!sys_path)
 	{
 		// Handle error: sys.path not retrieved
 		throw std::runtime_error("sys.path not retrieved");
 	}
-
-	PyObject* curpath_pystr = PyUnicode_FromString(curpath.c_str());
-	if(PyList_Append(sys_path, curpath_pystr) == -1)
+	
+	PyObject* curpath_pystr = pPyUnicode_FromString(curpath.c_str());
+	if(pPyList_Append(sys_path, curpath_pystr) == -1)
 	{
 		// Handle error: failed to append curpath
 		throw std::runtime_error("failed to append curpath");
@@ -126,14 +127,14 @@ void initialize_environment()
 	const char* metaffi_home = getenv("METAFFI_HOME");
 	if(metaffi_home)
 	{
-		PyObject* metaffi_home_pystr = PyUnicode_FromString(metaffi_home);
-		if(PyList_Append(sys_path, metaffi_home_pystr) == -1)
+		PyObject* metaffi_home_pystr = pPyUnicode_FromString(metaffi_home);
+		if(pPyList_Append(sys_path, metaffi_home_pystr) == -1)
 		{
 			// Handle error: failed to append METAFFI_HOME
 			throw std::runtime_error("failed to append METAFFI_HOME");
 		}
 		Py_DECREF(metaffi_home_pystr);// Decrement reference count
-		PyRun_SimpleString("import sys\nprint('Loaded python pathes:', sys.path)\n");
+		//pPyRun_SimpleString("import sys\nprint('Loaded python pathes:', sys.path)\n");
 	}
 	else
 	{
@@ -142,32 +143,32 @@ void initialize_environment()
 	}
 
 	// add "site.getusersitepackages" and "site.getsitepackages" to sys.path
-	const char* code = R"(
-import site
-import sys 
-
-# Split the existing sys.path into a set for faster membership checks
-existing_paths = set(sys.path)
-
-# Add any missing site-packages directories to sys.path
-site_dir = site.getusersitepackages()
-if site_dir not in existing_paths:
-	sys.path.append(site_dir)
-	print(f"Added '{site_dir}' to sys.path")
-
-for site_dir in site.getsitepackages():
-	if site_dir not in existing_paths:
-		sys.path.append(site_dir)
-		print(f"Added '{site_dir}' to sys.path")
-
-print('Loaded python pathes: ', sys.path)
-)";
-
-	PyRun_SimpleString(code);
-	if(PyErr_Occurred())
+//	const char* code = R"(
+//import site
+//import sys
+//
+//# Split the existing sys.path into a set for faster membership checks
+//existing_paths = set(sys.path)
+//
+//# Add any missing site-packages directories to sys.path
+//site_dir = site.getusersitepackages()
+//if site_dir not in existing_paths:
+//	sys.path.append(site_dir)
+//	print(f"Added '{site_dir}' to sys.path")
+//
+//for site_dir in site.getsitepackages():
+//	if site_dir not in existing_paths:
+//		sys.path.append(site_dir)
+//		print(f"Added '{site_dir}' to sys.path")
+//
+//#print('Loaded python pathes: ', sys.path)
+//)";
+//
+//	pPyRun_SimpleString(code);
+	if(pPyErr_Occurred())
 	{
-		PyErr_Print();
-		PyErr_Clear();
+		pPyErr_Print();
+		pPyErr_Clear();
 
 		throw std::runtime_error("Failed to add site-packages directories to sys.path");
 	}
@@ -196,23 +197,22 @@ void load_runtime(char** err)
 		strncpy(*err, e.what(), err_len);
 		return;
 	}
-	
 
 	// load python runtime
-	if(!Py_IsInitialized())
+	if(!pPy_IsInitialized())
 	{
-		Py_InitializeEx(0);// Do not install signal handlers
-
+		pPy_InitializeEx(0);// Do not install signal handlers
 		// https://stackoverflow.com/questions/75846775/embedded-python-3-10-py-finalizeex-hangs-deadlock-on-threading-shutdown/
-		PyEval_SaveThread();
-
+		pPyEval_SaveThread();
 		g_loaded_embeded = true;
 	}
-
-	auto gil = PyGILState_Ensure();
-
+	
+	auto gil = pPyGILState_Ensure();
 	try
 	{
+#ifndef _WIN32 // in non-windows, we can load the variables from the interpreter
+		load_python3_variables_from_interpreter();
+#endif
 		initialize_environment();
 	}
 	catch(std::exception& e)
@@ -222,11 +222,10 @@ void load_runtime(char** err)
 		strncpy(*err, e.what(), err_len);
 	}
 	
-
 	g_loaded = true;
 
 	//_save = PyEval_SaveThread();
-	PyGILState_Release(gil);
+	pPyGILState_Release(gil);
 }
 
 
@@ -242,28 +241,28 @@ void free_runtime(char** err)
 	}
 
 	// Ensure we have the GIL before we interact with Python
-	PyGILState_STATE gstate = PyGILState_Ensure();
+	PyGILState_STATE gstate = pPyGILState_Ensure();
 
 	// Import the threading module
-	PyObject* threadingModule = PyImport_ImportModule("threading");
+	PyObject* threadingModule = pPyImport_ImportModule("threading");
 	if(!threadingModule)
 	{
-		PyErr_Print();
-		PyGILState_Release(gstate);
+		pPyErr_Print();
+		pPyGILState_Release(gstate);
 		return;
 	}
 
 	// Get the active count of threads
-	PyObject* activeCount = PyObject_CallMethod(threadingModule, "active_count", NULL);
+	PyObject* activeCount = pPyObject_CallMethod(threadingModule, "active_count", NULL);
 	if(!activeCount)
 	{
-		PyErr_Print();
+		pPyErr_Print();
 		Py_DECREF(threadingModule);
-		PyGILState_Release(gstate);
+		pPyGILState_Release(gstate);
 		return;
 	}
 
-	long count = PyLong_AsLong(activeCount);
+	long count = pPyLong_AsLong(activeCount);
 	Py_DECREF(activeCount);
 
 	if(count > 1)
@@ -272,13 +271,13 @@ void free_runtime(char** err)
 	}
 	else if(count == 1)
 	{
-		PyObject* currentThread = PyObject_CallMethod(threadingModule, "current_thread", NULL);
-		PyObject* currentThreadId = PyObject_GetAttrString(currentThread, "ident");
-		long currentThreadIdValue = PyLong_AsLong(currentThreadId);
+		PyObject* currentThread = pPyObject_CallMethod(threadingModule, "current_thread", NULL);
+		PyObject* currentThreadId = pPyObject_GetAttrString(currentThread, "ident");
+		long currentThreadIdValue = pPyLong_AsLong(currentThreadId);
 
-		PyObject* mainThreadIdObj = PyObject_CallMethod(threadingModule, "main_thread", NULL);
-		PyObject* mainThreadId = PyObject_GetAttrString(mainThreadIdObj, "ident");
-		long mainThreadIdValue = PyLong_AsLong(mainThreadId);
+		PyObject* mainThreadIdObj = pPyObject_CallMethod(threadingModule, "main_thread", NULL);
+		PyObject* mainThreadId = pPyObject_GetAttrString(mainThreadIdObj, "ident");
+		long mainThreadIdValue = pPyLong_AsLong(mainThreadId);
 
 		if(currentThreadIdValue == mainThreadIdValue)
 		{
@@ -292,11 +291,11 @@ void free_runtime(char** err)
 			Py_DECREF(threadingModule);
 
 			// Now it's safe to finalize Python
-			int res = Py_FinalizeEx();
+			int res = pPy_FinalizeEx();
 			if(res < 0)
 			{
 				// Handle error during finalization
-				PyErr_Print();
+				pPyErr_Print();
 			}
 		}
 		else
@@ -309,14 +308,14 @@ void free_runtime(char** err)
 			Py_DECREF(mainThreadIdObj);
 			Py_DECREF(mainThreadId);
 			Py_DECREF(threadingModule);
-			PyGILState_Release(gstate);
+			pPyGILState_Release(gstate);
 		}
 	}
 	else
 	{
 		// Release threadingModule if no action is taken
 		Py_DECREF(threadingModule);
-		PyGILState_Release(gstate);
+		pPyGILState_Release(gstate);
 	}
 }
 //--------------------------------------------------------------------
@@ -339,7 +338,7 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 	out_kwargs_dict = nullptr;
 
 	// place all positional arguments in a tuple
-	Py_ssize_t all_args_count = PyTuple_Size(params_tuple);
+	Py_ssize_t all_args_count = pPyTuple_Size(params_tuple);
 
 	// if no arguments OR no varargs and no kwargs - set the tuple and return
 	if(all_args_count == 0 || (!is_varargs && !is_kwargs))
@@ -355,16 +354,16 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 	if(is_varargs)
 	{
 		// the last parameter is a list of positional arguments
-		PyObject* last_arg = PyTuple_GetItem(params_tuple, all_args_count - 1);
-		if(strcmp(last_arg->ob_type->tp_name, "list") == 0)
+		PyObject* last_arg = pPyTuple_GetItem(params_tuple, all_args_count - 1);
+		if(py_object::get_object_type(last_arg) == "list")
 		{
 			varargs = last_arg;
 		}
 		// if the last argument is not a list AND is_kwargs is true, maybe the one before the last arg is the list
 		else if(is_kwargs && all_args_count > 1)
 		{
-			PyObject* before_last_arg = PyTuple_GetItem(params_tuple, all_args_count - 2);
-			if(strcmp(before_last_arg->ob_type->tp_name, "list") == 0)
+			PyObject* before_last_arg = pPyTuple_GetItem(params_tuple, all_args_count - 2);
+			if(py_object::get_object_type(before_last_arg) == "list")
 			{
 				varargs = before_last_arg;
 			}
@@ -377,8 +376,8 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 	// if the last argument is a "dict", set it to kwargs
 	if(is_kwargs)
 	{
-		PyObject* last_arg = PyTuple_GetItem(params_tuple, all_args_count - 1);
-		if(strcmp(last_arg->ob_type->tp_name, "dict") == 0)// last argument is dict - that is kwargs
+		PyObject* last_arg = pPyTuple_GetItem(params_tuple, all_args_count - 1);
+		if(py_object::get_object_type(last_arg) == "dict")// last argument is dict - that is kwargs
 		{
 			out_kwargs_dict = last_arg;
 		}
@@ -403,13 +402,13 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 	Py_ssize_t varargs_size = 0;
 	if(varargs)
 	{
-		if(PyTuple_Check(varargs))
+		if(py_tuple::check(varargs))
 		{
-			varargs_size = PyTuple_Size(varargs);
+			varargs_size = pPyTuple_Size(varargs);
 		}
-		else if(PyList_Check(varargs))
+		else if(py_list::check(varargs))
 		{
-			varargs_size = PyList_Size(varargs);
+			varargs_size = pPyList_Size(varargs);
 		}
 		else
 		{
@@ -434,12 +433,12 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 	new_size += varargs_size;
 
 	// Copy non-varargs and non-kwargs arguments to a new tuple
-	out_params_tuple = PyTuple_New(new_size);
+	out_params_tuple = pPyTuple_New(new_size);
 	for(Py_ssize_t i = 0; i < size_without_varargs_kwargs; i++)
 	{
-		PyObject* cur_arg = PyTuple_GetItem(params_tuple, i);
+		PyObject* cur_arg = pPyTuple_GetItem(params_tuple, i);
 		Py_INCREF(cur_arg);
-		PyTuple_SetItem(out_params_tuple, i, cur_arg);
+		pPyTuple_SetItem(out_params_tuple, i, cur_arg);
 	}
 
 	// if varargs is used, copy the varargs to the new tuple
@@ -447,12 +446,12 @@ void organize_arguments(int is_method, PyObject* params_tuple, PyObject*& out_pa
 	{
 		for(Py_ssize_t i = 0; i < varargs_size; i++)
 		{
-			bool is_tuple = PyTuple_Check(varargs);
+			bool is_tuple = py_tuple::check(varargs);
 
-			PyObject* cur_arg = is_tuple ? PyTuple_GetItem(varargs, i) : PyList_GetItem(varargs, i);
+			PyObject* cur_arg = is_tuple ? pPyTuple_GetItem(varargs, i) : pPyList_GetItem(varargs, i);
 			Py_INCREF(cur_arg);
 
-			PyTuple_SetItem(out_params_tuple, size_without_varargs_kwargs + i, cur_arg);
+			pPyTuple_SetItem(out_params_tuple, size_without_varargs_kwargs + i, cur_arg);
 		}
 	}
 }
@@ -480,11 +479,11 @@ void pyxcall_params_ret(
 
 		// call function or set variable
 		PyObject* res = nullptr;
-		if(PyCallable_Check(pctxt->entrypoint))
+		if(pPyCallable_Check(pctxt->entrypoint))
 		{
 			if(out_params || out_kwargs)
 			{
-				res = PyObject_Call(pctxt->entrypoint, out_params, out_kwargs);
+				res = pPyObject_Call(pctxt->entrypoint, out_params, out_kwargs);
 			}
 			else
 			{
@@ -563,7 +562,7 @@ void pyxcall_no_params_ret(
 		pyscope();
 
 		PyObject* res = nullptr;
-		if(pctxt->entrypoint && PyCallable_Check(pctxt->entrypoint))
+		if(pctxt->entrypoint && pPyCallable_Check(pctxt->entrypoint))
 		{
 			res = PyObject_CallObject(pctxt->entrypoint, nullptr);
 		}
@@ -604,7 +603,6 @@ void pyxcall_no_params_ret(
 			return;
 		}
 
-		// return value;
 		cdts_python3 return_cdts(return_values[1]);
 		return_cdts.to_cdts(res, &pctxt->retvals_types[0], pctxt->retvals_types.size());
 
@@ -641,11 +639,11 @@ void pyxcall_params_no_ret(
 		                   pctxt->is_named_args);
 
 		// call function
-		if(PyCallable_Check(pctxt->entrypoint))
+		if(pPyCallable_Check(pctxt->entrypoint))
 		{
 			if(out_params || out_kwargs)
 			{
-				PyObject_Call(pctxt->entrypoint, out_params, out_kwargs);
+				pPyObject_Call(pctxt->entrypoint, out_params, out_kwargs);
 			}
 			else
 			{
@@ -712,7 +710,7 @@ void pyxcall_no_params_no_ret(
 	{
 		pyscope();
 
-		if(!PyCallable_Check(pctxt->entrypoint))
+		if(!pPyCallable_Check(pctxt->entrypoint))
 		{
 			handle_err(out_err, "Expecting callable object");
 			return;
@@ -770,7 +768,7 @@ xcall* make_callable(void* py_callable_as_py_object, metaffi_type_info* params_t
 //--------------------------------------------------------------------
 xcall* load_entity(const char* module_path, const char* entity_path, metaffi_type_info* param_types, int8_t params_count, metaffi_type_info* ret_types, int8_t retval_count, char** err)
 {
-	if(!Py_IsInitialized())
+	if(!pPy_IsInitialized())
 	{
 		load_runtime(err);
 	}
@@ -783,18 +781,18 @@ xcall* load_entity(const char* module_path, const char* entity_path, metaffi_typ
 	std::string dir_str = dir.string();
 
 	// Escape the backslashes in the string
-	PyObject* sysPath = PySys_GetObject((char*)"path");
-	PyObject* path = PyUnicode_FromString(dir_str.c_str());
+	PyObject* sysPath = pPySys_GetObject((char*)"path");
+	PyObject* path = pPyUnicode_FromString(dir_str.c_str());
 	if(path != nullptr)
 	{
 		if(PySequence_Contains(sysPath, path) == 0)
 		{
-			PyList_Append(sysPath, path);
+			pPyList_Append(sysPath, path);
 		}
 		Py_DECREF(path);
 	}
 
-	PyObject* pymod = PyImport_ImportModuleEx(p.stem().string().c_str(), Py_None, Py_None, Py_None);
+	PyObject* pymod = PyImport_ImportModuleEx(p.stem().string().c_str(), pPy_None, pPy_None, pPy_None);
 
 	if(!pymod)
 	{
@@ -826,7 +824,7 @@ xcall* load_entity(const char* module_path, const char* entity_path, metaffi_typ
 
 		for(const std::string& step: path_to_object)
 		{
-			pyobj = PyObject_GetAttrString(pyobj, step.c_str());
+			pyobj = pPyObject_GetAttrString(pyobj, step.c_str());
 			if(!pyobj)
 			{
 				std::stringstream ss;
@@ -836,7 +834,7 @@ xcall* load_entity(const char* module_path, const char* entity_path, metaffi_typ
 			}
 		}
 
-		if(fp.contains("callable") && !PyCallable_Check(pyobj))
+		if(fp.contains("callable") && !pPyCallable_Check(pyobj))
 		{
 			handle_err(err, "Given callable is not PyCallable");
 			return nullptr;

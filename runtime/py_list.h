@@ -33,7 +33,7 @@ public:
 			for (int i = 0; i < lengths[0]; ++i)
 			{
 				py_type_t val(arr[i]);
-				PyList_Append(instance, (PyObject*)val);
+				pPyList_Append(instance, (PyObject*)val);
 			}
 		}
 		else
@@ -42,7 +42,7 @@ public:
 			{
 				py_list sublist;
 				sublist.add_numeric_array<ctype_t, py_type_t>(arr + i * lengths[1], lengths + 1, dimensions - 1);
-				PyList_Append(instance, (PyObject*)sublist);
+				pPyList_Append(instance, (PyObject*)sublist);
 			}
 		}
 	}
@@ -55,7 +55,7 @@ public:
 			for (int i = 0; i < lengths[0]; i++)
 			{
 				py_type_t val(arr[i], strings_lengths[i]);
-				PyList_Append(instance, (PyObject*)val);
+				pPyList_Append(instance, (PyObject*)val);
 			}
 		}
 		else
@@ -64,7 +64,7 @@ public:
 			{
 				py_list sublist;
 				sublist.add_string_array<ctype_t, py_type_t>(arr + i * lengths[1], strings_lengths + i *  lengths[1], lengths + 1, dimensions - 1);
-				PyList_Append(instance, (PyObject*)sublist);
+				pPyList_Append(instance, (PyObject*)sublist);
 			}
 		}
 	}
@@ -78,14 +78,14 @@ public:
 	{
 		if (dimensions == 1)
 		{
-			Py_ssize_t size = PyList_Size(instance);
+			Py_ssize_t size = pPyList_Size(instance);
 			*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
 			(*out_lengths)[0] = size;
 			*out_arr = new ctype_t[size];
 			
 			for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
 			{
-				PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
+				PyObject* item = pPyList_GetItem(instance, (Py_ssize_t)i);
 				if (!py_type_t::check(item))
 				{
 					throw std::runtime_error("Python object is not of expected type");
@@ -96,16 +96,16 @@ public:
 		else
 		{
 			*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
-			(*out_lengths)[0] = PyList_Size(instance);
+			(*out_lengths)[0] = pPyList_Size(instance);
 			*out_arr = current_arr ? current_arr : new ctype_t[(*out_lengths)[0]];
 			
 			for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
 			{
-				PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
-				if (!PyList_Check(item))
+				PyObject* item = pPyList_GetItem(instance, (Py_ssize_t)i);
+				if (!py_list::check(item))
 				{
 					std::stringstream ss;
-					ss << "Object is not a list. It is " << item->ob_type->tp_name;
+					ss << "Object is not a list. It is " << py_object::get_object_type(item);
 					throw std::runtime_error(ss.str());
 				}
 				
@@ -122,7 +122,7 @@ public:
 	{
 		if(dimensions == 1)
 		{
-			Py_ssize_t size = PyList_Size(instance);
+			Py_ssize_t size = pPyList_Size(instance);
 			*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
 			(*out_lengths)[0] = size;
 			*out_arr = new ctype_t[size];
@@ -130,7 +130,7 @@ public:
 			
 			for(metaffi_size i = 0; i < size; i++)
 			{
-				PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
+				PyObject* item = pPyList_GetItem(instance, (Py_ssize_t)i);
 				if(!py_type_t::check(item))
 				{
 					throw std::runtime_error("Python object is not of expected type");
@@ -145,16 +145,16 @@ public:
 		else
 		{
 			*out_lengths = current_length ? current_length : new metaffi_size[dimensions];
-			(*out_lengths)[0] = PyList_Size(instance);
+			(*out_lengths)[0] = pPyList_Size(instance);
 			*out_arr = current_arr ? current_arr : new ctype_t[(*out_lengths)[0]];
 			
 			for (metaffi_size i = 0; i < (*out_lengths)[0]; i++)
 			{
-				PyObject* item = PyList_GetItem(instance, (Py_ssize_t)i);
-				if (!PyList_Check(item))
+				PyObject* item = pPyList_GetItem(instance, (Py_ssize_t)i);
+				if (!py_list::check(item))
 				{
 					std::stringstream ss;
-					ss << "Object is not a list. It is " << item->ob_type->tp_name;
+					ss << "Object is not a list. It is " << py_object::get_object_type(item);
 					throw std::runtime_error(ss.str());
 				}
 				
@@ -164,10 +164,10 @@ public:
 		}
 	}
 	
-	void get_handle_array(cdt_metaffi_handle** out_arr, metaffi_size** out_lengths, metaffi_size dimensions, metaffi_size* current_length = nullptr, cdt_metaffi_handle* current_arr = nullptr);
-	void get_bytes_array(metaffi_uint8*** out_arr, metaffi_size** out_lengths, metaffi_size dimensions);
-	
-	//--------------------------------------------------------------------
-	
-	void add_bytes_array(metaffi_uint8* bytes, metaffi_size* bytes_lengths, metaffi_size len);
+//	void get_handle_array(cdt_metaffi_handle** out_arr, metaffi_size** out_lengths, metaffi_size dimensions, metaffi_size* current_length = nullptr, cdt_metaffi_handle* current_arr = nullptr);
+//	void get_bytes_array(metaffi_uint8*** out_arr, metaffi_size** out_lengths, metaffi_size dimensions);
+//
+//	//--------------------------------------------------------------------
+//
+//	void add_bytes_array(metaffi_uint8* bytes, metaffi_size* bytes_lengths, metaffi_size len);
 };

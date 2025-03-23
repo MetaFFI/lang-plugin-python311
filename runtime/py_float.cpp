@@ -7,7 +7,7 @@
 
 py_float::py_float(float val) : py_object()
 {
-	instance = PyFloat_FromDouble(static_cast<double>(val));
+	instance = pPyFloat_FromDouble(static_cast<double>(val));
 	if (!instance)
 	{
 		throw std::runtime_error(check_python_error());
@@ -16,7 +16,7 @@ py_float::py_float(float val) : py_object()
 
 py_float::py_float(double val) : py_object()
 {
-	instance = PyFloat_FromDouble(val);
+	instance = pPyFloat_FromDouble(val);
 	if (!instance)
 	{
 		throw std::runtime_error(check_python_error());
@@ -25,7 +25,7 @@ py_float::py_float(double val) : py_object()
 
 py_float::py_float(PyObject* obj) : py_object(obj)
 {
-	if (!PyFloat_Check(obj))
+	if (!py_float::check(obj))
 	{
 		throw std::runtime_error(check_python_error());
 	}
@@ -51,15 +51,15 @@ py_float& py_float::operator=(const py_float& other)
 
 py_float::operator float() const
 {
-	return static_cast<float>(PyFloat_AsDouble(instance));
+	return static_cast<float>(pPyFloat_AsDouble(instance));
 }
 
 py_float::operator double() const
 {
-	return PyFloat_AsDouble(instance);
+	return pPyFloat_AsDouble(instance);
 }
 
 bool py_float::check(PyObject* obj)
 {
-	return PyFloat_Check(obj);
+	return pPyFloat_Check(obj);
 }

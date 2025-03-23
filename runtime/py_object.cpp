@@ -46,9 +46,9 @@ py_object::operator PyObject*() const
 	return instance;
 }
 
-const char* py_object::get_type() const
+std::string py_object::get_type() const
 {
-	return instance->ob_type->tp_name;
+	return get_object_type(instance);
 }
 
 void py_object::inc_ref()
@@ -76,12 +76,12 @@ py_object::~py_object()
 
 PyObject* py_object::get_attribute(const char* name) const
 {
-	return PyObject_GetAttrString(instance, name);
+	return pPyObject_GetAttrString(instance, name);
 }
 
 void py_object::set_attribute(const char *name, PyObject *val)
 {
-	PyObject_SetAttrString(instance, name, val);
+	pPyObject_SetAttrString(instance, name, val);
 }
 
 PyObject* py_object::detach()
@@ -91,9 +91,40 @@ PyObject* py_object::detach()
 	return res;
 }
 
-const char* py_object::get_object_type(PyObject* obj)
+std::string py_object::get_object_type(PyObject* obj)
 {
-	return obj->ob_type->tp_name;
+	if(obj == nullptr)
+	{
+		throw std::runtime_error("Null PyObject passed to check function");
+	}
+	
+	PyObject* res_type = pPyObject_Type(obj);
+	if(res_type == nullptr)
+	{
+		std::string err = check_python_error();
+		throw std::runtime_error("Failed to get object type: " + err);
+	}
+
+	PyObject* res_type_name = pPyObject_GetAttrString(res_type, "__name__");
+	Py_XDECREF(res_type);// Decrement reference count for res_type
+	if(res_type_name == nullptr)
+	{
+		std::string err = check_python_error();
+		throw std::runtime_error("Failed to get type name: " + err);
+	}
+
+	const char* res_type_name_str = pPyUnicode_AsUTF8(res_type_name);
+	if(res_type_name_str == nullptr)
+	{
+		Py_XDECREF(res_type_name); // Decrement reference count for res_type_name
+		std::string err = check_python_error();
+		throw std::runtime_error("Failed to convert type name to UTF-8: " + err);
+	}
+	
+	std::string res(res_type_name_str);
+	Py_XDECREF(res_type_name);
+	
+	return res;
 }
 
 metaffi_type py_object::get_metaffi_type(PyObject* obj)

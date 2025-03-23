@@ -15,7 +15,7 @@ protected:
 	py_object() = default;
 	
 public:
-	static const char* get_object_type(PyObject* obj);
+	static std::string get_object_type(PyObject* obj);
 	static metaffi_type get_metaffi_type(PyObject* obj);
 	
 public:
@@ -26,7 +26,7 @@ public:
 	py_object& operator=(const py_object& other);
 	explicit operator PyObject*() const;
 	
-	[[nodiscard]] const char* get_type() const;
+	[[nodiscard]] std::string get_type() const;
 	void inc_ref();
 	void dec_ref();
 	

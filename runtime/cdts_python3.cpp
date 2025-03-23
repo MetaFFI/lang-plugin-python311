@@ -20,18 +20,18 @@ using namespace metaffi::runtime;
 
 void set_element(PyObject* container, PyObject* item, metaffi_size index)
 {
-	if(PyList_Check(container))
+	if(py_list::check(container))
 	{
-		PyList_SetItem(container, index, item);
+		pPyList_SetItem(container, index, item);
 	}
-	else if(PyTuple_Check(container))
+	else if(py_tuple::check(container))
 	{
-		PyTuple_SetItem(container, index, item);
+		pPyTuple_SetItem(container, index, item);
 	}
 	else
 	{
 		std::stringstream ss;
-		ss << "Expected list or tuple. Received: " << container->ob_type->tp_name;
+		ss << "Expected list or tuple. Received: " << py_object::get_object_type(container);
 		throw std::runtime_error(ss.str());
 	}
 }
@@ -42,15 +42,15 @@ PyObject* get_element(PyObject* obj, const metaffi_size* index, metaffi_size ind
 
 	for(metaffi_size i = 0; i < index_size; i++)
 	{
-		if(PyList_Check(tmp))
+		if(py_list::check(tmp))
 		{
-			tmp = PyList_GetItem(tmp, index[i]);
+			tmp = pPyList_GetItem(tmp, index[i]);
 		}
-		else if(PyTuple_Check(tmp))
+		else if(py_tuple::check(tmp))
 		{
-			tmp = PyTuple_GetItem(tmp, index[i]);
+			tmp = pPyTuple_GetItem(tmp, index[i]);
 		}
-		else if(PyBytes_Check(tmp))
+		else if(py_bytes::check(tmp))
 		{
 			py_bytes bytes(tmp);
 			auto b = bytes[i];
@@ -59,7 +59,7 @@ PyObject* get_element(PyObject* obj, const metaffi_size* index, metaffi_size ind
 		else
 		{
 			std::stringstream ss;
-			ss << "Expected list or tuple. Received: " << tmp->ob_type->tp_name;
+			ss << "Expected list or tuple. Received: " << py_object::get_object_type(tmp);
 			throw std::runtime_error(ss.str());
 		}
 	}
@@ -357,12 +357,12 @@ DLL_PRIVATE void py_on_traverse_null(const metaffi_size* index, metaffi_size ind
 
 	if(index_size == 0)
 	{
-		tuple->set_item(0, Py_None);
+		tuple->set_item(0, pPy_None);
 	}
 	else// if is part of an array
 	{
 		PyObject* elem = get_element((PyObject*) (*tuple), index, index_size - 1);
-		set_element(elem, Py_None, index[index_size - 1]);
+		set_element(elem, pPy_None, index[index_size - 1]);
 	}
 }
 
@@ -467,7 +467,7 @@ DLL_PRIVATE metaffi_size py_get_array_metadata(const metaffi_size* index, metaff
 
 	PyObject* elem = get_element((PyObject*) *tuple, index, index_length);
 	
-	if(PyTuple_Check(elem))
+	if(py_tuple::check(elem))
 	{
 		Py_ssize_t len;
 		bool bis_1d_array, bis_fixed_dimension;
@@ -477,7 +477,7 @@ DLL_PRIVATE metaffi_size py_get_array_metadata(const metaffi_size* index, metaff
 		*is_manually_construct_array = 0;
 		return len;
 	}
-	else if(PyList_Check(elem))
+	else if(py_list::check(elem))
 	{
 		Py_ssize_t len;
 		bool bis_1d_array, bis_fixed_dimension;
@@ -487,7 +487,7 @@ DLL_PRIVATE metaffi_size py_get_array_metadata(const metaffi_size* index, metaff
 		*is_manually_construct_array = 0;
 		return len;
 	}
-	else if(PyBytes_Check(elem))
+	else if(py_bytes::check(elem))
 	{
 		py_bytes bytes(elem);
 		*is_fixed_dimension = 1;
@@ -499,7 +499,7 @@ DLL_PRIVATE metaffi_size py_get_array_metadata(const metaffi_size* index, metaff
 	else
 	{
 		std::stringstream ss;
-		ss << "Expected list, tuple or bytes. Received: " << elem->ob_type->tp_name;
+		ss << "Expected list, tuple or bytes. Received: " << py_object::get_object_type(elem);
 		throw std::runtime_error(ss.str());
 	}
 }
@@ -509,10 +509,10 @@ DLL_PRIVATE void py_construct_cdt_array(const metaffi_size* index, metaffi_size 
 	auto* tuple = static_cast<py_tuple*>(context);
 	PyObject* elem = get_element((PyObject*) *tuple, index, index_length);
 	
-	if(!PyBytes_Check(elem))
+	if(!py_bytes::check(elem))
 	{
 		std::stringstream ss;
-		ss << "Expected bytes. Received: " << elem->ob_type->tp_name;
+		ss << "Expected bytes. Received: " << py_object::get_object_type(elem);
 		throw std::runtime_error(ss.str());
 	}
 	
@@ -787,7 +787,7 @@ py_tuple cdts_python3::to_py_tuple()
 //--------------------------------------------------------------------
 void cdts_python3::to_cdts(PyObject* pyobject_or_tuple, metaffi_type_info* expected_types, int expected_types_length)
 {
-	py_tuple pyobjs = expected_types_length <= 1 && !PyTuple_Check(pyobject_or_tuple) ? py_tuple(&pyobject_or_tuple, 1)
+	py_tuple pyobjs = expected_types_length <= 1 && !py_tuple::check(pyobject_or_tuple) ? py_tuple(&pyobject_or_tuple, 1)
 	                                                                                  : py_tuple(pyobject_or_tuple);
 	pyobjs.inc_ref();// TODO: (is it correct?) prevent py_tuple from releasing the object
 

@@ -10,7 +10,7 @@
 
 		pyscope();
 
-		Py_ssize_t params_size = Py_IsNone(params) ? 0 : PyTuple_Size(params);
+		Py_ssize_t params_size = Py_IsNone(params) ? 0 : pPyTuple_Size(params);
 		if(params_size == 0)
 		{
 			if(return_values_size == 0){
@@ -22,7 +22,7 @@
 		}
 
 		// get the data from the local objects
-		cdts* cdts_buf = xllr_alloc_cdts_buffer(PyTuple_Size(params), return_values_size);
+		cdts* cdts_buf = xllr_alloc_cdts_buffer(pPyTuple_Size(params), return_values_size);
 		cdts& cdts_params = cdts_buf[0];
 		
 		cdts_python3 pycdts(cdts_params);
@@ -36,7 +36,7 @@
 		std::stringstream ss;
 		ss << "Failed convert_host_params_to_cdts: " << e.what();
 
-		PyErr_SetString(PyExc_ValueError, ss.str().c_str());
+		pPyErr_SetString(NULL, ss.str().c_str());
 		return nullptr;
 	}
 }
@@ -56,8 +56,8 @@
 	{
 		std::stringstream ss;
 		ss << "Failed convert_host_params_to_cdts: " << e.what();
-		PyErr_SetString(PyExc_ValueError, ss.str().c_str());
-		return Py_None;
+		pPyErr_SetString(NULL, ss.str().c_str());
+		return pPy_None;
 	}
 }
 //--------------------------------------------------------------------

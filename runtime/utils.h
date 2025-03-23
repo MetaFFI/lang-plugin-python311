@@ -7,17 +7,14 @@
 #include <utils/scope_guard.hpp>
 #include <thread>
 
-bool is_pycallable_or_property(PyObject* obj);
-bool is_property(PyObject* obj);
-
 // get current python error message
 std::string check_python_error();
 
 extern PyThreadState* _save;
 
 #define pyscope() \
-	PyGILState_STATE gstate = PyGILState_Ensure(); \
+	PyGILState_STATE gstate = pPyGILState_Ensure(); \
 	metaffi::utils::scope_guard sggstate([&]() \
 	{ \
-		PyGILState_Release(gstate); \
+		pPyGILState_Release(gstate); \
 	});

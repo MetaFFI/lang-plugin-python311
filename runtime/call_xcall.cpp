@@ -1,21 +1,35 @@
 #include "call_xcall.h"
 #include "host_cdts_converter.h"
+#include "py_int.h"
 #include "py_tuple.h"
 #include "utils.h"
+#include <mutex>
 #include <stdexcept>
 
+std::once_flag load_python_api_flag;
 
 PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
 {
 	if(pxcall_ptr == nullptr)
 	{
-		PyErr_SetString(PyExc_ValueError, "xcall is null");
-		return Py_None;
+		pPyErr_SetString(NULL, "xcall is null");
+		return pPy_None;
 	}
+	
+	// Thread-safe check and call to load_python3_api()
+	std::call_once(load_python_api_flag, []()
+	{
+		if (pPy_IsInitialized == nullptr || pPy_IsInitialized() == 0)
+		{
+			printf("Python is not initialized!\n");
+			throw std::runtime_error("Python is not initialized!");
+		}
+	});
 
 	xcall pxcall(pxcall_ptr, context);
 
-	pyscope();
+	PyGILState_STATE gstate = pPyGILState_Ensure();
+	metaffi::utils::scope_guard sggstate([&]() { pPyGILState_Release(gstate);} );
 	
 	Py_ssize_t retval_count = py_tuple::get_size(retval_metaffi_types);
 	
@@ -27,21 +41,21 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 	for(int i=0 ; i<params_count ; i++)
 	{
 		PyObject* item = param_metaffi_types_tuple[i];
-		if(strcmp(item->ob_type->tp_name, "metaffi_type_info") == 0)
+		if( py_object::get_object_type(item) == "metaffi_type_info") // <---- fix ME!!!! search any use of tp_name and fix it
 		{
 			// Get the fields of the metaffi_type_info instance
-			PyObject* type = PyObject_GetAttrString(item, "type");
-			PyObject* alias = PyObject_GetAttrString(item, "alias");
-			PyObject* dimensions = PyObject_GetAttrString(item, "fixed_dimensions");
+			PyObject* type = pPyObject_GetAttrString(item, "type");
+			PyObject* alias = pPyObject_GetAttrString(item, "alias");
+			PyObject* dimensions = pPyObject_GetAttrString(item, "fixed_dimensions");
 		
 			// Convert the fields to C types
-			uint64_t type_c = PyLong_AsUnsignedLongLong(type);
-			char* alias_c = Py_IsNone(alias) ? nullptr : (char*)PyUnicode_AsUTF8(alias);
-			int64_t dimensions_c = PyLong_AsLong(dimensions);
+			uint64_t type_c = pPyLong_AsUnsignedLongLong(type);
+			char* alias_c = Py_IsNone(alias) ? nullptr : (char*)pPyUnicode_AsUTF8(alias);
+			int64_t dimensions_c = pPyLong_AsLong(dimensions);
 		
-			if(PyErr_Occurred())
+			if(pPyErr_Occurred())
 			{
-				return Py_None;
+				return pPy_None;
 			}
 			
 			// Create a metaffi_type_info struct and populate it with the field values
@@ -59,9 +73,9 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 			Py_DECREF(dimensions);
 			
 		}
-		else if(PyLong_Check(item))
+		else if(py_int::check(item))
 		{
-			uint64_t type_c = PyLong_AsUnsignedLongLong(item);
+			uint64_t type_c = pPyLong_AsUnsignedLongLong(item);
 			metaffi_type_info info;
 			info.type = type_c;
 			info.alias = nullptr;
@@ -71,8 +85,8 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		}
 		else
 		{
-			PyErr_SetString(PyExc_ValueError, "expected metaffi_type_info");
-			return Py_None;
+			pPyErr_SetString(NULL, "expected metaffi_type_info");
+			return pPy_None;
 		}
 	}
 	
@@ -81,7 +95,7 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		cdts* pcdts = convert_host_params_to_cdts(args, param_metaffi_types_vec.data(), params_count, retval_count);
 		if(pcdts == nullptr)
 		{
-			return Py_None;
+			return pPy_None;
 		}
 
 		char* out_err = nullptr;
@@ -90,13 +104,13 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 
 		if(out_err)
 		{
-			PyErr_SetString(PyExc_ValueError, out_err);
+			pPyErr_SetString(NULL, out_err);
 			xllr_free_string(out_err);
-			return Py_None;
+			return pPy_None;
 		}
 
 		if(retval_count == 0) {
-			return Py_None;
+			return pPy_None;
 		}
 
 		return convert_host_return_values_from_cdts(pcdts, 1);
@@ -107,12 +121,12 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		pxcall(&out_err);
 		if (out_err)
 		{
-			PyErr_SetString(PyExc_ValueError, out_err);
+			pPyErr_SetString(NULL, out_err);
 			xllr_free_string(out_err);
-			return Py_None;
+			return pPy_None;
 		}
 
-		return Py_None;
+		return pPy_None;
 	}
 }
 

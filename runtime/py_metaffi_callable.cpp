@@ -15,18 +15,18 @@ py_metaffi_callable::py_metaffi_callable() : py_object()
 	// initialize
 	if(!create_lambda)
 	{
-		PyObject* main_module = PyImport_ImportModule("__main__");  // Get the main module
-		PyObject* global_dict = PyModule_GetDict(main_module);  // Get the global dictionary
+		PyObject* main_module = pPyImport_ImportModule("__main__");  // Get the main module
+		PyObject* global_dict = pPyModule_GetDict(main_module);  // Get the global dictionary
 		
 		// Get the create_lambda function
-		PyObject* pyFunc = PyDict_GetItemString(global_dict, "create_lambda");
+		PyObject* pyFunc = pPyDict_GetItemString(global_dict, "create_lambda");
 		
 		if(!pyFunc)
 		{
 			throw std::runtime_error("failed to create or import create_lambda python function. The function is defined in metaffi pypi package in __init__.py");
 		}
 		
-		if(!PyCallable_Check(pyFunc))
+		if(!pPyCallable_Check(pyFunc))
 		{
 			throw std::runtime_error("create_lambda is not callable - something is wrong");
 		}
@@ -62,7 +62,7 @@ py_metaffi_callable::py_metaffi_callable(const cdt_metaffi_callable& cdt_callabl
 	argsTuple.set_item(3, py_retval_types.detach());
 	
 	// Call "create_lambda"
-	PyObject* lambda_to_mffi_callable = PyObject_CallObject(create_lambda, (PyObject*)argsTuple);
+	PyObject* lambda_to_mffi_callable = pPyObject_CallObject(create_lambda, (PyObject*)argsTuple);
 	std::string err = check_python_error();
 	if(!err.empty())
 	{
@@ -92,6 +92,6 @@ py_metaffi_callable& py_metaffi_callable::operator=(const py_metaffi_callable& o
 bool py_metaffi_callable::check(PyObject* obj)
 {
 	// TODO: Implement this
-	std::cout << "+++ type name: " << obj->ob_type->tp_name << std::endl;
+	std::cout << "+++ type name: " << py_object::get_object_type(obj) << std::endl;
 	return false;
 }

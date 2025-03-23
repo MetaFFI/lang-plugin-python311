@@ -13,8 +13,6 @@
 #include <runtime/xcall.h>
 
 #include "python3_api_wrapper.h"
-#include "python3_api_wrapper.h"
-#endif
 
 struct GlobalSetup {
 	std::string runtime_test_target_path;
@@ -26,7 +24,7 @@ struct GlobalSetup {
 			std::cerr << "METAFFI_HOME is not set. Please set it to the root of the Metaffi project" << std::endl;
 			exit(1);
 		}
-
+		
 		std::filesystem::path runtime_test_target_std_path(__FILE__);
 		runtime_test_target_std_path = runtime_test_target_std_path.parent_path();
 		runtime_test_target_std_path.append("./test/runtime_test_target.py");

@@ -43,6 +43,7 @@ def return_null():
 # testing a container
 class testmap:
 	def __init__(self):
+		print('Creating testmap')
 		self.curdict = dict()
 		self.name = 'name1'
 	
