@@ -52,30 +52,38 @@ def get_files(win_metaffi_home: str, ubuntu_metaffi_home: str) -> Tuple[Dict[str
 
 
 def setup_environment():
-	# install metaffi-api PIP package
-	# install colorama (needed for tests)
-	import subprocess
-	import sys
-
-	res = subprocess.run(f'{sys.executable} -m pip install metaffi-api colorama', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-	if res.returncode != 0:
-		raise Exception(f"""Failed to install metaffi-api and colorama:\n{res.stdout}{res.stderr}""")
+	pass
 
 
 def check_prerequisites() -> bool:
+
 	if platform.system() == 'Windows':
-		if os.system(os.path.expandvars(r"%LOCALAPPDATA%\Programs\Python\Python311\python3.exe --version")) != 0:
-			print('Python3.11 is not installed')
+		import shutil		
+		# first check if python3 is installed (use the PATH environment variable to search for python.exe or python3.exe)
+		python3_path = shutil.which('python3')
+		python_path = shutil.which('python')
+
+		if python3_path is None and python_path is None:
+			print('Python3 is not installed')
 			return False
+
 	elif platform.system() == 'Linux':
-		if os.system('python3.11 --version') != 0:
-			print('Python3.11 is not installed')
+		import shutil
+		python3_path = shutil.which('python3')
+		
+		if python3_path is None:
+			print('Python3 is not installed')
 			return False
 	else:
-		raise Exception(f'Unsupported platform: {platform.system()}')
+		print(f'Unsupported platform: {platform.system()}')
+		return False
 
 	return True
 
 def print_prerequisites():
 	print("""Prerequisites:\n\tPython3.11 (for ubuntu python3.11-dev package is also required)""")
-	
+
+
+def get_version():
+	return '0.3.0'
+
