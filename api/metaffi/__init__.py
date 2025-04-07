@@ -4,6 +4,38 @@ __version__ = "0.0.50"
 
 __all__ = ['metaffi', 'metaffi_types', 'metaffi_runtime', 'metaffi_module', 'MetaFFIHandle', 'metaffi_types', 'xllr_wrapper', 'pycdts_converter', 'metaffi_type_info', 'MetaFFITypes', 'MetaFFIEntity', 'create_lambda']
 
+
+# TODO: replace pxcall and context to a single parameter
+# 		to xcall*. The current problem is that I can't find how to pass
+#		xcall* into the Tuple when calling the function from C++
+def create_lambda(pxcall, context, param_types_without_alias, retval_types_without_alias):
+	if param_types_without_alias is None:
+		param_types_without_alias = tuple()
+
+	if retval_types_without_alias is None:
+		retval_types_without_alias = tuple()
+
+	if not isinstance(param_types_without_alias, tuple):
+		param_types_without_alias = tuple(param_types_without_alias)
+
+	if not isinstance(retval_types_without_alias, tuple):
+		retval_types_without_alias = tuple(retval_types_without_alias)
+
+	if len(param_types_without_alias) > 0 and len(retval_types_without_alias) > 0:
+		pxcall = XCallParamsRetType(pxcall)
+	elif len(param_types_without_alias) > 0 and len(retval_types_without_alias) == 0:
+		pxcall = XCallParamsNoRetType(pxcall)
+	elif len(param_types_without_alias) == 0 and len(retval_types_without_alias) > 0:
+		pxcall = XCallNoParamsRetType(pxcall)
+	else:
+		pxcall = XCallNoParamsNoRetType(pxcall)
+
+	return lambda *args: xllr_python3.call_xcall(pxcall, context, param_types_without_alias, retval_types_without_alias, None if not args else args)
+
+
+
+
+
 import metaffi
 from . import metaffi_types
 from . import metaffi_runtime
@@ -22,6 +54,7 @@ import ctypes
 import sys
 
 python_plugin_dir = 'python311'
+
 
 # create_lambda is a function that creates a lambda function that calls xllr.call_xcall
 def get_dynamic_lib_path_from_metaffi_home(fname: str):
@@ -70,29 +103,3 @@ if not hasattr(sys, "__loading_within_xllr_python3"):
 	runtime.load_runtime_plugin()
 
 
-# TODO: replace pxcall and context to a single parameter
-# 		to xcall*. The current problem is that I can't find how to pass
-#		xcall* into the Tuple when calling the function from C++
-def create_lambda(pxcall, context, param_types_without_alias, retval_types_without_alias):
-	if param_types_without_alias is None:
-		param_types_without_alias = tuple()
-
-	if retval_types_without_alias is None:
-		retval_types_without_alias = tuple()
-
-	if not isinstance(param_types_without_alias, tuple):
-		param_types_without_alias = tuple(param_types_without_alias)
-
-	if not isinstance(retval_types_without_alias, tuple):
-		retval_types_without_alias = tuple(retval_types_without_alias)
-
-	if len(param_types_without_alias) > 0 and len(retval_types_without_alias) > 0:
-		pxcall = XCallParamsRetType(pxcall)
-	elif len(param_types_without_alias) > 0 and len(retval_types_without_alias) == 0:
-		pxcall = XCallParamsNoRetType(pxcall)
-	elif len(param_types_without_alias) == 0 and len(retval_types_without_alias) > 0:
-		pxcall = XCallNoParamsRetType(pxcall)
-	else:
-		pxcall = XCallNoParamsNoRetType(pxcall)
-
-	return lambda *args: xllr_python3.call_xcall(pxcall, context, param_types_without_alias, retval_types_without_alias, None if not args else args)
