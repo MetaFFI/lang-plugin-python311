@@ -9,11 +9,7 @@ metaffi_home = os.getenv('METAFFI_HOME')
 if metaffi_home is None:
 	raise RuntimeError('METAFFI_HOME environment variable is not set')
 
-python_plugin_dir: str = ''
-if '3.12' in sys.version:
-	python_plugin_dir = 'python312'
-else:
-	python_plugin_dir = 'python311'
+python_plugin_dir = 'python311'
 
 assert isinstance(metaffi_home, str)
 
