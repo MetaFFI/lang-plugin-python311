@@ -13,25 +13,30 @@ def get_files(win_metaffi_home: str, ubuntu_metaffi_home: str) -> Tuple[Dict[str
 
 	pluginname = 'python311'
 	
-	win_metaffi_home = win_metaffi_home.replace('\\', '/')
-	ubuntu_metaffi_home = ubuntu_metaffi_home.replace('\\', '/')
+	win_metaffi_home = win_metaffi_home.replace('\\', '/') + f'/{pluginname}/'
+	ubuntu_metaffi_home = ubuntu_metaffi_home.replace('\\', '/') + f'/{pluginname}/'
+	
+	win_files = {
+		'xllr.python311.dll': win_metaffi_home + 'xllr.python311.dll',
+		'boost_filesystem-vc143-mt-gd-x64-1_87.dll': win_metaffi_home + '../boost_filesystem-vc143-mt-gd-x64-1_87.dll'
+	}
+	
+	# for each absolute path in the value of win_files, check if the file exists
+	for key, value in win_files.items():
+		if not os.path.isfile(value):
+			raise FileNotFoundError(f'{value} not found - cannot build the installer')
 
-	win_files = {}
-	for file in glob.glob(win_metaffi_home + f'/{pluginname}/**', recursive=True):		
-		if os.path.isfile(file) and '__' not in file:
-			file = file.replace('\\', '/')
-			win_files[file.removeprefix(win_metaffi_home+f'/{pluginname}/')] = file
-
-	assert len(win_files) > 0, f'No files found in {win_metaffi_home}/{pluginname}'
-
-	ubuntu_files = {}
-	for file in glob.glob(ubuntu_metaffi_home + f'/{pluginname}/**', recursive=True):
-		if os.path.isfile(file) and '__' not in file:
-			file = file.replace('\\', '/')
-			ubuntu_files[file.removeprefix(ubuntu_metaffi_home+f'/{pluginname}/')] = file
-
-	assert len(ubuntu_files) > 0, f'No files found in {ubuntu_metaffi_home}/{pluginname}'
-
+	ubuntu_files = {
+		'xllr.python311.so': ubuntu_metaffi_home + 'xllr.python311.so',
+		'libboost_filesystem.so.1.87.0': ubuntu_metaffi_home + 'libboost_filesystem.so.1.87.0'
+	}
+	
+	# for each absolute path in the value of ubuntu_files, check if the file exists
+	for key, value in ubuntu_files.items():
+		if not os.path.isfile(value):
+			raise FileNotFoundError(f'{value} not found - cannot build the installer')
+	
+	
 	# * copy the api tests
 	current_script_dir = os.path.dirname(os.path.abspath(__file__))
 	api_tests_files = glob.glob(f'{current_script_dir}/api/tests/**', recursive=True)
