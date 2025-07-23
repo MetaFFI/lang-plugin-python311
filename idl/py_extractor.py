@@ -1,12 +1,13 @@
 import builtins
-from inspect import getmembers, isfunction, isclass, signature, getcomments, isgetsetdescriptor, ismethoddescriptor, ismodule
+from inspect import getmembers, isfunction, isclass, signature, getcomments, isgetsetdescriptor, ismethoddescriptor, ismodule, getdoc
 import importlib
 import os
 import sys
 from typing import List
 import types
 import re
-import none_python_impl_definitions
+import ast
+import importlib.util
 
 ignored_builtins = {'False', 'Ellipsis', 'None', 'True', 'NotImplemented', 'super'}
 
@@ -102,18 +103,47 @@ class py_extractor:
 		filename = filename.replace('\\', '/')  # replace win-style slash to *nix style (which is supported in win)
 		self.filename = filename
 
-		if not self.in_site_package(filename):
-			sys.path.append(os.path.dirname(filename))
-			module_name = os.path.basename(filename)
-			module_name = os.path.splitext(module_name)[0]
+		# Check if it's a directory (package)
+		if os.path.isdir(filename):
+			# For packages, we'll import the __init__.py
+			init_file = os.path.join(filename, "__init__.py")
+			if os.path.exists(init_file):
+				filename = init_file
+			else:
+				raise ValueError(f"Directory {filename} does not contain __init__.py")
 
+		# Check if it's a Python file
+		if not filename.endswith('.py'):
+			# Try to import as a module
+			try:
+				self.mod = importlib.import_module(filename)
+				return
+			except ImportError:
+				raise ValueError(f"Cannot import {filename} as a module")
+
+		# Handle file-based imports
+		if not self.in_site_package(filename):
+			# Use importlib.util to load module from file
+			module_name = os.path.splitext(os.path.basename(filename))[0]
+			spec = importlib.util.spec_from_file_location(module_name, filename)
+			if spec is None:
+				raise ImportError(f"Cannot create spec for {filename}")
+			mod = importlib.util.module_from_spec(spec)
+			sys.modules[module_name] = mod
+			try:
+				spec.loader.exec_module(mod)
+			except Exception as e:
+				raise ImportError(f"Failed to load module {module_name} from {filename}: {e}")
+			self.mod = mod
 		else:  # if installed in site-package
 			module_name = re.sub('.*site-packages/', '', filename)
 			module_name = module_name.replace('.py', '')
 			module_name = module_name.replace('/', '.')
-
-		print('Py IDL Extractor: Going to parse ' + module_name)
-		self.mod = importlib.import_module(module_name)
+			print('Py IDL Extractor: Going to parse ' + module_name)
+			try:
+				self.mod = importlib.import_module(module_name)
+			except ImportError as e:
+				raise ValueError(f"Failed to import module {module_name}: {e}")
 
 	def in_site_package(self, path: str) -> bool:
 		return '/site-packages' in path
@@ -163,19 +193,32 @@ class py_extractor:
 		return res
 
 	def _extract_classes(self) -> List[class_info]:
-		global ignored_builtins
-
 		res = []
 
 		for c in getmembers(self.mod, isclass):
 			clsdata = class_info()
 			clsdata.name = c[0]
-			clsdata.comment = getcomments(c[1])
+			clsdata.comment = getdoc(c[1]) or getcomments(c[1])
 			if clsdata.comment is not None:
 				clsdata.comment = clsdata.comment.replace('#', '', 1).strip()
 
 			constructor_found = False
 			found_in_annotations = []
+			
+			# Extract class variables (static/class-level fields)
+			for attr_name, attr_value in c[1].__dict__.items():
+				if attr_name.startswith('_'):
+					continue
+				if isfunction(attr_value) or ismethoddescriptor(attr_value):
+					continue
+				if isinstance(attr_value, builtins.property):
+					continue
+				if attr_name in found_in_annotations:
+					continue
+				
+				# This is a class variable
+				clsdata.fields.append(self._extract_field([attr_name, attr_value], True, True))
+			
 			for member in getmembers(c[1]):
 				if member[0] in found_in_annotations:  # already found in annotations
 					continue
@@ -189,22 +232,12 @@ class py_extractor:
 						found_in_annotations.append(k)
 
 				if ismethoddescriptor(member[1]):
-
-					# check if method is in "non_python_method_definitions"
-					method_data = none_python_impl_definitions.get_method_definition(self.mod.__name__, clsdata.name, member[0])
-					if method_data is None:
-						# print(f'Skipping {self.mod.__name__}.{clsdata.name}.{member[0]} as it is not implemented in python, and definition not found in non_python_method_definitions')
-						continue
-
 					if member[0] == '__init__':
 						constructor_found = True
 
-					clsdata.methods.append(self._extract_function((member[0], method_data), clsdata.name))
+					clsdata.methods.append(self._extract_function(member, clsdata.name))
 
 				elif isfunction(member[1]):
-					# if member[0].startswith('_') and member[0] != '__init__':
-					# 	continue
-
 					if member[0] == '__init__':
 						constructor_found = True
 
@@ -291,7 +324,7 @@ class py_extractor:
 		func_info = function_info()
 		func_info.name = f[0]
 
-		func_info.comment = getcomments(f[1])
+		func_info.comment = getdoc(f[1]) or getcomments(f[1])
 		if func_info.comment is not None:
 			func_info.comment = func_info.comment.replace('#', '', 1).strip()
 

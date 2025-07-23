@@ -1,4 +1,4 @@
-module github.com/MetaFFI/lang-plugin-python3/compiler
+module github.com/MetaFFI/lang-plugin-python311/compiler
 
 go 1.16
 

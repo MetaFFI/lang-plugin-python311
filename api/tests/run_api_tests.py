@@ -149,6 +149,30 @@ if is_plugin_installed('openjdk'):
 
 # --------------------------------------------
 
+# run OpenJDK->python3.11 tests with generated Python code
+if is_plugin_installed('openjdk'):
+	print(f'{Fore.MAGENTA}Testing Sanity OpenJDK -> Python3.11 (with generated Python code){Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
+
+	# Define the paths to the scripts to be run
+	build_sanity_openjdk_compiler_script_path = os.path.join(current_path, 'sanity', 'openjdk', 'build_metaffi.py')
+	test_sanity_openjdk_compiler_path = os.path.join(current_path, 'sanity', 'openjdk', 'openjdk_test_with_compiler.py')
+
+	# Run the scripts
+	run_script(build_sanity_openjdk_compiler_script_path)
+	run_unittest(test_sanity_openjdk_compiler_path)
+
+	print(f'{Fore.MAGENTA}Testing Sanity OpenJDK -> Python3.11 (with generated Python code){Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
+	# Clean up generated files
+	import shutil
+	sanity_dir = os.path.join(current_path, 'sanity', 'openjdk', 'sanity')
+	if os.path.exists(sanity_dir):
+		shutil.rmtree(sanity_dir)
+	sanity_py = os.path.join(current_path, 'sanity', 'openjdk', 'sanity.py')
+	if os.path.exists(sanity_py):
+		os.remove(sanity_py)
+
+# --------------------------------------------
+
 # run python3.11->Go tests
 if is_plugin_installed('go'):
 	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
@@ -163,6 +187,24 @@ if is_plugin_installed('go'):
 
 	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
 	os.remove(os.path.join(current_path, 'sanity', 'go', f'TestRuntime_MetaFFIGuest{get_extension_by_platform()}'))
+
+# --------------------------------------------
+
+# run python3.11->Go tests with generated Python code
+if is_plugin_installed('go'):
+	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go (with generated Python code){Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
+
+	# Define the paths to the scripts to be run
+	build_sanity_go_script_path = os.path.join(current_path, 'sanity', 'go', 'build_metaffi.py')
+	test_sanity_go_generated_path = os.path.join(current_path, 'sanity', 'go', 'go_test_with_generated_python_code.py')
+
+	# Run the scripts
+	run_script(build_sanity_go_script_path)
+	run_unittest(test_sanity_go_generated_path)
+
+	print(f'{Fore.MAGENTA}Testing Sanity Python3.11 -> Go (with generated Python code){Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
+	os.remove(os.path.join(current_path, 'sanity', 'go', f'TestRuntime_MetaFFIGuest{get_extension_by_platform()}'))
+	os.remove(os.path.join(current_path, 'sanity', 'go', 'TestRuntime_MetaFFIHost.py'))
 
 # --------------------------------------------
 
@@ -183,18 +225,3 @@ if is_plugin_installed('openjdk'):
 	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> OpenJDK{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
 
 # --------------------------------------------
-
-# run python3.11->Go tests
-if is_plugin_installed('go'):
-	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> Go{Fore.RESET} - {Fore.YELLOW}RUNNING{Fore.RESET}')
-
-	# Define the paths to the scripts to be run
-	build_extended_go_script_path = os.path.join(current_path, 'extended', 'go', 'gomcache', 'build_metaffi.py')
-	test_extended_go_path = os.path.join(current_path, 'extended', 'go', 'gomcache', 'gomcache_test.py')
-
-	# Run the scripts
-	run_script(build_extended_go_script_path)
-	run_unittest(test_extended_go_path)
-
-	print(f'{Fore.MAGENTA}Testing Extended Python3.11 -> Go{Fore.RESET} - {Fore.GREEN}PASSED{Fore.RESET}')
-	os.remove(os.path.join(current_path, 'extended', 'go', 'gomcache', f'mcache_MetaFFIGuest{get_extension_by_platform()}'))

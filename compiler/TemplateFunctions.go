@@ -3,9 +3,10 @@ package main
 import "C"
 import (
 	"fmt"
-	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 	"os"
 	"strings"
+
+	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
 )
 
 var templatesFuncMap = map[string]interface{}{
@@ -15,6 +16,7 @@ var templatesFuncMap = map[string]interface{}{
 	"GetEnvVar":                    getEnvVar,
 	"Add":                          add,
 	"GetMetaFFIType":               getMetaFFIType,
+	"GetMetaFFITypeForAPI":         getMetaFFITypeForAPI,
 	"GenerateCodeAllocateCDTS":     generateCodeAllocateCDTS,
 	"GenerateCodeXCall":            generateCodeXCall,
 	"GenerateCodeReturnValues":     generateCodeReturnValues,
@@ -24,6 +26,7 @@ var templatesFuncMap = map[string]interface{}{
 	"GenerateCEntryPoint":          generateCEntryPoint,
 	"GenerateMethodSignature":      generateMethodSignature,
 	"GetMetaFFITypeFromPyType":     getMetaFFITypeFromPyType,
+	"IsArray":                      isArray,
 }
 
 // --------------------------------------------------------------------
@@ -51,66 +54,70 @@ func generateMethodSignature(meth *IDL.MethodDefinition) string {
 		retvalString = "None"
 	} else if len(retvals) == 1 {
 		retvalString = retvals[0]
-	} else { // > 1
-		retvalString = fmt.Sprintf("Tuple[%v]", strings.Join(retvals, ","))
+	} else {
+		retvalString = "(" + strings.Join(retvals, ",") + ")"
 	}
 
-	return fmt.Sprintf("(%v)->%v", paramsString, retvalString)
+	return fmt.Sprintf("(%s) -> %s", paramsString, retvalString)
 }
 
 // --------------------------------------------------------------------
 func generateCEntryPoint(name string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, isMethod bool, indent int) string {
+	indentStr := strings.Repeat("\t", indent)
 
-	indentStr := ""
-	for i := 0; i < indent; i++ {
-		indentStr += "\t"
+	code := fmt.Sprintf("%sdef EntryPoint_%s(", indentStr, name)
+
+	paramNames := make([]string, 0)
+	for i, p := range params {
+		if i == 0 && isMethod {
+			paramNames = append(paramNames, "self")
+		} else {
+			paramNames = append(paramNames, p.Name)
+		}
 	}
 
-	res := ""
+	code += strings.Join(paramNames, ",")
+	code += "):\n"
 
-	isMethodBool := 0
-	if isMethod{
-		isMethodBool = 1
-	}
+	code += fmt.Sprintf("%s\ttry:\n", indentStr)
 
-
-	if len(params) > 0 && len(retvals) > 0 {
-		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
-		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_ret(%v, py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, isMethodBool, name)
-		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
-	} else if len(params) > 0 {
-		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
-		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_params_no_ret(%v, py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, isMethodBool, name)
-		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
-	} else if len(retvals) > 0 {
-		res += fmt.Sprintf("%v@CFUNCTYPE(None, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-		res += fmt.Sprintf("%vdef CEntryPoint_%v(cdts, out_err, out_err_len):\n", indentStr, name)
-		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_ret(%v, py_object(EntryPoint_%v), c_void_p(cdts), out_err, out_err_len)\n", indentStr, isMethodBool, name)
-		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+	// call function
+	retvalNames := make([]string, 0)
+	if len(retvals) > 0 {
+		for _, r := range retvals {
+			retvalNames = append(retvalNames, r.Name)
+		}
+		code += fmt.Sprintf("%s\t\t%s = foreign_function(%s)\n", indentStr, strings.Join(retvalNames, ","), strings.Join(paramNames, ","))
 	} else {
-		res += fmt.Sprintf("%v@CFUNCTYPE(None, POINTER(c_char_p), POINTER(c_ulonglong))\n", indentStr)
-		res += fmt.Sprintf("%vdef CEntryPoint_%v(out_err, out_err_len):\n", indentStr, name)
-		res += fmt.Sprintf("%v\tglobal python_plugin_handle\n", indentStr)
-		res += fmt.Sprintf("%v\tpython_plugin_handle.xcall_no_params_no_ret(%v, py_object(EntryPoint_%v), out_err, out_err_len)\n", indentStr, isMethodBool, name)
-		res += fmt.Sprintf("python_plugin_handle.set_entrypoint('EntryPoint_%v'.encode(), CEntryPoint_%v)\n", name, name)
+		code += fmt.Sprintf("%s\t\tforeign_function(%s)\n", indentStr, strings.Join(paramNames, ","))
 	}
 
-	return res
+	// return values
+	if len(retvals) > 0 {
+		retvalTypes := make([]string, 0)
+		for _, r := range retvals {
+			retvalTypes = append(retvalTypes, getMetaFFIType(r, false))
+		}
+		code += fmt.Sprintf("%s\t\tret_val_types = (%s)\n", indentStr, strings.Join(retvalTypes, ","))
+		code += fmt.Sprintf("%s\t\treturn (None, ret_val_types, %s)\n", indentStr, strings.Join(retvalNames, ","))
+	} else {
+		code += fmt.Sprintf("%s\t\treturn (None,)\n", indentStr)
+	}
+
+	code += fmt.Sprintf("%s\texcept Exception as e:\n", indentStr)
+	code += fmt.Sprintf("%s\t\terrdata = traceback.format_exception(*sys.exc_info())\n", indentStr)
+	code += fmt.Sprintf("%s\t\treturn ('\\n'.join(errdata),)\n", indentStr)
+
+	return code
 }
 
 // --------------------------------------------------------------------
 func getCFuncType(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
-
 	if len(params) > 0 && len(retvals) > 0 {
 		return "cfunctype_params_ret"
-	} else if len(params) > 0 {
+	} else if len(params) > 0 && len(retvals) == 0 {
 		return "cfunctype_params_no_ret"
-	} else if len(retvals) > 0 {
+	} else if len(params) == 0 && len(retvals) > 0 {
 		return "cfunctype_no_params_ret"
 	} else {
 		return "cfunctype_no_params_no_ret"
@@ -119,127 +126,107 @@ func getCFuncType(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) str
 
 // --------------------------------------------------------------------
 func generateCodeGlobals(name string, indent int) string {
-
-	indentStr := ""
-	for i := 0; i < indent; i++ {
-		indentStr += "\t"
-	}
-
-	code := fmt.Sprintf("global xllr_handle\n%vglobal %v_id\n%vglobal runtime_plugin\n%vglobal python_plugin_handle", indentStr, name, indentStr, indentStr)
-
-	return code
+	indentStr := strings.Repeat("\t", indent)
+	return fmt.Sprintf("%sglobal %s_id\n", indentStr, name)
 }
 
 // --------------------------------------------------------------------
 func generateReturn(retvals []*IDL.ArgDefinition) string {
-	code := "return "
-	retcode := make([]string, 0)
-	for i, _ := range retvals {
-		retcode = append(retcode, fmt.Sprintf("ret_vals[%v]", i))
+	if len(retvals) == 0 {
+		return "return"
+	} else if len(retvals) == 1 {
+		return fmt.Sprintf("return %s", retvals[0].Name)
+	} else {
+		retvalNames := make([]string, 0)
+		for _, r := range retvals {
+			retvalNames = append(retvalNames, r.Name)
+		}
+		return fmt.Sprintf("return (%s)", strings.Join(retvalNames, ","))
 	}
-	code += strings.Join(retcode, ",")
+}
+
+// --------------------------------------------------------------------
+func generateCodeReturnValues(parameters []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
+	if len(retvals) == 0 {
+		return ""
+	}
+
+	code := "\t# unpack results\n"
+	code += "\tret_vals = python_plugin_handle.convert_host_return_values_from_cdts(xcall_return, "
+	code += fmt.Sprintf("%d", len(retvals))
+	code += ")\n"
+
+	if len(retvals) == 1 {
+		code += fmt.Sprintf("\t%s = ret_vals\n", retvals[0].Name)
+	} else {
+		for i, r := range retvals {
+			code += fmt.Sprintf("\t%s = ret_vals[%d]\n", r.Name, i)
+		}
+	}
 
 	return code
 }
 
 // --------------------------------------------------------------------
-func generateCodeReturnValues(parameters []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition) string {
-	/*
-		{{if gt $retLength 0}}
-		# unpack results
-		ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(return_values_buffer), {{len $f.Getter.ReturnValues}})
-		return {{range $index, $elem := $f.Getter.ReturnValues}}{{if $index}},{{end}}ret_vals[{{$index}}]{{end}}
-		{{end}}
-	*/
-
-	if len(retvals) == 0 {
-		return ""
-	}
-
-	// return values are always at index 1
-	return fmt.Sprintf(`ret_vals = python_plugin_handle.convert_host_return_values_from_cdts(c_void_p(xcall_params), 1)`)
-
-}
-
-// --------------------------------------------------------------------
 func generateCodeXCall(className string, funcName string, overloadIndexString string, params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, indent int) string {
-	/*
-		out_error = ({{ConvertToCPythonType "string8"}} * 1)(0)
-		out_error_len = ({{ConvertToCPythonType "size"}})(0)
-		xllr_handle.{{XCall $f.Getter.Parameters $f.Getter.ReturnValues}}(c_ulonglong({{$f.Getter.Name}}_id), c_void_p(xcall_params), out_error, byref(out_error_len))
+	indentStr := strings.Repeat("\t", indent)
 
-		# check for error
-		if out_error != None and out_error[0] != None:
-			err_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')
-			raise RuntimeError('\n'+err_msg.replace("\\n", "\n"))
-	*/
-	indentStr := ""
-	for i := 0; i < indent; i++ {
-		indentStr += "\t"
-	}
-
-	var name string
-	if className != "" {
-		name += className + "_"
-	}
-	name += funcName
-
-	code := fmt.Sprintf("out_error = (%v * 1)(0)\n", convertToCPythonType("string8"))
-	code += fmt.Sprintf("%vout_error_len = (%v)(0)\n", indentStr, convertToCPythonType("size"))
-	if len(params) > 0 || len(retvals) > 0 {
-		code += fmt.Sprintf("%v%v_id(c_void_p(xcall_params), out_error, byref(out_error_len))", indentStr, name+overloadIndexString)
+	var funcId string
+	if className == "" {
+		funcId = fmt.Sprintf("%s%s_id", funcName, overloadIndexString)
 	} else {
-		code += fmt.Sprintf("%v%v_id(out_error, byref(out_error_len))", indentStr, name+overloadIndexString)
+		funcId = fmt.Sprintf("%s_%s%s_id", className, funcName, overloadIndexString)
 	}
-	code += fmt.Sprintf("%v\n", indentStr)
-	code += fmt.Sprintf("%vif out_error is not None and out_error[0] is not None:\n", indentStr)
-	code += fmt.Sprintf("%v\terr_msg = string_at(out_error[0], out_error_len.value).decode('utf-8')\n", indentStr)
-	code += fmt.Sprintf("%v\traise RuntimeError('\\n'+err_msg.replace(\"\\\\n\", \"\\n\"))\n", indentStr)
+
+	code := fmt.Sprintf("%s# xcall function\n", indentStr)
+
+	if len(params) > 0 && len(retvals) > 0 {
+		code += fmt.Sprintf("%sxcall_return = xllr_handle.xcall_params_ret(%s, xcall_params, %s)\n", indentStr, funcId, funcId)
+	} else if len(params) > 0 && len(retvals) == 0 {
+		code += fmt.Sprintf("%sxllr_handle.xcall_params_no_ret(%s, xcall_params)\n", indentStr, funcId)
+	} else if len(params) == 0 && len(retvals) > 0 {
+		code += fmt.Sprintf("%sxcall_return = xllr_handle.xcall_no_params_ret(%s)\n", indentStr, funcId)
+	} else {
+		code += fmt.Sprintf("%sxllr_handle.xcall_no_params_no_ret(%s)\n", indentStr, funcId)
+	}
 
 	return code
 }
 
 // --------------------------------------------------------------------
 func generateCodeAllocateCDTS(params []*IDL.ArgDefinition, retvals []*IDL.ArgDefinition, isObjectMember bool) string {
-	/*
-		{{$paramsLength := len $f.Getter.Parameters}}
-		{{$retLength := len $f.Getter.ReturnValues}}
+	if len(params) == 0 && len(retvals) == 0 {
+		return ""
+	}
 
-		{{if gt $paramsLength 0}}
-		params = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{$elem.Name}}{{if eq $paramsLength 1}},{{end}}{{end}}) // For object, ignore first parameter and use self.obj_handle
-		params_types = ({{range $index, $elem := $f.Getter.Parameters}}{{if $index}},{{end}} {{GetMetaFFIType $elem false}}{{end}}{{if eq $paramsLength 1}},{{end}})
-		xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), {{$retLength}})
-		{{else if gt $retLength 0}}
-		xcall_params = xllr_handle.alloc_cdts_buffer(0, {{len $f.Getter.ReturnValues}})
-		{{end}}
-	*/
+	code := "\t# allocate CDTS buffer\n"
 
-	if len(params) > 0 { // use convert_host_params_to_cdts to allocate CDTS
-		code := `xcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object((%v,)), py_object((%v,)), %v)`
-
-		paramsNames := make([]string, 0)
-		paramsTypes := make([]string, 0)
+	if len(params) > 0 {
+		code += "\tparams = ("
+		paramNames := make([]string, 0)
+		paramTypes := make([]string, 0)
 
 		for i, p := range params {
-
 			if isObjectMember && i == 0 {
-				paramsNames = append(paramsNames, "self.obj_handle")
+				paramNames = append(paramNames, "self.obj_handle")
 			} else {
 				name := strings.Replace(p.Name, "*", "", -1) // remove "*" or "**" from the params
-				paramsNames = append(paramsNames, fmt.Sprintf("%v", name))
+				paramNames = append(paramNames, fmt.Sprintf("%v", name))
 			}
 
-			paramsTypes = append(paramsTypes, getMetaFFIType(p, false))
+			paramTypes = append(paramTypes, getMetaFFIType(p, false))
 		}
 
-		return fmt.Sprintf(code, strings.Join(paramsNames, ","), strings.Join(paramsTypes, ","), len(retvals))
+		code += fmt.Sprintf("%s)\n", strings.Join(paramNames, ","))
+		code += fmt.Sprintf("\tparams_types = (%s)\n", strings.Join(paramTypes, ","))
+		code += "\txcall_params = python_plugin_handle.convert_host_params_to_cdts(py_object(params), py_object(params_types), 0)\n"
 	} else if len(retvals) > 0 {
-		code := `xcall_params = xllr_handle.alloc_cdts_buffer(0, %v)`
-		return fmt.Sprintf(code, len(retvals))
+		code += fmt.Sprintf("\txcall_params = xllr_handle.alloc_cdts_buffer(0, %d)\n", len(retvals))
 	} else {
 		return ""
 	}
 
+	return code
 }
 
 // --------------------------------------------------------------------
@@ -249,7 +236,7 @@ func getMetaFFIType(elem *IDL.ArgDefinition, isObjectField bool) string {
 	var found bool
 
 	if elem.Type == IDL.ANY {
-		if isObjectField{
+		if isObjectField {
 			return fmt.Sprintf("dynamicTypeToMetaFFIType(obj[0].%v)", elem.Name)
 		} else {
 			return fmt.Sprintf("dynamicTypeToMetaFFIType(%v)", elem.Name)
@@ -271,6 +258,57 @@ func getMetaFFIType(elem *IDL.ArgDefinition, isObjectField bool) string {
 	}
 
 	return fmt.Sprintf("%v", handle)
+}
+
+// --------------------------------------------------------------------
+// New function for MetaFFI API approach
+func getMetaFFITypeForAPI(elem *IDL.ArgDefinition) string {
+	if elem.Dimensions > 0 {
+		// Handle array types
+		baseType := strings.ReplaceAll(string(elem.Type), "_array", "")
+		return fmt.Sprintf("MetaFFITypes.metaffi_%s_array_type", baseType)
+	}
+
+	switch elem.Type {
+	case "int64":
+		return "MetaFFITypes.metaffi_int64_type"
+	case "int32":
+		return "MetaFFITypes.metaffi_int32_type"
+	case "int16":
+		return "MetaFFITypes.metaffi_int16_type"
+	case "int8":
+		return "MetaFFITypes.metaffi_int8_type"
+	case "uint64":
+		return "MetaFFITypes.metaffi_uint64_type"
+	case "uint32":
+		return "MetaFFITypes.metaffi_uint32_type"
+	case "uint16":
+		return "MetaFFITypes.metaffi_uint16_type"
+	case "uint8":
+		return "MetaFFITypes.metaffi_uint8_type"
+	case "float64":
+		return "MetaFFITypes.metaffi_float64_type"
+	case "float32":
+		return "MetaFFITypes.metaffi_float32_type"
+	case "string8":
+		return "MetaFFITypes.metaffi_string8_type"
+	case "string16":
+		return "MetaFFITypes.metaffi_string16_type"
+	case "string32":
+		return "MetaFFITypes.metaffi_string32_type"
+	case "bool":
+		return "MetaFFITypes.metaffi_bool_type"
+	case "handle":
+		return "MetaFFITypes.metaffi_handle_type"
+	case "any":
+		return "MetaFFITypes.metaffi_any_type"
+	default:
+		// Try to handle type aliases
+		if elem.TypeAlias != "" {
+			return "MetaFFITypes.metaffi_handle_type" // Custom types are typically handles
+		}
+		return "MetaFFITypes.metaffi_any_type"
+	}
 }
 
 // --------------------------------------------------------------------
@@ -319,6 +357,11 @@ func convertToPythonTypeFromField(definition *IDL.ArgDefinition) string {
 }
 
 // --------------------------------------------------------------------
+func isArray(dimensions int) bool {
+	return dimensions > 0
+}
+
+// --------------------------------------------------------------------
 func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string {
 
 	var res string
@@ -328,6 +371,10 @@ func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string {
 		fallthrough
 	case IDL.FLOAT32:
 		res = "float"
+	case IDL.FLOAT64_ARRAY:
+		fallthrough
+	case IDL.FLOAT32_ARRAY:
+		res = "List[float]"
 
 	case IDL.INT8:
 		fallthrough
@@ -347,9 +394,29 @@ func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string {
 		fallthrough
 	case IDL.SIZE:
 		res = "int"
+	case IDL.INT8_ARRAY:
+		fallthrough
+	case IDL.INT16_ARRAY:
+		fallthrough
+	case IDL.INT32_ARRAY:
+		fallthrough
+	case IDL.INT64_ARRAY:
+		fallthrough
+	case IDL.UINT8_ARRAY:
+		fallthrough
+	case IDL.UINT16_ARRAY:
+		fallthrough
+	case IDL.UINT32_ARRAY:
+		fallthrough
+	case IDL.UINT64_ARRAY:
+		fallthrough
+	case IDL.SIZE_ARRAY:
+		res = "List[int]"
 
 	case IDL.BOOL:
 		res = "bool"
+	case IDL.BOOL_ARRAY:
+		res = "List[bool]"
 
 	case IDL.STRING8:
 		fallthrough
@@ -357,12 +424,29 @@ func convertToPythonType(metaffiType IDL.MetaFFIType, isArray bool) string {
 		fallthrough
 	case IDL.STRING32:
 		res = "str"
+	case IDL.STRING8_ARRAY:
+		fallthrough
+	case IDL.STRING16_ARRAY:
+		fallthrough
+	case IDL.STRING32_ARRAY:
+		res = "List[str]"
+
+	case IDL.CHAR8_ARRAY:
+		fallthrough
+	case IDL.CHAR16_ARRAY:
+		fallthrough
+	case IDL.CHAR32_ARRAY:
+		res = "List[str]"
 
 	case IDL.HANDLE:
-		res = "py_object"
+		res = "Any"
+	case IDL.HANDLE_ARRAY:
+		res = "List[Any]"
 
 	case IDL.ANY:
 		res = "Any"
+	case IDL.ANY_ARRAY:
+		res = "List[Any]"
 
 	default:
 		panic("Unsupported MetaFFI Type " + metaffiType)

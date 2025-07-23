@@ -1,6 +1,12 @@
 #pragma once
 
+// if C++ use <string> otherwise use <string.h>
+#ifdef __cplusplus
 #include <string>
+#else
+#include <string.h>
+#endif
+
 #include "python_h_declares.h"
 
 // Function pointer types for Python API functions
