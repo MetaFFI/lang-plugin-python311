@@ -5,13 +5,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
+	"github.com/MetaFFI/sdk/idl_entities/go/IDL"
 )
 
 // --------------------------------------------------------------------
 func createSimpleFunctionIDL() *IDL.IDLDefinition {
 	// Create a simple function IDL
-	idl := IDL.NewIDLDefinition("simple_function.json", "openjdk")
+	idl := IDL.NewIDLDefinition("simple_function.json", "jvm")
 
 	module := IDL.NewModuleDefinition("com.example.Math")
 
@@ -61,7 +61,7 @@ func createSimpleFunctionIDL() *IDL.IDLDefinition {
 // --------------------------------------------------------------------
 func createClassWithMethodsIDL() *IDL.IDLDefinition {
 	// Create a class with methods IDL
-	idl := IDL.NewIDLDefinition("class_with_methods.json", "openjdk")
+	idl := IDL.NewIDLDefinition("class_with_methods.json", "jvm")
 
 	module := IDL.NewModuleDefinition("com.example.Calculator")
 
@@ -162,7 +162,7 @@ func createClassWithMethodsIDL() *IDL.IDLDefinition {
 // --------------------------------------------------------------------
 func createGlobalsIDL() *IDL.IDLDefinition {
 	// Create globals IDL
-	idl := IDL.NewIDLDefinition("globals.json", "openjdk")
+	idl := IDL.NewIDLDefinition("globals.json", "jvm")
 
 	module := IDL.NewModuleDefinition("com.example.Globals")
 

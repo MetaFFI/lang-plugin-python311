@@ -1,14 +1,10 @@
-#include "../plugin-sdk/compiler/idl_plugin_interface.h"
-#include "../plugin-sdk/runtime/xllr_capi_loader.h"
+#include <compiler/idl_plugin_interface.h>
+#include <runtime/xllr_capi_loader.h>
 #include "../runtime/python3_api_wrapper.h"
 #include <string>
-#include <memory>
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <vector>
-#include <cstdlib>
-#include <array>
+#include <filesystem>
 
 class PythonIDLPlugin : public idl_plugin_interface
 {
@@ -22,6 +18,32 @@ private:
                 throw std::runtime_error("Failed to load Python API");
             }
             pPy_Initialize();
+
+            // Add SDK path to sys.path so we can import sdk.idl_compiler.python3
+            std::filesystem::path sdk_path = std::filesystem::current_path() / "sdk";
+            std::string sdk_path_str = sdk_path.string();
+
+            // Get sys.path
+            PyObject* sys = pPyImport_ImportModule("sys");
+            if (!sys) {
+                throw std::runtime_error("Failed to import sys module");
+            }
+
+            PyObject* sys_path = pPyObject_GetAttrString(sys, "path");
+            if (!sys_path) {
+                Py_DECREF(sys);
+                throw std::runtime_error("Failed to get sys.path");
+            }
+
+            // Add SDK path if not already present
+            PyObject* sdk_path_py = pPyUnicode_FromString(sdk_path_str.c_str());
+            if (pPySequence_Contains(sys_path, sdk_path_py) == 0) {
+                pPyList_Append(sys_path, sdk_path_py);
+            }
+            Py_DECREF(sdk_path_py);
+            Py_DECREF(sys_path);
+            Py_DECREF(sys);
+
             python_initialized = true;
         }
     }
@@ -29,246 +51,134 @@ private:
     std::string extract_and_generate_idl(const std::string& file_path)
     {
         initialize_python();
-        
-        // Import required modules
-        PyObject* sys = pPyImport_ImportModule("sys");
-        PyObject* os = pPyImport_ImportModule("os");
-        PyObject* ast = pPyImport_ImportModule("ast");
-        PyObject* json = pPyImport_ImportModule("json");
-        PyObject* inspect = pPyImport_ImportModule("inspect");
-        
-        if (!sys || !os || !ast || !json || !inspect) {
-            return "{\"error\": \"Failed to import required Python modules\"}";
-        }
 
-        // Create the extraction code as a string
-        std::string extractor_code = R"(
-import ast
-import json
-import inspect
-import sys
-import os
-from typing import Dict, List, Any, Optional
-
-def safe_getattr(obj, attr, default=None):
-    """Safely get attribute from object"""
-    try:
-        return getattr(obj, attr, default)
-    except:
-        return default
-
-def extract_type_annotation(annotation):
-    """Extract type annotation as string"""
-    if annotation is None:
-        return "Any"
-    try:
-        return ast.unparse(annotation) if hasattr(ast, 'unparse') else str(annotation)
-    except:
-        return str(annotation)
-
-def extract_function_info(func_node, module_name=""):
-    """Extract function information from AST node"""
-    func_info = {
-        "name": func_node.name,
-        "type": "function",
-        "parameters": [],
-        "return_type": "Any",
-        "docstring": ast.get_docstring(func_node) or ""
-    }
-    
-    # Extract parameters
-    for arg in func_node.args.args:
-        param_info = {
-            "name": arg.arg,
-            "type": extract_type_annotation(arg.annotation)
-        }
-        func_info["parameters"].append(param_info)
-    
-    # Extract return type
-    if func_node.returns:
-        func_info["return_type"] = extract_type_annotation(func_node.returns)
-    
-    return func_info
-
-def extract_class_info(class_node, module_name=""):
-    """Extract class information from AST node"""
-    class_info = {
-        "name": class_node.name,
-        "type": "class",
-        "methods": [],
-        "fields": [],
-        "docstring": ast.get_docstring(class_node) or ""
-    }
-    
-    # Extract methods and fields
-    for item in class_node.body:
-        if isinstance(item, ast.FunctionDef):
-            method_info = extract_function_info(item, module_name)
-            method_info["name"] = item.name
-            class_info["methods"].append(method_info)
-        elif isinstance(item, ast.Assign):
-            # Class variables
-            for target in item.targets:
-                if isinstance(target, ast.Name):
-                    field_info = {
-                        "name": target.id,
-                        "type": "Any"
-                    }
-                    class_info["fields"].append(field_info)
-    
-    return class_info
-
-def extract_global_variables(module_node):
-    """Extract global variables from module"""
-    globals_list = []
-    
-    for item in module_node.body:
-        if isinstance(item, ast.Assign):
-            for target in item.targets:
-                if isinstance(target, ast.Name):
-                    global_info = {
-                        "name": target.id,
-                        "type": "Any"
-                    }
-                    globals_list.append(global_info)
-    
-    return globals_list
-
-def extract_module_info(file_path):
-    """Extract all information from a Python module"""
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            source_code = f.read()
-        
-        tree = ast.parse(source_code)
-        
-        module_info = {
-            "name": os.path.splitext(os.path.basename(file_path))[0],
-            "functions": [],
-            "classes": [],
-            "globals": []
-        }
-        
-        # Extract all entities
-        for item in tree.body:
-            if isinstance(item, ast.FunctionDef):
-                func_info = extract_function_info(item)
-                module_info["functions"].append(func_info)
-            elif isinstance(item, ast.ClassDef):
-                class_info = extract_class_info(item)
-                module_info["classes"].append(class_info)
-            elif isinstance(item, ast.Assign):
-                # Global variables
-                for target in item.targets:
-                    if isinstance(target, ast.Name):
-                        global_info = {
-                            "name": target.id,
-                            "type": "Any"
-                        }
-                        module_info["globals"].append(global_info)
-        
-        return module_info
-        
-    except Exception as e:
-        return {"error": f"Failed to extract module info: {str(e)}"}
-
-def generate_metaffi_idl(module_info):
-    """Generate MetaFFI IDL JSON from extracted module info"""
-    if "error" in module_info:
-        return json.dumps({"error": module_info["error"]})
-    
-    metaffi_idl = {
-        "modules": [
-            {
-                "name": module_info["name"],
-                "functions": [],
-                "classes": []
-            }
-        ]
-    }
-    
-    module = metaffi_idl["modules"][0]
-    
-    # Convert functions
-    for func in module_info["functions"]:
-        metaffi_func = {
-            "name": func["name"],
-            "parameters": func["parameters"],
-            "return_type": func["return_type"]
-        }
-        module["functions"].append(metaffi_func)
-    
-    # Convert classes
-    for cls in module_info["classes"]:
-        metaffi_class = {
-            "name": cls["name"],
-            "methods": [],
-            "fields": cls["fields"]
-        }
-        
-        for method in cls["methods"]:
-            metaffi_method = {
-                "name": method["name"],
-                "parameters": method["parameters"],
-                "return_type": method["return_type"]
-            }
-            metaffi_class["methods"].append(metaffi_method)
-        
-        module["classes"].append(metaffi_class)
-    
-    return json.dumps(metaffi_idl, indent=2)
-
-def process_file(file_path):
-    """Process a single file and return the IDL JSON"""
-    module_info = extract_module_info(file_path)
-    return generate_metaffi_idl(module_info)
-)";
-
-        // Execute the embedded Python code
-        PyObject* main_module = pPyImport_AddModule("__main__");
-        PyObject* globals = pPyModule_GetDict(main_module);
-        
-        // Execute the extractor code
-        int result = pPyRun_SimpleString(extractor_code.c_str());
-        if (result != 0) {
+        // Import the SDK IDL compiler module
+        PyObject* idl_module = pPyImport_ImportModule("sdk.idl_compiler.python3.extractor");
+        if (!idl_module) {
             pPyErr_Print();
-            return "{\"error\": \"Failed to execute Python extractor code\"}";
+            return "{\"error\": \"Failed to import sdk.idl_compiler.python3.extractor\"}";
         }
-        
-        // Call the process_file function with file_path
-        PyObject* process_func = pPyDict_GetItemString(globals, "process_file");
-        if (!process_func) {
-            return "{\"error\": \"process_file function not found\"}";
-        }
-        
-        // Create arguments for process_file function
-        PyObject* args = pPyTuple_New(1);
-        pPyTuple_SetItem(args, 0, pPyUnicode_FromString(file_path.c_str()));
-        PyObject* call_result = pPyObject_CallObject(process_func, args);
-        
-        if (!call_result) {
+
+        PyObject* generator_module = pPyImport_ImportModule("sdk.idl_compiler.python3.idl_generator");
+        if (!generator_module) {
             pPyErr_Print();
-            return "{\"error\": \"Failed to execute process_file function\"}";
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to import sdk.idl_compiler.python3.idl_generator\"}";
         }
-        
-        // Get the result as string
-        PyObject* str_result = pPyObject_Repr(call_result);
-        const char* result_str = pPyUnicode_AsUTF8(str_result);
-        std::string json_result = result_str ? result_str : "{\"error\": \"Failed to get result\"}";
-        
+
+        // Get PythonExtractor class
+        PyObject* extractor_class = pPyObject_GetAttrString(idl_module, "PythonExtractor");
+        if (!extractor_class) {
+            pPyErr_Print();
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to get PythonExtractor class\"}";
+        }
+
+        // Create extractor instance
+        PyObject* extractor_args = pPyTuple_New(1);
+        pPyTuple_SetItem(extractor_args, 0, pPyUnicode_FromString(file_path.c_str()));
+        PyObject* extractor = pPyObject_CallObject(extractor_class, extractor_args);
+        Py_DECREF(extractor_args);
+        Py_DECREF(extractor_class);
+
+        if (!extractor) {
+            pPyErr_Print();
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to create PythonExtractor instance\"}";
+        }
+
+        // Call extract() method
+        PyObject* extract_method = pPyObject_GetAttrString(extractor, "extract");
+        if (!extract_method) {
+            pPyErr_Print();
+            Py_DECREF(extractor);
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to get extract method\"}";
+        }
+
+        PyObject* module_info = pPyObject_CallObject(extract_method, nullptr);
+        Py_DECREF(extract_method);
+
+        if (!module_info) {
+            pPyErr_Print();
+            Py_DECREF(extractor);
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to extract module info\"}";
+        }
+
+        // Get IDLGenerator class
+        PyObject* generator_class = pPyObject_GetAttrString(generator_module, "IDLGenerator");
+        if (!generator_class) {
+            pPyErr_Print();
+            Py_DECREF(module_info);
+            Py_DECREF(extractor);
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to get IDLGenerator class\"}";
+        }
+
+        // Create generator instance
+        PyObject* generator_args = pPyTuple_New(2);
+        pPyTuple_SetItem(generator_args, 0, pPyUnicode_FromString(file_path.c_str()));
+        pPyTuple_SetItem(generator_args, 1, module_info);
+        PyObject* generator = pPyObject_CallObject(generator_class, generator_args);
+        Py_DECREF(generator_args);
+        Py_DECREF(generator_class);
+
+        if (!generator) {
+            pPyErr_Print();
+            Py_DECREF(extractor);
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to create IDLGenerator instance\"}";
+        }
+
+        // Call generate_json() method
+        PyObject* generate_json_method = pPyObject_GetAttrString(generator, "generate_json");
+        if (!generate_json_method) {
+            pPyErr_Print();
+            Py_DECREF(generator);
+            Py_DECREF(extractor);
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to get generate_json method\"}";
+        }
+
+        PyObject* json_result = pPyObject_CallObject(generate_json_method, nullptr);
+        Py_DECREF(generate_json_method);
+
+        if (!json_result) {
+            pPyErr_Print();
+            Py_DECREF(generator);
+            Py_DECREF(extractor);
+            Py_DECREF(generator_module);
+            Py_DECREF(idl_module);
+            return "{\"error\": \"Failed to generate JSON\"}";
+        }
+
+        // Convert result to C++ string
+        const char* json_str = pPyUnicode_AsUTF8(json_result);
+        std::string result = json_str ? json_str : "{\"error\": \"Failed to convert JSON to string\"}";
+
         // Cleanup
-        Py_DECREF(args);
-        Py_DECREF(call_result);
-        Py_DECREF(str_result);
-        
-        return json_result;
+        Py_DECREF(json_result);
+        Py_DECREF(generator);
+        Py_DECREF(extractor);
+        Py_DECREF(generator_module);
+        Py_DECREF(idl_module);
+
+        return result;
     }
 
 public:
     void init() override
     {
         initialize_python();
-        std::cout << "Python IDL Plugin initialized with embedded Python code." << std::endl;
+        std::cout << "Python IDL Plugin initialized (using SDK)" << std::endl;
     }
 
     void parse_idl(const char* source_code, uint32_t source_length,
@@ -282,7 +192,7 @@ public:
             std::string file_path(file_or_path, file_or_path_length);
             std::string source(source_code, source_length);
 
-            // Write source code to temporary file if needed
+            // Write source code to temporary file if provided
             if (!source.empty())
             {
                 std::ofstream temp_file(file_path);
@@ -290,12 +200,15 @@ public:
                 temp_file.close();
             }
 
-            // Extract and generate IDL using embedded Python code
+            // Extract and generate IDL using SDK
             std::string idl_json = extract_and_generate_idl(file_path);
-            
+
+            // Check for errors
             if (idl_json.find("\"error\"") != std::string::npos) {
                 *out_err = xllr_alloc_string(idl_json.c_str(), idl_json.length());
                 *out_err_len = idl_json.length();
+                *out_idl_def_json = nullptr;
+                *out_idl_def_json_length = 0;
                 return;
             }
 
@@ -309,11 +222,16 @@ public:
         {
             *out_err = xllr_alloc_string(e.what(), strlen(e.what()));
             *out_err_len = strlen(e.what());
+            *out_idl_def_json = nullptr;
+            *out_idl_def_json_length = 0;
         }
         catch (...)
         {
-            *out_err = xllr_alloc_string("Unknown error in parse_idl", 26);
-            *out_err_len = 26;
+            const char* error_msg = "Unknown error in parse_idl";
+            *out_err = xllr_alloc_string(error_msg, strlen(error_msg));
+            *out_err_len = strlen(error_msg);
+            *out_idl_def_json = nullptr;
+            *out_idl_def_json_length = 0;
         }
     }
 
@@ -336,16 +254,15 @@ extern "C"
     {
         static PythonIDLPlugin plugin;
         static bool initialized = false;
-        
+
         if (!initialized) {
             plugin.init();
             initialized = true;
         }
-        
+
         plugin.parse_idl(source_code, source_code_length,
                         file_path, file_path_length,
                         out_idl_def_json, out_idl_def_json_length,
                         out_err, out_err_len);
     }
 }
- 

@@ -23,7 +23,7 @@ def load_python_plugin():
 	global python_plugin_handle
 	
 	if python_plugin_handle == None:
-		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python311'))
+		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 		python_plugin_handle.set_entrypoint.argstype = [c_char_p, c_void_p]
 		python_plugin_handle.xcall_params_ret.argstype = [c_int, py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]
 		python_plugin_handle.xcall_params_no_ret.argstype = [c_int, py_object, c_void_p, POINTER(c_char_p), POINTER(c_ulonglong)]

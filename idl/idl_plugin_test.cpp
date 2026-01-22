@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest/doctest.h"
-#include "../plugin-sdk/compiler/idl_plugin_interface.h"
+#include <compiler/idl_plugin_interface.h>
 #include <string>
 #include <iostream>
 

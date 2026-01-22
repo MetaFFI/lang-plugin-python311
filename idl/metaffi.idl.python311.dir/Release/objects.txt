@@ -1,0 +1,11 @@
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/cdt.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/cdts_traverse_construct.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/cdts_wrapper.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/metaffi_primitives.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/xllr_capi_loader.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/xllr_static_capi_loader.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/entity_path_parser.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/expand_env.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/library_loader.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/xllr_api_wrapper.obj
+C:/src/github.com/MetaFFI/lang-plugin-python311/idl/metaffi.idl.python311.dir/Release/python3_api_wrapper.obj

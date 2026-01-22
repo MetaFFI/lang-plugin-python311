@@ -49,11 +49,11 @@ def load_xllr_and_python_plugin():
 	if xllr_handle == None:
 		if platform.system()=='Windows':
 			os.add_dll_directory(os.environ['METAFFI_HOME'])
-			os.add_dll_directory(os.environ['METAFFI_HOME']+'\\python311\\')
+			os.add_dll_directory(os.environ['METAFFI_HOME']+'\\python3\\')
 		xllr_handle = cdll.LoadLibrary(get_filename_to_load('xllr'))
 
 	if python_plugin_handle == None:
-		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python311'))
+		python_plugin_handle = cdll.LoadLibrary(get_filename_to_load('xllr.python3'))
 
 		err = pointer((c_char * 1)(0))
 		err_len = (c_ulonglong)(0)

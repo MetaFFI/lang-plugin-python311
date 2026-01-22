@@ -11,13 +11,13 @@ def get_files(win_metaffi_home: str, ubuntu_metaffi_home: str) -> Tuple[Dict[str
 	# get all files from $METAFFI_HOME/go - the installed dir of this project recursively
 	# don't continue recursively if the directory starts with '__'
 
-	pluginname = 'python311'
+pluginname = 'python3'
 	
 	win_metaffi_home = win_metaffi_home.replace('\\', '/') + f'/{pluginname}/'
 	ubuntu_metaffi_home = ubuntu_metaffi_home.replace('\\', '/') + f'/{pluginname}/'
 	
 	win_files = {
-		'xllr.python311.dll': win_metaffi_home + 'xllr.python311.dll',
+		'xllr.python3.dll': win_metaffi_home + 'xllr.python3.dll',
 		'boost_filesystem-vc143-mt-gd-x64-1_87.dll': win_metaffi_home + '../boost_filesystem-vc143-mt-gd-x64-1_87.dll'
 	}
 	
@@ -27,7 +27,7 @@ def get_files(win_metaffi_home: str, ubuntu_metaffi_home: str) -> Tuple[Dict[str
 			raise FileNotFoundError(f'{value} not found - cannot build the installer')
 
 	ubuntu_files = {
-		'xllr.python311.so': ubuntu_metaffi_home + 'xllr.python311.so',
+		'xllr.python3.so': ubuntu_metaffi_home + 'xllr.python3.so',
 		'libboost_filesystem.so.1.87.0': ubuntu_metaffi_home + 'libboost_filesystem.so.1.87.0'
 	}
 	

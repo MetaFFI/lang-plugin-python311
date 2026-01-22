@@ -304,7 +304,7 @@ bool load_python3_api()
 		if(GetModuleFileNameA(hModule, moduleName, sizeof(moduleName)))
 		{
 			std::string name(moduleName);
-			if(name.find("python3") != std::string::npos || name.find("python311") != std::string::npos)
+			if(name.find("python3") != std::string::npos)
 			{
 				python_lib_handle = hModule;
 				printf("Found already loaded Python DLL: %s\n", name.c_str());
@@ -316,7 +316,6 @@ bool load_python3_api()
 	if(!python_lib_handle)
 	{
 		const char* lib_names[] = {
-		        "python311.dll",
 		        "python3.dll",
 		};
 
@@ -366,7 +365,7 @@ bool load_python3_api()
 		Dl_info dl_info;
 
 		dl_iterate_phdr([](struct dl_phdr_info* info, size_t size, void* data) -> int {
-			if (info->dlpi_name && (strstr(info->dlpi_name, "libpython3.11") || strstr(info->dlpi_name, "libpython3"))) {
+			if (info->dlpi_name && strstr(info->dlpi_name, "libpython3")) {
 				void** handle = static_cast<void**>(data);
 				// Get handle to already loaded library without loading it again
 				*handle = dlopen(info->dlpi_name, RTLD_NOLOAD | RTLD_NOW);
@@ -385,10 +384,9 @@ bool load_python3_api()
 			printf("+++ didn't find already loaded python library\n");
 			
 			const char* lib_names[] = {
-					"libpython3.11.so",
-					"libpython3.11.so.1.0",
-					"libpython3.11.so.1",
 					"libpython3.so",
+					"libpython3.so.1",
+					"libpython3.so.1.0",
 			};
 
 			std::string load_errors;

@@ -1,12 +1,12 @@
-# OpenJDK End-to-End Tests
+# JVM End-to-End Tests
 
-This directory contains end-to-end tests for the OpenJDK MetaFFI compiler plugin, demonstrating the complete flow from Java classes to generated Python code.
+This directory contains end-to-end tests for the JVM MetaFFI compiler plugin, demonstrating the complete flow from Java classes to generated Python code.
 
 ## Test Files
 
 ### Core Test Files
-- **`openjdk_test.py`** - Direct MetaFFI API test (without compiler)
-- **`openjdk_test_with_compiler.py`** - End-to-end test using generated Python code
+- **`jvm_test.py`** - Direct MetaFFI API test (without compiler)
+- **`jvm_test_with_compiler.py`** - End-to-end test using generated Python code
 - **`build_metaffi.py`** - Build script that runs the MetaFFI compiler
 - **`run_e2e_test.py`** - Complete test runner (build + test)
 
@@ -17,7 +17,7 @@ This directory contains end-to-end tests for the OpenJDK MetaFFI compiler plugin
 
 ## Test Flow
 
-### 1. Direct API Test (`openjdk_test.py`)
+### 1. Direct API Test (`jvm_test.py`)
 ```
 Python → MetaFFI API → Java Classes
 ```
@@ -25,9 +25,9 @@ Python → MetaFFI API → Java Classes
 - Uses low-level API calls
 - Validates basic functionality
 
-### 2. End-to-End Test (`openjdk_test_with_compiler.py`)
+### 2. End-to-End Test (`jvm_test_with_compiler.py`)
 ```
-Java Classes → OpenJDK IDL Plugin → MetaFFI IDL → Python311 Host Compiler → Generated Python Code → Test
+Java Classes → JVM IDL Plugin → MetaFFI IDL → Python311 Host Compiler → Generated Python Code → Test
 ```
 - Tests the complete MetaFFI compiler pipeline
 - Uses generated high-level Python interface
@@ -47,10 +47,10 @@ python run_e2e_test.py
 python build_metaffi.py
 
 # 2. Run the direct API test
-python openjdk_test.py
+python jvm_test.py
 
 # 3. Run the end-to-end test
-python openjdk_test_with_compiler.py
+python jvm_test_with_compiler.py
 ```
 
 ## Expected Generated Files
@@ -93,7 +93,7 @@ After running `build_metaffi.py`, you should see:
 
 3. **Java class loading errors**
    - Ensure the `sanity/` directory contains valid `.class` files
-   - Verify that the Java classes are compatible with the OpenJDK IDL plugin
+   - Verify that the Java classes are compatible with the JVM IDL plugin
 
 ### Debug Mode
 ```bash
@@ -101,13 +101,13 @@ After running `build_metaffi.py`, you should see:
 python -v run_e2e_test.py
 
 # Run individual tests with more detail
-python -m unittest -v openjdk_test_with_compiler.TestSanityWithCompiler
+python -m unittest -v jvm_test_with_compiler.TestSanityWithCompiler
 ```
 
 ## Architecture Notes
 
 ### MetaFFI Compiler Pipeline
-1. **OpenJDK IDL Plugin**: Analyzes Java bytecode and generates MetaFFI IDL
+1. **JVM IDL Plugin**: Analyzes Java bytecode and generates MetaFFI IDL
 2. **Python311 Host Compiler**: Takes MetaFFI IDL and generates Python code
 3. **Generated Python Code**: Provides high-level interface to Java classes
 
@@ -126,7 +126,7 @@ When adding new tests:
 ## Dependencies
 
 - MetaFFI CLI (`metaffi` command)
-- OpenJDK IDL Plugin
+- JVM IDL Plugin
 - Python311 Host Compiler
 - Python 3.11+
 - Java Runtime Environment (JRE) 

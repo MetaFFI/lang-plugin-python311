@@ -10,7 +10,7 @@ runtime: metaffi.metaffi_runtime.MetaFFIRuntime | None = None
 
 def init():
 	global runtime
-	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('openjdk')
+	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('jvm')
 
 
 def fini():

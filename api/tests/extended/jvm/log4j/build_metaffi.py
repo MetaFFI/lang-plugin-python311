@@ -32,16 +32,14 @@ def main():
 	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 	
 	try:
-		run_command(f'metaffi -c --idl-plugin openjdk --idl sanity/ -h python311')
-		print("Successfully generated Python code from OpenJDK IDL plugin")
+		run_command(f'metaffi -c --idl-plugin jvm --idl log4j-api-2.21.1.jar;log4j-core-2.21.1.jar -h python3')
+		print("Successfully generated Python code from log4j JAR files using JVM IDL plugin")
 	except Exception as e:
-		print(f"Warning: Failed to generate Python code: {e}")
-		print("   This is expected if the OpenJDK IDL plugin is not built.")
-		print("   The test will run with dummy classes for structure validation.")
-		# Don't exit with error - let the test continue with dummy classes
+		print(f"Error: Failed to generate Python code: {e}")
+		print("   This indicates a problem with the JVM IDL plugin or Python311 host compiler.")
+		print("   Please check the IDL plugin and host compiler implementations.")
+		exit(1)
 
 
 if __name__ == '__main__':
-	main()
-	
-	
+	main() 

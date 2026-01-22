@@ -1,6 +1,6 @@
 package main
 
-import "github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
+import "github.com/MetaFFI/sdk/idl_entities/go/IDL"
 
 var MetaFFITypeToPython3Type = map[IDL.MetaFFIType]string{
 

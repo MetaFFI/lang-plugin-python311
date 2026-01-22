@@ -6,7 +6,7 @@ import platform
 from . import metaffi_types, xllr_wrapper
 import sys
 
-python_plugin_dir = 'python311'
+python_plugin_dir = 'python3'
 
 if platform.system() == 'Windows':
 	os.add_dll_directory(os.environ['METAFFI_HOME'])

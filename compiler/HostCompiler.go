@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	compiler "github.com/MetaFFI/plugin-sdk/compiler/go"
-	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
+	"github.com/MetaFFI/sdk/compiler/go/common"
+	"github.com/MetaFFI/sdk/idl_entities/go/IDL"
 )
 
 var pythonKeywords = map[string]bool{
@@ -66,7 +66,7 @@ func NewHostCompiler() *HostCompiler {
 // --------------------------------------------------------------------
 func (this *HostCompiler) Compile(definition *IDL.IDLDefinition, outputDir string, outputFilename string, hostOptions map[string]string) (err error) {
 
-	compiler.ModifyKeywords(definition, pythonKeywords, func(keyword string) string { return keyword + "__" })
+	common.ModifyKeywords(definition, pythonKeywords, func(keyword string) string { return keyword + "__" })
 
 	if outputFilename == "" {
 		outputFilename = definition.IDLSource

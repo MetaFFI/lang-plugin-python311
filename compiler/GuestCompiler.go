@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/MetaFFI/plugin-sdk/compiler/go/IDL"
+	"github.com/MetaFFI/sdk/idl_entities/go/IDL"
 )
 
 // --------------------------------------------------------------------

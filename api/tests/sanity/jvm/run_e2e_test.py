@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-end test runner for OpenJDK -> Python311 MetaFFI compilation.
+End-to-end test runner for JVM -> Python311 MetaFFI compilation.
 
 This script:
 1. Runs the MetaFFI compiler to generate Python code from Java classes
@@ -69,7 +69,7 @@ def check_generated_files():
 
 def main():
     """Main function to run the end-to-end test"""
-    print("🚀 Starting OpenJDK -> Python311 MetaFFI End-to-End Test")
+    print("🚀 Starting JVM -> Python311 MetaFFI End-to-End Test")
     print(f"Working directory: {os.getcwd()}")
     
     # Step 1: Build the MetaFFI code
@@ -86,7 +86,7 @@ def main():
     
     # Step 3: Run the end-to-end test
     print("\n🧪 Step 3: Running end-to-end test...")
-    if not run_command("python openjdk_test_with_compiler.py", "Running end-to-end test with generated code"):
+    if not run_command("python jvm_test_with_compiler.py", "Running end-to-end test with generated code"):
         print("❌ End-to-end test failed. Exiting.")
         return 1
     

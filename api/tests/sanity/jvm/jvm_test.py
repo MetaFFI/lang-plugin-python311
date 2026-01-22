@@ -44,7 +44,7 @@ def init():
 	import time
 	#time.sleep(30)
 	
-	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('openjdk')
+	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('jvm')
 	runtime.load_runtime_plugin()
 	test_runtime_module = runtime.load_module('sanity/TestRuntime.class')
 	test_map_module = runtime.load_module('sanity/TestMap.class')

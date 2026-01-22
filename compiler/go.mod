@@ -1,7 +1,14 @@
-module github.com/MetaFFI/lang-plugin-python311/compiler
+module github.com/MetaFFI/lang-plugin-python3/compiler
 
-go 1.16
+go 1.23.0
 
-require github.com/MetaFFI/plugin-sdk v0.0.0-20240305071807-ac730a1a58f1
+toolchain go1.24.4
 
-replace github.com/MetaFFI/plugin-sdk => ../plugin-sdk
+require (
+	github.com/MetaFFI/sdk/compiler/go v0.0.0
+	github.com/MetaFFI/sdk/idl_entities/go v0.0.0
+)
+
+replace github.com/MetaFFI/sdk/compiler/go => ../../sdk/compiler/go
+
+replace github.com/MetaFFI/sdk/idl_entities/go => ../../sdk/idl_entities/go

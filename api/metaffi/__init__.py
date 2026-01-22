@@ -53,7 +53,7 @@ import os
 import ctypes
 import sys
 
-python_plugin_dir = 'python311'
+python_plugin_dir = 'python3'
 
 
 # create_lambda is a function that creates a lambda function that calls xllr.call_xcall
@@ -99,7 +99,7 @@ XCallNoParamsNoRetType = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_void_p
 # as a host or a guest due to the initialization of the python interpreter
 # and loading the functions and variables
 if not hasattr(sys, "__loading_within_xllr_python3"):
-	runtime = metaffi.metaffi_runtime.MetaFFIRuntime('python311')
+runtime = metaffi.metaffi_runtime.MetaFFIRuntime('python3')
 	runtime.load_runtime_plugin()
 
 

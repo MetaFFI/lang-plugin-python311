@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import metaffi
 
 # Create a MetaFFIRuntime object
-runtime: metaffi.metaffi_runtime.MetaFFIRuntime = metaffi.metaffi_runtime.MetaFFIRuntime('python311')
+runtime: metaffi.metaffi_runtime.MetaFFIRuntime = metaffi.metaffi_runtime.MetaFFIRuntime('python3')
 current_path = os.path.dirname(os.path.realpath(__file__))
 
 test_runtime_module: metaffi.metaffi_module.MetaFFIModule | None = None
