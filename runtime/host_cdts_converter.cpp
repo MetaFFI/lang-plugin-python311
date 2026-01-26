@@ -1,33 +1,41 @@
 #include "host_cdts_converter.h"
-#include "cdts_python3.h"
-#include "utils.h"
+#include "runtime_globals.h"
+
+// SDK includes
+#include <cdts_serializer/cpython3/cdts_python3_serializer.h>
+#include <runtime_manager/cpython3/gil_guard.h>
+#include <runtime/xllr_capi_loader.h>
+
+using namespace metaffi::utils;
 
 //--------------------------------------------------------------------
 [[maybe_unused]] cdts* convert_host_params_to_cdts(PyObject* params, metaffi_type_info* param_metaffi_types, metaffi_size params_count, metaffi_size return_values_size)
 {
 	try
 	{
-
-		pyscope();
+		gil_guard guard;
 
 		Py_ssize_t params_size = Py_IsNone(params) ? 0 : pPyTuple_Size(params);
 		if(params_size == 0)
 		{
-			if(return_values_size == 0){
+			if(return_values_size == 0)
+			{
 				return nullptr;
 			}
-			else{
-				return xllr_alloc_cdts_buffer(0, return_values_size);
-			}
+			return xllr_alloc_cdts_buffer(0, return_values_size);
 		}
 
-		// get the data from the local objects
+		// Allocate CDTS buffer
 		cdts* cdts_buf = xllr_alloc_cdts_buffer(pPyTuple_Size(params), return_values_size);
 		cdts& cdts_params = cdts_buf[0];
-		
-		cdts_python3 pycdts(cdts_params);
 
-		pycdts.to_cdts(params, param_metaffi_types, params_count);
+		// Use SDK serializer to convert Python objects to CDTS
+		cdts_python3_serializer ser(get_runtime_manager(), cdts_params);
+		for(metaffi_size i = 0; i < params_count; i++)
+		{
+			PyObject* item = pPyTuple_GetItem(params, i);
+			ser.add(item, param_metaffi_types[i].type);
+		}
 
 		return cdts_buf;
 	}
@@ -45,17 +53,17 @@
 {
 	try
 	{
-		pyscope();
+		gil_guard guard;
 		cdts& retvals = pcdts[index];
-		cdts_python3 cdts(retvals);
-		PyObject* o = cdts.to_py_tuple().detach();
 
-		return o;
+		// Use SDK serializer to convert CDTS to Python tuple
+		cdts_python3_serializer ser(get_runtime_manager(), retvals);
+		return ser.extract_as_tuple();
 	}
 	catch(std::exception& e)
 	{
 		std::stringstream ss;
-		ss << "Failed convert_host_params_to_cdts: " << e.what();
+		ss << "Failed convert_host_return_values_from_cdts: " << e.what();
 		pPyErr_SetString(NULL, ss.str().c_str());
 		return pPy_None;
 	}

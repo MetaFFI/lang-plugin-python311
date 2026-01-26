@@ -1,35 +1,43 @@
-# load conan packages
+# Load conan packages
 find_or_install_package(Boost COMPONENTS filesystem)
-find_or_install_package(doctest)
 
+# Collect plugin source files
 collect_c_cpp_files(${CMAKE_CURRENT_LIST_DIR} xllr.python3)
 remove_files_inside_path("${xllr.python3_src}" "deps")
 set(xllr.python3_src ${NEW_FILES})
 
-# get cpython from "deps" as vcpkg doesn't have python3.11 and python3.12
+# Collect SDK cpython3 runtime_manager sources
+collect_c_cpp_files("${metaffi_sdk_root}/runtime_manager/cpython3" sdk_cpython3_runtime_manager)
+
+# Collect SDK cpython3 cdts_serializer sources
+collect_c_cpp_files("${metaffi_sdk_root}/cdts_serializer/cpython3" sdk_cpython3_cdts_serializer)
+
+# Combined SDK sources for cpython3
+set(sdk_cpython3_src
+	${sdk_src}
+	${sdk_cpython3_runtime_manager_src}
+	${sdk_cpython3_cdts_serializer_src}
+)
+
+# SDK include directories (add metaffi_sdk_root for <runtime_manager/cpython3/...> style includes)
+set(sdk_cpython3_include
+	${sdk_include_dir}
+	${metaffi_sdk_root}
+)
+
+# Platform-specific link libraries
+set(platform_libs "")
+if(WIN32)
+	# Version.lib is needed for GetFileVersionInfoA, VerQueryValueA, etc.
+	# used in python_api_wrapper.cpp for detecting Python version from DLL
+	set(platform_libs "Version.lib")
+endif()
+
+# Build shared library
 c_cpp_shared_lib(xllr.python3
-		"${xllr.python3_src};${sdk_src}"
-		"${sdk_include_dir};${Boost_INCLUDE_DIRS};${CPython_INCLUDE_DIR}"
-		"Boost::filesystem;"
+		"${xllr.python3_src};${sdk_cpython3_src}"
+		"${sdk_cpython3_include};${Boost_INCLUDE_DIRS}"
+		"Boost::filesystem;${platform_libs}"
 		"./python3")
 
 set(xllr.python3 xllr.python3 PARENT_SCOPE)
-
-# run python_runtime_test.cpp doctest unit test
-c_cpp_exe(python_runtime_test
-		"${xllr.python3_src};${sdk_src};python_runtime_test.cpp"
-		"${sdk_include_dir};${Boost_INCLUDE_DIRS};${doctest_INCLUDE_DIRS};${CPython_INCLUDE_DIR}"
-		"doctest::doctest;Boost::filesystem;"
-		"./python3")
-
-# add post build that deletes libpython3* from $ENV{METAFFI_HOME}/python3
-add_custom_command(TARGET python_runtime_test POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E remove
-		$ENV{METAFFI_HOME}/python3/libpython3*
-		COMMENT "Deleting libpython3* from $ENV{METAFFI_HOME}/python3")
-
-
-add_dependencies(python_runtime_test xllr.python3)
-set(python_runtime_test python_runtime_test PARENT_SCOPE)
-
-add_test(NAME python_runtime_test COMMAND $ENV{METAFFI_HOME}/python3/python_runtime_test)

@@ -7,17 +7,14 @@ endif()
 # runtime
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/runtime")
 
-# api
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/api")
-
 # compiler IDL plugin
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/idl")
 
 # compiler plugin
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/compiler")
+#add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/compiler")
 
 add_custom_target(python3
-	DEPENDS xllr.python3 python_runtime_test metaffi.idl.python3 python3_idl_plugin_test metaffi.compiler.python3
+	DEPENDS xllr.python3 metaffi.idl.python3 #metaffi.compiler.python3
 )
 set_target_properties(python3 PROPERTIES EXCLUDE_FROM_ALL TRUE)
 

@@ -76,3 +76,5 @@ runtime/deps/linux/cpython/bin/pydoc3
 runtime/deps/linux/cpython/bin/python
 runtime/deps/linux/cpython/bin/python3
 runtime/deps/linux/cpython/bin/python3-config
+go.work
+go.work.sum

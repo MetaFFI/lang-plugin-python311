@@ -9,6 +9,4 @@ require (
 	github.com/MetaFFI/sdk/idl_entities/go v0.0.0
 )
 
-replace github.com/MetaFFI/sdk/compiler/go => ../../sdk/compiler/go
 
-replace github.com/MetaFFI/sdk/idl_entities/go => ../../sdk/idl_entities/go

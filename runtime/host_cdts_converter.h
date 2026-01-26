@@ -1,7 +1,7 @@
 #pragma once
 #include <runtime/cdt.h>
 
-#include "python3_api_wrapper.h"
+#include <runtime_manager/cpython3/python_api_wrapper.h>
 
 extern "C"
 {
