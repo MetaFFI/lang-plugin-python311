@@ -1,3 +1,0 @@
-#pragma once
-
-#define PYTHON311_RUNTIME_ID 7332767675

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <filesystem>
 #include <cstdlib>
+#include <utils/safe_func.h>
 
 class PythonIDLPlugin : public idl_plugin_interface
 {
@@ -32,11 +33,12 @@ private:
 
         // Add SDK path to sys.path for importing sdk.idl_compiler.python3.*
         // SDK is expected to be in METAFFI_HOME or current working directory
-        const char* metaffi_home = std::getenv("METAFFI_HOME");
+        char* metaffi_home = metaffi_getenv_alloc("METAFFI_HOME");
         if (metaffi_home)
         {
             std::filesystem::path sdk_path = std::filesystem::path(metaffi_home);
             m_runtime->add_sys_path(sdk_path.string());
+            metaffi_free_env(metaffi_home);
         }
         else
         {

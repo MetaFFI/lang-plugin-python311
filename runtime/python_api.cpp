@@ -15,6 +15,7 @@
 #include <utility>
 #include <utils/foreign_function.h>
 #include <utils/entity_path_parser.h>
+#include <utils/safe_func.h>
 
 // SDK runtime manager and entity classes
 #include <runtime_manager/cpython3/runtime_manager.h>
@@ -119,6 +120,51 @@ struct entity_context {
 		return true;
 	}
 };
+
+static PyObject* import_module_by_path(const std::string& module_path)
+{
+	std::filesystem::path p = std::filesystem::absolute(std::filesystem::path(module_path));
+
+	if(std::filesystem::exists(p) && std::filesystem::is_regular_file(p))
+	{
+		std::filesystem::path dir = p.parent_path();
+		std::string dir_str = dir.generic_string();
+
+		PyObject* sysPath = pPySys_GetObject("path");
+		PyObject* path = pPyUnicode_FromString(dir_str.c_str());
+		if(path != nullptr)
+		{
+			if(pPySequence_Contains(sysPath, path) == 0)
+			{
+				pPyList_Append(sysPath, path);
+			}
+			Py_DECREF(path);
+		}
+
+		return pPyImport_ImportModuleLevel(p.stem().string().c_str(), pPy_None, pPy_None, pPy_None, 0);
+	}
+
+	if(std::filesystem::exists(p) && std::filesystem::is_directory(p))
+	{
+		std::filesystem::path dir = p.parent_path();
+		std::string dir_str = dir.generic_string();
+
+		PyObject* sysPath = pPySys_GetObject("path");
+		PyObject* path = pPyUnicode_FromString(dir_str.c_str());
+		if(path != nullptr)
+		{
+			if(pPySequence_Contains(sysPath, path) == 0)
+			{
+				pPyList_Append(sysPath, path);
+			}
+			Py_DECREF(path);
+		}
+
+		return pPyImport_ImportModule(p.filename().string().c_str());
+	}
+
+	return pPyImport_ImportModule(module_path.c_str());
+}
 //--------------------------------------------------------------------
 std::unordered_map<std::string, void*> foreign_entities;
 void set_entrypoint(const char* entrypoint_name, void* pfunction)
@@ -127,7 +173,7 @@ void set_entrypoint(const char* entrypoint_name, void* pfunction)
 }
 // NOTE: initialize_environment() has been removed.
 // The SDK's cpython3_runtime_manager handles sys.path initialization.
-// METAFFI_HOME and import_metaffi_package() are handled in load_runtime().
+// METAFFI_SOURCE_ROOT and import_metaffi_package() are handled in load_runtime().
 //--------------------------------------------------------------------
 // SDK runtime manager - replaces global state variables
 // g_runtime_manager is declared extern in runtime_globals.h for use by other files
@@ -148,11 +194,23 @@ void load_runtime(char** err)
 
 	try
 	{
+		auto add_metaffi_sys_path = [](const std::shared_ptr<cpython3_runtime_manager>& manager)
+		{
+			char* source_root = metaffi_getenv_alloc("METAFFI_SOURCE_ROOT");
+			if(source_root && *source_root)
+			{
+				std::filesystem::path dev_path = std::filesystem::path(source_root) / "sdk" / "api" / "python3";
+				manager->add_sys_path(dev_path.string());
+			}
+			metaffi_free_env(source_root);
+		};
+
 		// First check if python is already loaded into the process
 		auto already_loaded_python3 = cpython3_runtime_manager::load_loaded_cpython3();
 		if(already_loaded_python3)
 		{
 			g_runtime_manager = already_loaded_python3;
+			add_metaffi_sys_path(g_runtime_manager);
 			g_runtime_manager->import_metaffi_package();
 			return;
 		}
@@ -168,17 +226,7 @@ void load_runtime(char** err)
 		// Use first detected version - create() handles runtime loading internally
 		g_runtime_manager = cpython3_runtime_manager::create(versions[0]);
 
-		// Add METAFFI_HOME to sys.path
-		const char* metaffi_home = getenv("METAFFI_HOME");
-		if(metaffi_home)
-		{
-			g_runtime_manager->add_sys_path(metaffi_home);
-		}
-		else
-		{
-			handle_err(err, "METAFFI_HOME not set");
-			return;
-		}
+		add_metaffi_sys_path(g_runtime_manager);
 
 		// Import metaffi package using SDK runtime_manager (handles GIL internally)
 		g_runtime_manager->import_metaffi_package();
@@ -324,11 +372,9 @@ void pyxcall_params_ret(
 
 		Py_DECREF(params);
 
-	} catch(std::exception& err)
+	} catch(const std::exception& err)
 	{
-		auto err_len = strlen(err.what());
-		*out_err = (char*)calloc(sizeof(char), err_len + 1);
-		strncpy(*out_err, err.what(), err_len);
+		handle_err_str(out_err, std::string(err.what()));
 	}
 }
 //--------------------------------------------------------------------
@@ -403,7 +449,7 @@ void pyxcall_no_params_ret(
 		}
 
 		// Convert result to CDTS using SDK serializer
-		cdts_python3_serializer ret_ser(*g_runtime_manager, return_values[1]);
+		cdts_python3_serializer ret_ser(*g_runtime_manager, return_values[0]);
 		size_t retval_count = pctxt->retvals_types.size();
 
 		if(retval_count == 1)
@@ -419,11 +465,9 @@ void pyxcall_no_params_ret(
 			}
 		}
 
-	} catch(std::exception& err)
+	} catch(const std::exception& err)
 	{
-		auto err_len = strlen(err.what());
-		*out_err = (char*)calloc(sizeof(char), err_len + 1);
-		strncpy(*out_err, err.what(), err_len);
+		handle_err_str(out_err, std::string(err.what()));
 	}
 }
 //--------------------------------------------------------------------
@@ -504,11 +548,9 @@ void pyxcall_params_no_ret(
 
 		Py_DECREF(params);
 
-	} catch(std::exception& err)
+	} catch(const std::exception& err)
 	{
-		auto err_len = strlen(err.what());
-		*out_err = (char*)calloc(sizeof(char), err_len + 1);
-		strncpy(*out_err, err.what(), err_len);
+		handle_err_str(out_err, std::string(err.what()));
 	}
 }
 //--------------------------------------------------------------------
@@ -552,11 +594,9 @@ void pyxcall_no_params_no_ret(
 			handle_err_str((char**)out_err, err_msg);
 		}
 	}
-	catch(std::exception& err)
+	catch(const std::exception& err)
 	{
-		auto err_len = strlen(err.what());
-		*out_err = (char*)calloc(sizeof(char), err_len + 1);
-		strncpy(*out_err, err.what(), err_len);
+		handle_err_str(out_err, std::string(err.what()));
 	}
 }
 //--------------------------------------------------------------------
@@ -662,10 +702,7 @@ xcall* load_entity(const char* module_path, const char* entity_path, metaffi_typ
 			// For non-instance attributes, resolve immediately
 			if(!ctxt->is_instance_required)
 			{
-				// Need to get pymod from the Module
-				// Since Module doesn't expose pyModule directly, manually import
-				std::filesystem::path p(module_path);
-				PyObject* pymod = pPyImport_ImportModuleLevel(p.stem().string().c_str(), pPy_None, pPy_None, pPy_None, 0);
+				PyObject* pymod = import_module_by_path(module_path);
 				if(!pymod)
 				{
 					handle_py_err(err);
