@@ -35,7 +35,7 @@ c_cpp_exe(python3_host_test
 	"${python3_host_test_src}"
 	"${python3_host_test_includes}"
 	"${python3_host_test_libs}"
-	"$ENV{METAFFI_HOME}/lang-plugin-python3/test"
+	"$ENV{METAFFI_HOME}"
 )
 
 add_test(NAME python3_host_test COMMAND $ENV{METAFFI_HOME}/lang-plugin-python3/test/python3_host_test${CMAKE_EXECUTABLE_SUFFIX})
