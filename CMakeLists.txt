@@ -14,10 +14,10 @@ add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test")
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/idl")
 
 # compiler plugin
-#add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/compiler")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/compiler")
 
 add_custom_target(python3
-	DEPENDS xllr.python3 metaffi.idl.python3 python3_host_test #metaffi.compiler.python3
+	DEPENDS xllr.python3 metaffi.idl.python3 metaffi.compiler.python3 python3_host_test
 )
 set_target_properties(python3 PROPERTIES EXCLUDE_FROM_ALL TRUE)
 

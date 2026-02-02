@@ -7,7 +7,7 @@ find_or_install_package(Boost COMPONENTS filesystem)
 
 # Collect C++ source files
 collect_c_cpp_files(${CMAKE_CURRENT_LIST_DIR} metaffi_idl_python3)
-set(metaffi_idl_python3_src ${NEW_FILES})
+# metaffi_idl_python3_src is now set by the macro
 
 # Collect SDK cpython3 runtime_manager sources
 collect_c_cpp_files("${metaffi_sdk_root}/runtime_manager/cpython3" sdk_cpython3_runtime_manager)

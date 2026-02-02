@@ -1,4 +1,3 @@
-#include <compiler/idl_plugin_interface.h>
 #include <runtime/xllr_capi_loader.h>
 #include <runtime_manager/cpython3/runtime_manager.h>
 #include <runtime_manager/cpython3/python_api_wrapper.h>
@@ -7,6 +6,7 @@
 #include <fstream>
 #include <filesystem>
 #include <cstdlib>
+#include <idl_compiler/idl_plugin_interface.h>
 #include <utils/safe_func.h>
 
 class PythonIDLPlugin : public idl_plugin_interface
@@ -225,7 +225,7 @@ public:
             if (idl_json.find("\"error\"") != std::string::npos)
             {
                 *out_err = xllr_alloc_string(idl_json.c_str(), idl_json.length());
-                *out_err_len = idl_json.length();
+                *out_err_len = (uint32_t)idl_json.length();
                 *out_idl_def_json = nullptr;
                 *out_idl_def_json_length = 0;
                 return;
@@ -233,14 +233,14 @@ public:
 
             // Return the generated JSON
             *out_idl_def_json = xllr_alloc_string(idl_json.c_str(), idl_json.length());
-            *out_idl_def_json_length = idl_json.length();
+            *out_idl_def_json_length = (uint32_t)idl_json.length();
             *out_err = nullptr;
             *out_err_len = 0;
         }
         catch (const std::exception& e)
         {
             *out_err = xllr_alloc_string(e.what(), strlen(e.what()));
-            *out_err_len = strlen(e.what());
+            *out_err_len = (uint32_t)strlen(e.what());
             *out_idl_def_json = nullptr;
             *out_idl_def_json_length = 0;
         }
@@ -248,7 +248,7 @@ public:
         {
             const char* error_msg = "Unknown error in parse_idl";
             *out_err = xllr_alloc_string(error_msg, strlen(error_msg));
-            *out_err_len = strlen(error_msg);
+            *out_err_len = (uint32_t)strlen(error_msg);
             *out_idl_def_json = nullptr;
             *out_idl_def_json_length = 0;
         }
