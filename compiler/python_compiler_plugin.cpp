@@ -2,9 +2,11 @@
 
 #include <runtime_manager/cpython3/python_api_wrapper.h>
 #include <utils/safe_func.h>
-#include <iostream>
+#include <utils/logger.hpp>
 #include <filesystem>
 #include <stdexcept>
+
+static auto LOG = metaffi::get_logger("python3.compiler");
 
 void PythonCompilerPlugin::initialize_python()
 {
@@ -312,7 +314,7 @@ void PythonCompilerPlugin::execute_host_compiler(
 void PythonCompilerPlugin::init()
 {
     initialize_python();
-    std::cout << "Python Compiler Plugin initialized" << std::endl;
+    METAFFI_INFO(LOG, "initialized");
 }
 
 void PythonCompilerPlugin::compile_to_guest(

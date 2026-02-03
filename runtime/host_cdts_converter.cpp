@@ -1,6 +1,6 @@
 #include "host_cdts_converter.h"
 #include "runtime_globals.h"
-#include <iostream>
+#include <utils/logger.hpp>
 
 // SDK includes
 #include <cdts_serializer/cpython3/cdts_python3_serializer.h>
@@ -8,6 +8,7 @@
 #include <runtime/xllr_capi_loader.h>
 
 using namespace metaffi::utils;
+static auto LOG = metaffi::get_logger("python3.runtime");
 
 //--------------------------------------------------------------------
 [[maybe_unused]] cdts* convert_host_params_to_cdts(PyObject* params, metaffi_type_info* param_metaffi_types, metaffi_size params_count, metaffi_size return_values_size)
@@ -16,10 +17,10 @@ using namespace metaffi::utils;
 	cdts* cdts_buf = nullptr;
 	try
 	{
-		std::cerr << "[DEBUG] convert_host_params_to_cdts: params_count=" << params_count << ", return_values_size=" << return_values_size << std::endl;
+		METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: params_count={}, return_values_size={}", params_count, return_values_size);
 
 		Py_ssize_t params_size = Py_IsNone(params) ? 0 : pPyTuple_Size(params);
-		std::cerr << "[DEBUG] convert_host_params_to_cdts: params_size=" << params_size << std::endl;
+		METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: params_size={}", params_size);
 		if(params_size == 0)
 		{
 			if(return_values_size == 0)
@@ -31,25 +32,26 @@ using namespace metaffi::utils;
 
 		// Allocate CDTS buffer
 		cdts_buf = xllr_alloc_cdts_buffer(pPyTuple_Size(params), return_values_size);
-		std::cerr << "[DEBUG] convert_host_params_to_cdts: allocated cdts_buf=" << (void*)cdts_buf << std::endl;
+		METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: allocated cdts_buf={}", static_cast<void*>(cdts_buf));
 		cdts& cdts_params = cdts_buf[0];
 
 		// Use SDK serializer to convert Python objects to CDTS
 		cdts_python3_serializer ser(get_runtime_manager(), cdts_params);
 		for(metaffi_size i = 0; i < params_count; i++)
 		{
-			std::cerr << "[DEBUG] convert_host_params_to_cdts: serializing param[" << i << "], type=" << param_metaffi_types[i].type << std::endl;
+			METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: serializing param[{}], type={}", i, param_metaffi_types[i].type);
 			PyObject* item = pPyTuple_GetItem(params, i);
 			ser.add(item, param_metaffi_types[i].type);
-			std::cerr << "[DEBUG] convert_host_params_to_cdts: param[" << i << "] serialized successfully" << std::endl;
+			METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: param[{}] serialized successfully", i);
 		}
 
-		std::cerr << "[DEBUG] convert_host_params_to_cdts: all params serialized successfully" << std::endl;
+		METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: all params serialized successfully");
 		return cdts_buf;
 	}
 	catch(std::exception& e)
 	{
-		std::cerr << "[DEBUG] convert_host_params_to_cdts: EXCEPTION: " << e.what() << std::endl;
+		(void)e;
+		METAFFI_DEBUG(LOG, "convert_host_params_to_cdts: EXCEPTION: {}", e.what());
 		
 		// Free allocated buffer if serialization failed
 		if(cdts_buf != nullptr)
@@ -72,60 +74,54 @@ using namespace metaffi::utils;
 
 	try
 	{
-		std::cerr << "[DEBUG] convert_host_return_values_from_cdts: index=" << index << std::endl;
+		METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: index={}", index);
 		
 		cdts& retvals = pcdts[index];
-		std::cerr << "[DEBUG] convert_host_return_values_from_cdts: retvals.length=" << retvals.length << ", retvals.arr=" << (void*)retvals.arr << std::endl;
+		METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: retvals.length={}, retvals.arr={}",
+			retvals.length, static_cast<void*>(retvals.arr));
 
 		if(retvals.arr && retvals.length > 0)
 		{
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: retvals[0].type=" << retvals.arr[0].type << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: retvals[0].type={}", retvals.arr[0].type);
 		}
 		else
 		{
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: WARNING - retvals is empty or null!" << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: WARNING - retvals is empty or null!");
 		}
 
 		// Use SDK serializer to convert CDTS to Python tuple
 		// Check if retvals is valid before accessing length
-		std::cerr << "[DEBUG] convert_host_return_values_from_cdts: about to create serializer" << std::endl;
-		std::cerr.flush();
-		std::cerr << "[DEBUG] convert_host_return_values_from_cdts: retvals.length=" << retvals.length << std::endl;
-		std::cerr.flush();
+		METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: about to create serializer");
+		METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: retvals.length={}", retvals.length);
 		
 		try
 		{
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: getting runtime manager" << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: getting runtime manager");
 			auto& rt_mgr = get_runtime_manager();
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: runtime manager obtained, creating serializer" << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: runtime manager obtained, creating serializer");
 			cdts_python3_serializer ser(rt_mgr, retvals);
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: serializer created, calling extract_as_tuple" << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: serializer created, calling extract_as_tuple");
 			PyObject* result = ser.extract_as_tuple(); //<---- HERE
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: extract_as_tuple returned " << (void*)result << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: extract_as_tuple returned {}",
+				static_cast<void*>(result));
 			return result;
 		}
 		catch(const std::exception& e)
 		{
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: EXCEPTION during serializer/extract: " << e.what() << std::endl;
-			std::cerr.flush();
+			(void)e;
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: EXCEPTION during serializer/extract: {}", e.what());
 			throw;
 		}
 		catch(...)
 		{
-			std::cerr << "[DEBUG] convert_host_return_values_from_cdts: UNKNOWN EXCEPTION during serializer/extract" << std::endl;
-			std::cerr.flush();
+			METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: UNKNOWN EXCEPTION during serializer/extract");
 			throw;
 		}
 	}
 	catch(std::exception& e)
 	{
-		std::cerr << "[DEBUG] convert_host_return_values_from_cdts: EXCEPTION: " << e.what() << std::endl;
+		(void)e;
+		METAFFI_DEBUG(LOG, "convert_host_return_values_from_cdts: EXCEPTION: {}", e.what());
 		std::stringstream ss;
 		ss << "Failed convert_host_return_values_from_cdts: " << e.what();
 		pPyErr_SetString(pPyExc_RuntimeError, ss.str().c_str());

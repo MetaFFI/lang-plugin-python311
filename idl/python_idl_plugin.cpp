@@ -1,13 +1,15 @@
 #include <runtime/xllr_capi_loader.h>
 #include <runtime_manager/cpython3/runtime_manager.h>
 #include <runtime_manager/cpython3/python_api_wrapper.h>
+#include <utils/logger.hpp>
 #include <string>
-#include <iostream>
 #include <fstream>
 #include <filesystem>
 #include <cstdlib>
 #include <idl_compiler/idl_plugin_interface.h>
 #include <utils/safe_func.h>
+
+static auto LOG = metaffi::get_logger("python3.idl");
 
 class PythonIDLPlugin : public idl_plugin_interface
 {
@@ -196,7 +198,7 @@ public:
     void init() override
     {
         initialize_python();
-        std::cout << "Python IDL Plugin initialized (using SDK cpython3_runtime_manager)" << std::endl;
+        METAFFI_INFO(LOG, "initialized");
     }
 
     void parse_idl(const char* source_code, uint32_t source_length,

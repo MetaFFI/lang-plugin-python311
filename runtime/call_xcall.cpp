@@ -4,17 +4,19 @@
 #include <runtime_manager/cpython3/gil_guard.h>
 #include <runtime_manager/cpython3/python_api_wrapper.h>
 #include <runtime/xllr_capi_loader.h>
+#include <utils/logger.hpp>
 #include <stdexcept>
-#include <iostream>
 #include <runtime_manager/cpython3/py_utils.h>
+
+static auto LOG = metaffi::get_logger("python3.runtime");
 
 PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
 {
-	std::cerr << "[DEBUG] call_xcall: pxcall_ptr=" << pxcall_ptr << ", context=" << context << std::endl;
+	METAFFI_DEBUG(LOG, "call_xcall: pxcall_ptr={}, context={}", pxcall_ptr, context);
 	
 	if(pxcall_ptr == nullptr)
 	{
-		std::cerr << "[DEBUG] call_xcall: pxcall_ptr is NULL!" << std::endl;
+		METAFFI_DEBUG(LOG, "call_xcall: pxcall_ptr is NULL!");
 		pPyErr_SetString(pPyExc_RuntimeError, "xcall is null");
 		Py_INCREF(pPy_None);
 		return pPy_None;
@@ -28,7 +30,8 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 
 	xcall pxcall(pxcall_ptr, context);
 	
-	std::cerr << "[DEBUG] call_xcall: xcall created, pxcall_and_context[0]=" << pxcall.pxcall_and_context[0] << ", pxcall_and_context[1]=" << pxcall.pxcall_and_context[1] << std::endl;
+	METAFFI_DEBUG(LOG, "call_xcall: xcall created, pxcall_and_context[0]={}, pxcall_and_context[1]={}",
+		pxcall.pxcall_and_context[0], pxcall.pxcall_and_context[1]);
 
 	Py_ssize_t retval_count = pPyTuple_Size(retval_metaffi_types);
 	
@@ -49,7 +52,7 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 			if(pPyErr_Occurred())
 			{
 				std::string err_msg = check_python_error();
-				std::cerr << err_msg << std::endl;
+				METAFFI_ERROR(LOG, "{}", err_msg);
 
 				Py_XDECREF(type);
 				Py_INCREF(pPy_None);
@@ -61,7 +64,7 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 			if(pPyErr_Occurred())
 			{
 				std::string err_msg = check_python_error();
-				std::cerr << err_msg << std::endl;
+				METAFFI_ERROR(LOG, "{}", err_msg);
 
 				Py_XDECREF(type);
 				Py_XDECREF(alias);
@@ -75,7 +78,7 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 			if(pPyErr_Occurred())
 			{
 				std::string err_msg = check_python_error();
-				std::cerr << err_msg << std::endl;
+				METAFFI_ERROR(LOG, "{}", err_msg);
 
 				Py_XDECREF(type);
 				Py_XDECREF(alias);
@@ -203,4 +206,3 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		return pPy_None;
 	}
 }
-
