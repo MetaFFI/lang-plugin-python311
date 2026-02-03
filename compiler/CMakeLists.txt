@@ -67,3 +67,6 @@ add_custom_command(TARGET metaffi.compiler.python3 POST_BUILD
 )
 
 set(metaffi_compiler_python3 metaffi.compiler.python3 PARENT_SCOPE)
+
+# Add E2E tests subdirectory
+add_subdirectory(test)

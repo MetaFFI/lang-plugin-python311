@@ -38,7 +38,8 @@ c_cpp_exe(python3_host_test
 	"$ENV{METAFFI_HOME}"
 )
 
-add_test(NAME python3_host_test COMMAND $ENV{METAFFI_HOME}/lang-plugin-python3/test/python3_host_test${CMAKE_EXECUTABLE_SUFFIX})
+add_test(NAME python3_host_test
+		COMMAND $ENV{METAFFI_HOME}/python3_host_test${CMAKE_EXECUTABLE_SUFFIX})
 if(WIN32)
 	set(python3_host_test_path "$ENV{METAFFI_HOME}/sdk/api/cpp;$ENV{PATH}")
 	string(REPLACE ";" "\\;" python3_host_test_path "${python3_host_test_path}")

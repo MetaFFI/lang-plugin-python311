@@ -6,6 +6,7 @@
 #include <runtime/xllr_capi_loader.h>
 #include <stdexcept>
 #include <iostream>
+#include <runtime_manager/cpython3/py_utils.h>
 
 PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
 {
@@ -45,15 +46,42 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		{
 			// Get the fields of the metaffi_type_info instance
 			PyObject* type = pPyObject_GetAttrString(item, "type");
-			PyObject* alias = pPyObject_GetAttrString(item, "alias");
+			if(pPyErr_Occurred())
+			{
+				std::string err_msg = check_python_error();
+				std::cerr << err_msg << std::endl;
+
+				Py_XDECREF(type);
+				Py_INCREF(pPy_None);
+
+				return pPy_None;
+			}
+
+			PyObject* alias = pPyObject_GetAttrString(item, "alias"); // alias its UTF-8 encoded to 'bytes'
+			if(pPyErr_Occurred())
+			{
+				std::string err_msg = check_python_error();
+				std::cerr << err_msg << std::endl;
+
+				Py_XDECREF(type);
+				Py_XDECREF(alias);
+				Py_INCREF(pPy_None);
+
+				return pPy_None;
+			}
+
 			PyObject* dimensions = pPyObject_GetAttrString(item, "fixed_dimensions");
 		
 			if(pPyErr_Occurred())
 			{
+				std::string err_msg = check_python_error();
+				std::cerr << err_msg << std::endl;
+
 				Py_XDECREF(type);
 				Py_XDECREF(alias);
 				Py_XDECREF(dimensions);
 				Py_INCREF(pPy_None);
+
 				return pPy_None;
 			}
 		
@@ -62,7 +90,17 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 			const char* alias_utf8 = nullptr;
 			if(!Py_IsNone(alias))
 			{
-				alias_utf8 = pPyUnicode_AsUTF8(alias);
+				alias_utf8 = pPyBytes_AsString(alias);
+
+				if(pPyErr_Occurred())
+				{
+					Py_DECREF(type);
+					Py_DECREF(alias);
+					Py_DECREF(dimensions);
+					Py_INCREF(pPy_None);
+					return pPy_None;
+				}
+
 			}
 			// Note: alias_utf8 points to internal Python string data, valid only while GIL is held
 			// Since we use it immediately within the GIL guard, this is safe
@@ -127,11 +165,8 @@ PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_ty
 		}
 
 		char* out_err = nullptr;
-		// Plugin expects: params_ret → full buffer; params_no_ret → &pcdts[0]; no_params_ret → &pcdts[1]
-		cdts* pxcall_arg = (params_count > 0 && retval_count > 0) ? pcdts
-			: (params_count > 0) ? &pcdts[0]
-			: &pcdts[1];
-		pxcall(pxcall_arg, &out_err);
+		// xcall always receives 2-element cdts array: [0]=params, [1]=returns
+		pxcall(pcdts, &out_err);
 
 		if(out_err)
 		{
