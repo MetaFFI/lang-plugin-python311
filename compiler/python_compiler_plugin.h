@@ -52,7 +52,7 @@ public:
      * Compile IDL to host code.
      * @param idl_def_json IDL definition as JSON string
      * @param output_path Output path for generated files
-     * @param host_options Compiler options as JSON string (can be empty)
+     * @param host_options Compiler options as key=value comma-separated string (can be empty)
      * @throws std::runtime_error on compilation failure
      */
     void compile_from_host(

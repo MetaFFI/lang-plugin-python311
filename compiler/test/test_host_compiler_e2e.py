@@ -84,7 +84,7 @@ def setUpModule():
         print(f"Compiler stderr:\n{result.stderr}")
 
     if result.returncode != 0:
-        raise RuntimeError(f"Compiler failed with code {result.returncode}:\n{result.stderr}")
+        raise RuntimeError(f"Compiler failed with code {result.returncode}:\n{result.stderr}\ncmd: metaffi -c --idl {idl_path} -h python3\ncwd: {output_base_dir}")
 
     _generated_file = os.path.join(test_output_dir, 'host_MetaFFIHost.py')
     if not os.path.exists(_generated_file):

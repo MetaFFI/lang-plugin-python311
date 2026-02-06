@@ -253,23 +253,79 @@ void PythonCompilerPlugin::execute_host_compiler(
     pPyTuple_SetItem(compile_args, 1, pPyUnicode_FromString(output_dir.c_str()));
     pPyTuple_SetItem(compile_args, 2, pPyUnicode_FromString(output_filename.c_str()));
 
-    // Parse host_options as dict or use None
+    // Parse host_options as key=value comma-separated string into dict
     PyObject* opts_dict = nullptr;
     if (!host_options.empty())
     {
-        PyObject* json_module = pPyImport_ImportModule("json");
-        if (json_module)
+        opts_dict = pPyDict_New();
+        if (!opts_dict)
         {
-            PyObject* loads = pPyObject_GetAttrString(json_module, "loads");
-            if (loads)
+            Py_DECREF(compiler);
+            Py_DECREF(definition);
+            Py_DECREF(context);
+            Py_DECREF(metaffi_types_module);
+            Py_DECREF(idl_entities_module);
+            Py_DECREF(context_module);
+            Py_DECREF(host_compiler_module);
+            throw std::runtime_error("Failed to create host options dict");
+        }
+
+        auto trim = [](const std::string& s) -> std::string {
+            size_t start = s.find_first_not_of(" \t\r\n");
+            if (start == std::string::npos) return "";
+            size_t end = s.find_last_not_of(" \t\r\n");
+            return s.substr(start, end - start + 1);
+        };
+
+        size_t pos = 0;
+        while (pos < host_options.size())
+        {
+            size_t comma = host_options.find(',', pos);
+            std::string token = host_options.substr(pos, comma == std::string::npos ? std::string::npos : comma - pos);
+            token = trim(token);
+            if (!token.empty())
             {
-                PyObject* opts_args = pPyTuple_New(1);
-                pPyTuple_SetItem(opts_args, 0, pPyUnicode_FromString(host_options.c_str()));
-                opts_dict = pPyObject_CallObject(loads, opts_args);
-                Py_DECREF(opts_args);
-                Py_DECREF(loads);
+                size_t eq = token.find('=');
+                if (eq == std::string::npos || eq == 0 || eq == token.size() - 1)
+                {
+                    Py_DECREF(opts_dict);
+                    Py_DECREF(compiler);
+                    Py_DECREF(definition);
+                    Py_DECREF(context);
+                    Py_DECREF(metaffi_types_module);
+                    Py_DECREF(idl_entities_module);
+                    Py_DECREF(context_module);
+                    Py_DECREF(host_compiler_module);
+                    throw std::runtime_error("Host options are invalid (expected key=value[,key=value...])");
+                }
+
+                std::string key = trim(token.substr(0, eq));
+                std::string val = trim(token.substr(eq + 1));
+                PyObject* py_key = pPyUnicode_FromString(key.c_str());
+                PyObject* py_val = pPyUnicode_FromString(val.c_str());
+                if (!py_key || !py_val)
+                {
+                    Py_XDECREF(py_key);
+                    Py_XDECREF(py_val);
+                    Py_DECREF(opts_dict);
+                    Py_DECREF(compiler);
+                    Py_DECREF(definition);
+                    Py_DECREF(context);
+                    Py_DECREF(metaffi_types_module);
+                    Py_DECREF(idl_entities_module);
+                    Py_DECREF(context_module);
+                    Py_DECREF(host_compiler_module);
+                    throw std::runtime_error("Failed to create host option strings");
+                }
+                pPyDict_SetItem(opts_dict, py_key, py_val);
+                Py_DECREF(py_key);
+                Py_DECREF(py_val);
             }
-            Py_DECREF(json_module);
+            if (comma == std::string::npos)
+            {
+                break;
+            }
+            pos = comma + 1;
         }
     }
 

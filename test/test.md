@@ -1,0 +1,1 @@
+This tests, using C++ and SDK, the plugin against python3 test guest module.

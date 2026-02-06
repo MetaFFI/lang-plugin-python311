@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <runtime_manager/cpython3/py_utils.h>
 
-static auto LOG = metaffi::get_logger("python3.runtime");
+static spdlog::logger* LOG = metaffi::get_logger("python3.runtime");
 
 PyObject* call_xcall(void* pxcall_ptr, void* context, PyObject* param_metaffi_types, PyObject* retval_metaffi_types, PyObject* args)
 {
